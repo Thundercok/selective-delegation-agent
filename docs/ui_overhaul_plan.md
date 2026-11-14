@@ -92,9 +92,9 @@ ghi lại.
   - Khoảng cách theo bội số 4: 4, 8, 12, 16, 24. Giai đoạn này chỉ định nghĩa token; từng màn
     hình chuyển sang dùng khi được thiết kế lại ở giai đoạn 3, để không xê dịch mọi bố cục cùng lúc.
   - Thời lượng chuyển động 3 bậc, tắt hết khi `reduceMotion`.
-- Gom component dùng chung thành tệp riêng: `IconButton` và `DeskProgress` (đang nằm trong
-  `PDFDesk.qml`), `Chip` và `Card` (đang nằm trong `ReasoningLab.qml`), `Badge` (đang chép tay 5
-  lần trong `ArtifactCard.qml`), thêm `Banner` và `EmptyState`.
+- Gom component dùng chung thành tệp riêng: `IconButton`, `DeskProgress`, `Chip`, `Card`, `Badge`,
+  `Banner` và `EmptyState` (nay đã có tệp riêng trong `rat/ui/quick/`; cần kiểm tra bản nào còn
+  chép tay). `ReasoningLab.qml` đã bị xóa ngày 15/11/2026 cùng cửa sổ lab nghiên cứu.
 - Thêm trang trưng bày component để chụp ảnh đối chiếu.
 
 **Xong khi:** không còn mã màu nào ngoài `DeskTheme.qml`; cỡ chữ và bo góc chỉ lấy từ token; ảnh

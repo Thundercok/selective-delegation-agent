@@ -47,21 +47,11 @@ def normalize_answer(ans: str) -> str:
     return s
 
 
-def extract_answer(text: str, answer_type: str | None = None, decimal_separator: str = ".") -> str:
+def extract_answer(text: str, decimal_separator: str = ".") -> str:
     """Lấy dòng 'Answer: ...' cuối cùng; fallback dòng cuối không rỗng."""
-    if answer_type is not None:
-        from research_scoring import parse_typed_answer
-        return parse_typed_answer(text, answer_type, decimal_separator)[0]
     return parse_answer_details(text, decimal_separator=decimal_separator)[0]
 
 
-def extract_item_answer(text: str, item: dict | None = None) -> str:
-    """Trích xuất đáp án tự động ánh xạ answer_type và decimal_separator từ dataset item (nếu có)."""
-    if item is not None and isinstance(item, dict):
-        answer_type = item.get("answer_type")
-        decimal_sep = item.get("decimal_separator", ".")
-        return extract_answer(text, answer_type=answer_type, decimal_separator=decimal_sep)
-    return extract_answer(text)
 
 
 
@@ -135,7 +125,7 @@ def is_wordy_answer(ans: str) -> bool:
     return True
 
 
-def parse_answer_details(text: str, answer_type: str | None = None, decimal_separator: str = ".") -> tuple[str, str, bool]:
+def parse_answer_details(text: str, decimal_separator: str = ".") -> tuple[str, str, bool]:
     """
     Trích xuất đáp án và phân loại:
     Returns (answer, parse_status, wordy).
@@ -143,10 +133,6 @@ def parse_answer_details(text: str, answer_type: str | None = None, decimal_sepa
     wordy: True nếu answer không phải số, từ/tên, hay biểu thức.
     'fail' gồm cả chuỗi rỗng, câu giải thích dài, và LaTeX.
     """
-    if answer_type is not None:
-        from research_scoring import parse_typed_answer
-        return parse_typed_answer(text, answer_type, decimal_separator)
-
     lines = text.splitlines()
     marker_re = re.compile(
         r"(?:#{1,6}\s*)?(?:[^\w\s]+\s*)?(?:\*\*)?(?:final\s+)?answer(?:\*\*)?\s*:\s*(.*)",
@@ -157,8 +143,7 @@ def parse_answer_details(text: str, answer_type: str | None = None, decimal_sepa
     placeholders = {"<kết quả>", "<your final answer>", "[kết quả của bạn]", "<final answer>", "<answer>"}
 
     def _clean_cand(norm: str) -> str:
-        # Keep legacy untyped Yes/No behavior. Typed research parsing returns
-        # earlier and retains the whole candidate for strict scoring.
+        # A bare Yes/No answer collapses to the word itself.
         yes_no = YES_NO_ANSWER.match(norm)
         if yes_no:
             return yes_no.group(1)
@@ -270,19 +255,13 @@ def canonicalize_answer(s: str) -> str:
 def majority_vote(
     answers: list[str],
     return_tie: bool = False,
-    answer_type: str | None = None,
-    decimal_separator: str = ".",
     weights: list[float] | None = None,
 ) -> tuple[str, float] | tuple[str, float, bool]:
     """Vote trên dạng chuẩn hoá, trả dạng chuẩn hoá. Hoà phiếu -> mẫu đầu, ghi tie=True.
     Hỗ trợ weights tùy chọn cho trọng số tin cậy per-sample."""
     if not answers:
         return ("", 0.0, False) if return_tie else ("", 0.0)
-    if answer_type is None:
-        canonical_list = [canonicalize_answer(a) for a in answers]
-    else:
-        from research_scoring import typed_vote_key
-        canonical_list = [typed_vote_key(a, answer_type, decimal_separator) for a in answers]
+    canonical_list = [canonicalize_answer(a) for a in answers]
 
     if weights is not None and len(weights) == len(answers):
         total_weight = float(sum(weights))

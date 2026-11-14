@@ -42,48 +42,6 @@ REPO = Path(__file__).resolve().parents[1]
 DESK_SCENES = ("idle", "unread", "folded", "startup", "receiving", "working", "result")
 WARNINGS = "warnings.txt"
 
-_LAB_STEP = {
-    "strategy": "cot", "label": "Suy luận từng bước", "answer": "42", "verdict": "correct",
-    "confidence": "0.9312", "tokens": 218, "seconds": 3.4,
-    "text": "Mỗi hộp có 6 quả, 7 hộp là 6 × 7 = 42 quả.", "code": "print(6*7)",
-    "toolOutput": "42", "toolOk": True, "decision": "Độ tin cậy vượt ngưỡng nên dừng ở đây.",
-}
-_LAB_RESULT = {
-    "question": "7 hộp, mỗi hộp 6 quả. Có bao nhiêu quả?", "mode": "policy", "reason": "", "status": "done",
-    "finalLabel": "Suy luận từng bước", "finalAnswer": "42", "finalVerdict": "correct", "expected": "42",
-    "path": ["Trả lời thẳng", "Suy luận từng bước"], "tokens": 431, "promptTokens": 512, "calls": 2,
-    "seconds": 6.1,
-    "steps": [dict(_LAB_STEP, strategy="direct", label="Trả lời thẳng", answer="48", verdict="wrong",
-                   confidence="0.5120"), _LAB_STEP],
-}
-
-
-class LabStub(QObject):
-    """Stands in for ReasoningLabController with one finished run, so no model is loaded."""
-    changed = pyqtSignal()
-
-    @pyqtProperty("QVariantMap", notify=changed)
-    def snapshot(self):
-        return {"busy": False, "status": "", "error": "", "question": _LAB_RESULT["question"],
-                "mode": "policy", "result": _LAB_RESULT, "logPath": "/tmp/reasoning.log",
-                "examples": [{"text": "Ví dụ một", "expected": "1", "label": "Ví dụ 1"}]}
-
-    @pyqtSlot(int)
-    def useExample(self, index): pass
-
-    @pyqtSlot(str)
-    def editQuestion(self, text): pass
-
-    @pyqtSlot(str)
-    def setMode(self, mode): pass
-
-    @pyqtSlot()
-    def submit(self): pass
-
-    @pyqtSlot()
-    def cancel(self): pass
-
-
 def _all_targets() -> list[dict]:
     from tools.ui_shot_fixtures import LIVE_STATES, LIVE_WIDTHS
 
@@ -95,10 +53,6 @@ def _all_targets() -> list[dict]:
                 "qml": "PDFDesk.qml", "kind": "preview", "scene": scene,
                 "dark": dark, "name": f"desk-{scene}-{mode}.png", "size": [700, 640]
             })
-        targets.append({
-            "qml": "ReasoningLab.qml", "kind": "lab", "dark": dark,
-            "name": f"lab-{mode}.png", "size": [980, 780]
-        })
         targets.append({
             "qml": "MiniDesk.qml", "kind": "mini", "dark": dark,
             "name": f"mini-{mode}.png", "size": [580, 480]
@@ -142,8 +96,6 @@ def render_one(tree: Path, out: Path, spec: dict) -> int:
                 "previewScene": spec["scene"],
                 "mascotSource": mascot,
             }
-        elif kind == "lab":
-            props = {"controller": LabStub(), "darkMode": dark}
         elif kind == "mini":
             props = {
                 "liveController": MiniStub(),

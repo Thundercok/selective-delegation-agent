@@ -49,7 +49,7 @@ def route_request(args: Sequence[str] | None = None) -> None:
     Route an incoming invocation to the appropriate subsystem:
     - Diagnostics session
     - Quick PDF or Quick Desk view
-    - Standalone Reasoning Lab or Astrology window
+    - Standalone Astrology window
     - CLI command (search, index, doctor, status, etc.)
     - Shell integration or LaunchAgent daemon installer
     - Resident GUI modes (daemon, spotlight, widget, schedule, finder)
@@ -73,9 +73,6 @@ def route_request(args: Sequence[str] | None = None) -> None:
         elif cmd.lower().endswith(".pdf"):
             from rat.ui.quick_app import main as quick_pdf_main
             raise SystemExit(quick_pdf_main(list(args)))
-        elif cmd in ("lab", "reasoning-lab"):
-            from rat.ui.reasoning_lab import main as lab_main
-            raise SystemExit(lab_main())
         elif cmd in ("astrology", "natal", "la-so"):
             from rat.os.crash_shield import install_crash_shield
             install_crash_shield()

@@ -4,6 +4,11 @@ You are overhauling the user interface of RAT, a local-first macOS assistant wri
 with PyQt6 and Qt Quick (QML). The plan is in `docs/ui_overhaul_plan.md` (Vietnamese). This file
 tells you how to carry it out safely. Read both files fully before you change anything.
 
+> Note (2026-11-15): `ReasoningLab.qml` and its Python window were deleted. Where this file says
+> `Chip`, `Card` or `Metric` live inside it, or mentions its `backingColor`, treat that as history:
+> `Chip.qml` and `Card.qml` already exist as files, and `backingColor` now comes from `DeskTheme.qml`.
+> Check the current tree before following any step that names a file.
+
 **Each time you are started, do exactly one phase: the first phase that section 9 of the plan
 ("Tiến độ") does not show as finished. Then stop and report.** The owner reviews and commits
 between phases.
