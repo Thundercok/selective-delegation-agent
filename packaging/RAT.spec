@@ -30,7 +30,9 @@ hiddenimports = (
     + collect_submodules("mlx_lm.models")   # model classes are imported by name from config.json
 )
 
-# TODO(human): decide what stays out of the shipped bundle.
+# pyswisseph (Swiss Ephemeris, AGPL or paid Professional License) stays in: the
+# natal chart ships (decided 2026-11-15). Pick the license model before giving
+# this bundle to anyone; see docs/product_plan.md section 1.
 EXCLUDES = [
     "tkinter",
     "pytest",

@@ -10,7 +10,8 @@ Các mục ghi `[CẦN ĐIỀN]` chưa có dữ liệu. Không điền bằng s�
 
 - [ ] Gỡ các PDF và mã nguồn sách của Molnar trong `_archive_book/` khỏi repo public. Chỉ xóa ở bản mới vẫn để lại trong lịch sử git, nên cần quyết định có viết lại lịch sử không.
 - [ ] Rà soát `work/`, nơi có mã nguồn và tài liệu của dự án cũ.
-- [ ] `pyswisseph` theo AGPL, xung đột với việc bán `.app` đóng. Bỏ tính năng lá số khỏi bản phát hành đóng, hoặc tìm giấy phép phù hợp.
+- [x] Giữ tính năng lá số trong bản phát hành (quyết định 15/11/2026), nên `pyswisseph` được đóng vào `.app`.
+- [ ] Chọn giấy phép cho Swiss Ephemeris **trước khi đưa `.app` cho bất kỳ ai**, theo `rat/astrology/ephemeris/LICENSE`: (a) đặt toàn bộ RAT theo AGPL hoặc giấy phép tương thích, phải công khai mã nguồn của bản phát hành; hoặc (b) mua Swiss Ephemeris Professional License của Astrodienst (giá: `[CẦN ĐIỀN]`, xem astro.com/swisseph). Bán `.app` đóng chỉ đi được với (b). Repo hiện chưa có file `LICENSE`.
 - [ ] Ghi công mô hình dịch (OPUS-MT và Argos, CC-BY-4.0) theo `rat/assets/translation/ATTRIBUTION.txt`.
 - [ ] Kiểm tra giấy phép của model SLM và sprite linh vật.
 
