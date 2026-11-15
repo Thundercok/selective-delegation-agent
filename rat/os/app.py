@@ -121,6 +121,12 @@ class ResidentApplication(QObject):
         self.open_natal_signal.connect(self._do_open_natal, Qt.ConnectionType.QueuedConnection)
         self.app.aboutToQuit.connect(self._on_app_quit)
         self.app.installEventFilter(self)
+        # Python signal handlers (SIGTERM/SIGINT from CrashShield) only run while the interpreter runs. An
+        # idle Qt loop never calls back into it, so without a periodic tick `kill` can be ignored for minutes.
+        self._signal_pump = QTimer(self)
+        self._signal_pump.setInterval(250)
+        self._signal_pump.timeout.connect(lambda: None)
+        self._signal_pump.start()
 
     @property
     def is_quitting(self) -> bool:

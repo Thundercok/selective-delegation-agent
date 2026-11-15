@@ -135,8 +135,17 @@ class Config:
 
     def get_hotkey_display(self, key: Optional[str] = None) -> str:
         """Return native macOS symbols for a chord name or pynput string, by default global_hotkey."""
-        key = key or self.global_hotkey
-        from rat.os.hotkey_chords import CHORDS
+        from rat.os.hotkey_chords import CHORDS, DEFAULT_CHORD
+        if key is None:
+            # Show the chord that is really registered, not the raw setting: an old
+            # "<cmd>+<shift>+<space>" in config.json is replaced by the default chord.
+            from rat.os.hotkey import get_active_hotkey_manager, native_helper_available
+            manager = get_active_hotkey_manager()
+            if manager is not None and manager._running and manager.backend == "native" and manager.toggle_chord in CHORDS:
+                return CHORDS[manager.toggle_chord][2]
+            key = self.global_hotkey
+            if key not in CHORDS and native_helper_available():
+                key = DEFAULT_CHORD
         if key in CHORDS:
             return CHORDS[key][2]
         key = key.replace("<alt>", "⌥").replace("<option>", "⌥")

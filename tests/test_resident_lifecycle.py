@@ -29,6 +29,15 @@ def test_resident_initial_state(qapp):
     assert resident.get_active_workers() == []
 
 
+def test_resident_keeps_ticking_so_python_signal_handlers_can_run(qapp):
+    # An idle Qt loop never re-enters Python, so a SIGTERM handler (CrashShield) can wait minutes and the
+    # helper processes keep their hotkeys. A running no-op timer is what lets the handler fire promptly.
+    resident = ResidentApplication(mode="daemon")
+    pump = resident._signal_pump
+    assert pump.isActive()
+    assert 0 < pump.interval() <= 500
+
+
 def test_resident_request_quit_clean_shutdown(qapp):
     resident = ResidentApplication(mode="daemon")
     mock_view = Mock()

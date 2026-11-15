@@ -110,3 +110,20 @@ def test_checked_in_helper_matches_the_current_build_id():
     if sys.platform != 'darwin' or not helper.is_file():
         pytest.skip('native helper is macOS only')
     assert BUILD.encode() in helper.read_bytes(), 'rebuild with: zsh tools/build_rat_mini_hotkey.sh'
+
+
+def test_displayed_shortcut_is_the_registered_chord_when_config_holds_an_old_string(registrations, monkeypatch, tmp_path):
+    # A config.json saved by the pynput-era app still says "<cmd>+<shift>+<space>", but the native helper
+    # registers the default chord. The desk must show what the key really is.
+    monkeypatch.delenv('RAT_HOTKEY', raising=False)
+    monkeypatch.setattr('rat.config.CONFIG_FILE', tmp_path / 'missing.json')
+    monkeypatch.setattr(hotkey, '_active_hotkey_manager', None)
+    cfg = Config()
+    cfg.global_hotkey = '<cmd>+<shift>+<space>'
+    assert cfg.get_hotkey_display() == '⌥⇧Space'  # no manager yet, helper present: the default chord
+
+    monkeypatch.setattr('rat.os.hotkey.config', cfg)
+    manager = hotkey.GlobalHotkeyManager(Mock(), None)
+    assert manager.start() is True
+    assert cfg.get_hotkey_display() == '⌥⇧Space'
+    manager.stop()
