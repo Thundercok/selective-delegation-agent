@@ -46,7 +46,9 @@ from rat.ui.assistant_worker import create_execution_worker
 from rat.ui.pdf_snapshot_provider import PdfSnapshotRenderer
 from rat.ui.reading_coordinator import ReadingDeskCoordinator
 from rat.ui.quick_navigation_stack import QuickNavigationStack
+from rat.ui.image_input import IMAGE_SUFFIXES, image_from_url
 from rat.kernel.contracts import Artifact, SourceEvidence
+from rat.kernel.input_context import ImageInput
 
 logger = logging.getLogger("rat.ui.quick_pdf_controller")
 
@@ -65,7 +67,20 @@ ERROR_MESSAGES = {
     "empty_query": "Hãy nhập từ hoặc cụm từ cần tìm.",
     "invalid_citation": "Đoạn chọn không khớp văn bản trang đã đọc. Hãy chọn lại đoạn trích.",
     "open_failed": "Hệ thống chưa nhận yêu cầu mở PDF gốc.",
+    "image_invalid": "Không đọc được tệp ảnh này. Hãy chọn ảnh PNG, JPG, WebP, BMP hoặc TIFF dưới 12 MB.",
+    "image_multiple": "Hãy thả từng tệp một vào bàn Chuột.",
+    "ocr_empty": "Không nhận ra chữ trong ảnh này. Hãy chọn ảnh có chữ rõ hơn.",
 }
+
+
+def extract_image_ocr(image_input: ImageInput, path: Path) -> str:
+    """Extract readable text from an attached or dropped image via local OCR."""
+    from document_intake.vision import recognize_tokens
+    from rat.engine.ocr_paragraphs import prepare_ocr_text
+
+    tokens = recognize_tokens(image_input.content or str(path))
+    text, _raw, _norm = prepare_ocr_text(tokens)
+    return text.strip()
 
 
 def format_matched_snippet(hit: Optional[Dict[str, Any]], page_content: str, query: str = "") -> Dict[str, Any]:
@@ -156,6 +171,16 @@ class _LatestPDFWorker:
                         {"path": request.args[0], "select_fn": select_pdf},
                         **kwargs,
                     )
+                elif request.kind == "image_ocr":
+                    # Decoding (~0.2 s) and Vision OCR (~0.3-1 s) stay off the GUI thread.
+                    # QImage, unlike QPixmap, is safe to use here.
+                    file_url, _label, _instruction = request.args
+                    image_input, label = image_from_url(file_url, origin="dropped_file")
+                    path = Path(file_url.toLocalFile())
+                    text = extract_image_ocr(image_input, path)
+                    if request.cancelled.is_set():
+                        raise InterruptedError
+                    data = (text, image_input, path, label)
                 elif request.kind == "search":
                     selection, query, start = request.args
                     data = self._execution_service.execute_subplan(
@@ -175,8 +200,13 @@ class _LatestPDFWorker:
                 outcome, value = "cancelled", None
             except SelectedPDFError as exc:
                 outcome, value = "error", exc.code
+            except ValueError as exc:
+                if request.kind != "image_ocr":
+                    outcome, value = "error", "invalid_pdf"
+                else:
+                    outcome, value = "error", ("image_invalid", str(exc))
             except Exception:
-                outcome, value = "error", "invalid_pdf"
+                outcome, value = "error", "image_invalid" if request.kind == "image_ocr" else "invalid_pdf"
             with self._condition:
                 if self._closed:
                     return
@@ -243,6 +273,7 @@ class QuickPDFController(QObject):
         self._unread = False
         self._status = "Chuột sẵn sàng. Bạn cần gì?"
         self._error = ""
+        self._custom_error_text = ""
         self._events = []
         self._open_url = open_url
         self._reveal_file = reveal_file
@@ -295,6 +326,8 @@ class QuickPDFController(QObject):
         self._auto_read_on_select: bool = False
         self._page_return_view: str = "none"
         self._nav_stack: QuickNavigationStack = QuickNavigationStack()
+        self._pre_settings_expanded: bool = False
+        self._pre_settings_status: Optional[str] = None
         self._active_search_hit: Optional[Dict[str, Any]] = None
         self._cached_matched_info: Optional[Dict[str, Any]] = None
         self._cached_matched_key: Optional[tuple] = None
@@ -387,7 +420,8 @@ class QuickPDFController(QObject):
         )
         if busy:
             if self._request:
-                title = {"select": "Đang mở PDF.", "search": "Đang tìm trang khớp.", "page": "Đang đọc trang đã chọn."}[self._request.kind]
+                title = {"select": "Đang mở PDF.", "search": "Đang tìm trang khớp.", "page": "Đang đọc trang đã chọn.",
+                         "image_ocr": "Đang đọc chữ trong ảnh."}[self._request.kind]
             else:
                 title = self._status or "Đang suy nghĩ…"
         elif view == "search":
@@ -400,6 +434,8 @@ class QuickPDFController(QObject):
         elif view == "finder":
             found = len(self._finder_hits)
             title = f"Gợi ý tìm kiếm ({found})" if found else "Không có gợi ý khớp"
+        elif view == "settings":
+            title = "Cài đặt & Giới thiệu"
         elif view == "error":
             title = "Cần xem lại PDF hoặc yêu cầu."
         else:
@@ -415,10 +451,12 @@ class QuickPDFController(QObject):
             }
         elif self._assistant_sources:
             src = self._assistant_sources[-1]
+            is_img = src.get("kind") == "image"
+            char_count = src.get("char_count", len(src.get("content", "")))
             active_context = {
-                "type": "file",
+                "type": "image" if is_img else "file",
                 "title": src.get("name", "Tệp"),
-                "subtitle": "Tệp đính kèm",
+                "subtitle": f"Ảnh · {char_count} ký tự OCR" if is_img else "Tệp đính kèm",
                 "path": src.get("path", ""),
             }
 
@@ -463,6 +501,39 @@ class QuickPDFController(QObject):
                     "text": "Luận điểm cốt lõi và kết luận quan trọng nhất của bài là gì?",
                 },
             ]
+        elif self._assistant_sources:
+            src = self._assistant_sources[-1]
+            if src.get("kind") == "image":
+                quick_prompts = [
+                    {
+                        "label": "Dịch sang tiếng Việt",
+                        "text": "Dịch toàn bộ nội dung trong ảnh sang tiếng Việt.",
+                        "autoSubmit": True,
+                    },
+                    {
+                        "label": "Tóm tắt ý chính",
+                        "text": "Tóm tắt các ý chính trong ảnh này.",
+                        "autoSubmit": True,
+                    },
+                    {
+                        "label": "Giải thích chi tiết",
+                        "text": "Giải thích chi tiết nội dung và thuật ngữ trong ảnh này.",
+                        "autoSubmit": True,
+                    },
+                ]
+            else:
+                quick_prompts = [
+                    {
+                        "label": "Tóm tắt nội dung",
+                        "text": f"Tóm tắt nội dung chính của tệp {src.get('name', 'đính kèm')}.",
+                        "autoSubmit": True,
+                    },
+                    {
+                        "label": "Ý quan trọng nhất",
+                        "text": "Những điểm quan trọng nhất trong tệp này là gì?",
+                        "autoSubmit": True,
+                    },
+                ]
 
         return {
             "phase": "startup" if not self._ready else "working" if busy else "result" if self._view != "none" else "idle",
@@ -518,7 +589,7 @@ class QuickPDFController(QObject):
             "canBack": bool(self._search) and self._page_return_view == "search" and view in ("page", "error"),
             "canBackToAnswer": (view == "page" and self._page_return_view == "answer" and bool(self._last_assistant_answer or self._last_user_query)),
             "errorCode": self._error,
-            "errorText": ERROR_MESSAGES.get(self._error, "Không xử lý được yêu cầu này."),
+            "errorText": self._custom_error_text or ERROR_MESSAGES.get(self._error, "Không xử lý được yêu cầu này."),
             "events": list(self._events),
             "contradictionReport": self._telemetry.get("contradiction_report"),
             "finderHits": list(self._finder_hits),
@@ -571,6 +642,7 @@ class QuickPDFController(QObject):
         self._serial += 1
         self._request = _Request(self._serial, kind, args)
         self._error = ""
+        self._custom_error_text = ""
         self._unread = False
         self._events = ["Đã nhận yêu cầu.", self._status]
         if self._worker is None:
@@ -579,12 +651,13 @@ class QuickPDFController(QObject):
         self.changed.emit()
 
     @pyqtSlot(str)
-    def openPdfDocument(self, value: str):
-        """Open a PDF file, immediately displaying page 1 in the expanded desk."""
-        self.selectFile(value, auto_read=True)
+    @pyqtSlot(str, str)
+    def openPdfDocument(self, value: str, instruction: str = ""):
+        """Open a PDF file or attach an image (via OCR) in the desk."""
+        self.selectFile(value, auto_read=True, instruction=instruction)
 
     @pyqtSlot(str)
-    def selectFile(self, value, auto_read: bool = False):
+    def selectFile(self, value, auto_read: bool = False, instruction: str = ""):
         if self._request:
             self._request.cancelled.set()
             self._request = None
@@ -598,23 +671,140 @@ class QuickPDFController(QObject):
             self._status = "Chuột sẵn sàng. Bạn cần gì?" if not self._last_assistant_answer else "Đã trả lời · có thể hỏi tiếp"
             self.changed.emit()
             return
+        url = QUrl(value)
+        if url.isLocalFile():
+            path = url.toLocalFile()
+        elif url.scheme():
+            self._selection = None
+            self._search = self._page = None
+            self._active_search_hit = None
+            self._page_return_view = "none"
+            if not auto_read:
+                self._expanded = False
+            self._show_error("not_pdf")
+            return
+        else:
+            path = value
+        if Path(path).suffix.lower() in IMAGE_SUFFIXES:
+            self.selectImageFile(value, instruction=instruction)
+            return
         self._selection = None
+        self._assistant_sources = []
         self._search = self._page = None
         self._active_search_hit = None
         self._page_return_view = "none"
         if not auto_read:
             self._expanded = False
         self._view = "busy" if auto_read else "none"
-        url = QUrl(value)
-        if url.isLocalFile():
-            path = url.toLocalFile()
-        elif url.scheme():
-            self._show_error("not_pdf")
-            return
-        else:
-            path = value
         self._status = "Đang kiểm tra PDF…"
         self._begin("select", path)
+
+    @pyqtSlot(str, result=bool)
+    @pyqtSlot(str, str, result=bool)
+    def selectImageFile(self, value: str, instruction: str = "") -> bool:
+        """Validate and OCR an image file, attaching it as context or submitting immediately."""
+        if self._closed or not value:
+            return False
+        if self._request:
+            self._request.cancelled.set()
+            self._request = None
+        self._selection = None
+        self._search = self._page = None
+        self._active_search_hit = None
+        self._page_return_view = "none"
+        self._error = ""
+        self._custom_error_text = ""
+
+        url = QUrl(value)
+        if url.isLocalFile():
+            file_url = url
+            path = Path(url.toLocalFile())
+        elif url.scheme():
+            self._show_error("image_invalid")
+            return False
+        else:
+            path = Path(value)
+            file_url = QUrl.fromLocalFile(str(path))
+
+        # Cheap failures (wrong type, missing file) answer at once; decoding waits for the worker.
+        if not str(path).startswith("/.file/id=") and (path.suffix.lower() not in IMAGE_SUFFIXES or not path.is_file()):
+            try:
+                image_from_url(file_url, origin="dropped_file")
+            except ValueError as exc:
+                self._show_error("image_invalid", str(exc))
+                return False
+
+        label = path.name
+        clean_q = (instruction or "").strip()
+        if clean_q:
+            self._expanded = True
+            self._view = "busy"
+        self._status = f"Đang đọc chữ trong ảnh {label}…"
+        self._begin("image_ocr", file_url, label, clean_q)
+        return True
+
+    def _finish_image_ocr(self, ocr_text: str, image_input: ImageInput, path: Path, label: str, clean_q: str) -> None:
+        if not ocr_text:
+            self._show_error("ocr_empty")
+            return
+
+        self._assistant_sources = [
+            {
+                "kind": "image",
+                "path": str(path),
+                "name": label,
+                "content": ocr_text[:4000],
+                "char_count": len(ocr_text),
+                "sha256": image_input.source_file_sha256 or image_input.content_sha256,
+            }
+        ]
+
+        if clean_q:
+            self._finder_hits = []
+            self._finder_query = ""
+            if self._finder_coordinator is not None:
+                self._finder_coordinator.cancel()
+            self._expanded = True
+            self._status = f"Chuột đang đọc ảnh {label} và xử lý yêu cầu…"
+            self.changed.emit()
+            self.submit(clean_q, origin="ui_action")
+            return
+
+        self._view = "answer" if self._last_assistant_answer else "none"
+        self._status = f"Đã đọc ảnh {label} ({len(ocr_text)} ký tự). Chọn gợi ý bên dưới hoặc hỏi Chuột."
+        self._events.append(self._status)
+        self.changed.emit()
+
+    @pyqtSlot("QVariantList", result=bool)
+    @pyqtSlot("QVariantList", str, result=bool)
+    def dropImage(self, urls, instruction: str = "") -> bool:
+        """Accept a single dropped image URL into the main desk."""
+        if self._closed:
+            return False
+        if not urls or len(urls) != 1:
+            self._show_error("image_multiple")
+            return False
+        target = urls[0]
+        value = target.toString() if isinstance(target, QUrl) else str(target)
+        return self.selectImageFile(value, instruction)
+
+    @pyqtSlot(result=bool)
+    def showCurrentImageSource(self) -> bool:
+        """Display the OCR text extracted from the currently attached image."""
+        if self._closed or not self._assistant_sources:
+            return False
+        src = self._assistant_sources[-1]
+        content = src.get("content", "").strip()
+        if not content:
+            return False
+        self._last_user_query = f"Văn bản OCR · {src.get('name', 'Ảnh')}"
+        self._last_assistant_answer = content
+        self._view = "answer"
+        self._expanded = True
+        self._unread = False
+        self._status = f"Nội dung nhận diện từ {src.get('name', 'ảnh')} · có thể hỏi tiếp"
+        self.changed.emit()
+        return True
 
     @pyqtSlot()
     def clearActiveContext(self):
@@ -844,13 +1034,14 @@ class QuickPDFController(QObject):
                 f"{len(data['textless_pages'])} trang không có văn bản trích xuất. "
                 "Tìm theo từ khóa; OCR chưa chạy.")
 
-    def _show_error(self, code):
+    def _show_error(self, code, custom_text: str = ""):
         if self._request:
             self._request.cancelled.set()
             self._request = None
         self._error = code
+        self._custom_error_text = custom_text
         self._view = "error"
-        self._status = ERROR_MESSAGES.get(code, f"Lỗi: {code}")
+        self._status = custom_text or ERROR_MESSAGES.get(code, f"Lỗi: {code}")
         self._events.append(self._status)
         self._unread = not self._expanded
         self.changed.emit()
@@ -863,7 +1054,13 @@ class QuickPDFController(QObject):
         if request.cancelled.is_set() or outcome == "cancelled":
             return
         if outcome == "error":
-            self._show_error(data)
+            # image_ocr errors carry (code, message) so the user sees why the image was refused.
+            code, text = data if isinstance(data, tuple) else (data, "")
+            self._show_error(code, text)
+            return
+        if request.kind == "image_ocr":
+            text, image_input, path, label = data
+            self._finish_image_ocr((text or "").strip(), image_input, path, label, request.args[2])
             return
         if request.kind == "select":
             self._selection = data
@@ -902,6 +1099,8 @@ class QuickPDFController(QObject):
         if self._request:
             self._request.cancelled.set()
             self._request = None
+            if self._view == "busy":  # PDF open or image OCR with no result coming
+                self._view = "none"
 
         # Cancel finder coordinator if active
         if self._finder_coordinator:
@@ -1561,16 +1760,31 @@ class QuickPDFController(QObject):
 
     @pyqtSlot()
     def openSettings(self) -> None:
+        if self._closed or self.snapshot["busy"]:
+            return
         if self._view != "settings":
-            self._navigation_stack.push(self._view)
-            self._view = "settings"
-            self.changed.emit()
+            self._nav_stack.push(self._view)
+            self._pre_settings_expanded = self._expanded
+            self._pre_settings_status = self._status
+        self._view = "settings"
+        self._expanded = True
+        self._unread = False
+        self._status = "Cài đặt & Giới thiệu RAT"
+        self.changed.emit()
 
     @pyqtSlot()
     def closeSettings(self) -> None:
         if self._view == "settings":
-            prev = self._navigation_stack.pop() if self._navigation_stack else "none"
-            self._view = prev or "none"
+            prev = self._nav_stack.pop() or "none"
+            self._view = prev
+            if prev == "none":
+                self._expanded = False
+            else:
+                self._expanded = self._pre_settings_expanded
+            self._status = self._pre_settings_status or (
+                "Chuột sẵn sàng. Bạn cần gì?" if not self._last_assistant_answer else "Đã trả lời · có thể hỏi tiếp"
+            )
+            self._pre_settings_status = None
             self.changed.emit()
 
     @pyqtSlot(result="QVariantList")
@@ -2140,6 +2354,8 @@ class QuickPDFController(QObject):
                 return False
             self._search = self._page = None
             return self.submit(q, origin="ui_action")
+        elif p.suffix.lower() in IMAGE_SUFFIXES:
+            return self.selectImageFile(str(p), instruction=query.strip())
         else:
             try:
                 content = p.read_text(encoding="utf-8", errors="replace")[:4000]
@@ -2177,7 +2393,15 @@ class QuickPDFController(QObject):
                 return False
 
             is_pdf = bool(hit.get("is_pdf") or str(path).lower().endswith(".pdf"))
+            is_image = p.suffix.lower() in IMAGE_SUFFIXES
             clean_q = (query or "").strip()
+
+            if is_image:
+                self._finder_hits = []
+                self._finder_query = ""
+                if self._finder_coordinator is not None:
+                    self._finder_coordinator.cancel()
+                return self.selectImageFile(str(p), instruction=clean_q)
 
             # If user has an active drafted question, automatically begin agentic analysis
             if clean_q:

@@ -200,7 +200,7 @@ import QtQuick.Layouts
                     spacing: desk.emptyCancelledAnswer ? 8 : 12
                     AnswerView { id: answerView }
                     Label {
-                        visible: desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "busy" && desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "reading" && (desk.liveSnapshot.view !== "page" || desk.readerDisplayMode === "text" || desk.liveSnapshot.pageTruncated)
+                        visible: desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "busy" && desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "reading" && desk.liveSnapshot.view !== "settings" && (desk.liveSnapshot.view !== "page" || desk.readerDisplayMode === "text" || desk.liveSnapshot.pageTruncated)
                         Layout.fillWidth: true
                         text: desk.liveSnapshot.view === "page" ? ((desk.liveSnapshot.pageTruncated ? "Đã cắt ở 8.000 ký tự. " : "") + (desk.readerDisplayMode === "text" ? "Bôi chọn đoạn cần lấy, rồi chép trích dẫn." : "")) : (desk.liveSnapshot.view === "error" ? desk.liveSnapshot.errorText : desk.liveSnapshot.status) || ""
                         textFormat: Text.PlainText
@@ -215,10 +215,11 @@ import QtQuick.Layouts
                         QuietButton {
                             objectName: "errorActionButton"
                             primary: true
-                            text: (desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1 ? "Chọn tệp PDF" : "Thử lại"
-                            iconName: (desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1 ? "file" : "sparkle"
+                            text: (desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1 ? "Chọn tệp PDF"
+                                : ((desk.liveSnapshot.errorText || "").indexOf("ảnh") !== -1 ? "Chọn ảnh khác" : "Thử lại")
+                            iconName: ((desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1 || (desk.liveSnapshot.errorText || "").indexOf("ảnh") !== -1) ? "file" : "sparkle"
                             onClicked: {
-                                if ((desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1) {
+                                if ((desk.liveSnapshot.errorText || "").indexOf("PDF") !== -1 || (desk.liveSnapshot.errorText || "").indexOf("ảnh") !== -1) {
                                     desk.openPdfDialog()
                                 } else {
                                     desk.editor.forceActiveFocus()
@@ -275,7 +276,7 @@ import QtQuick.Layouts
                         QuietButton { objectName: "nextBatch"; visible: desk.liveSnapshot.nextPage > 0; text: "Tìm tiếp từ trang " + desk.liveSnapshot.nextPage; onClicked: desk.liveController.nextBatch() }
                     }
                     RowLayout {
-                        visible: desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "reading"
+                        visible: desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "reading" && desk.liveSnapshot.view !== "settings"
                         Layout.fillWidth: true
                         QuietButton {
                             objectName: "logToggle"

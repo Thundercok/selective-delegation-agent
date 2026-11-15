@@ -432,6 +432,10 @@ Rectangle {
         const command = value.trim().toLowerCase()
         return command === "/apps" || command === "ứng dụng" || command === "mở ứng dụng"
     }
+    function isSettingsCommand(value) {
+        const command = value.trim().toLowerCase()
+        return command === "/settings" || command === "/caidat"
+    }
     function submitDraft() { composer.submitDraft() }
     function handleComposerReturn(event) { composer.handleComposerReturn(event) }
     function stopRequest() { composer.stopRequest() }
@@ -467,9 +471,21 @@ Rectangle {
     }
     FileDialog {
         id: pdfDialog
-        title: "Chọn một PDF để tìm và đọc"
-        nameFilters: ["PDF (*.pdf *.PDF)"]
-        onAccepted: { if (desk.liveMode) desk.liveController.openPdfDocument(String(selectedFile)) }
+        title: "Chọn PDF hoặc ảnh để đọc và hỏi Chuột"
+        nameFilters: [
+            "Tài liệu & Ảnh (*.pdf *.PDF *.png *.PNG *.jpg *.JPG *.jpeg *.JPEG *.webp *.WEBP *.bmp *.BMP *.tif *.TIF *.tiff *.TIFF)",
+            "PDF (*.pdf *.PDF)",
+            "Ảnh (*.png *.PNG *.jpg *.JPG *.jpeg *.JPEG *.webp *.WEBP *.bmp *.BMP *.tif *.TIF *.tiff *.TIFF)"
+        ]
+        onAccepted: {
+            if (!desk.liveMode) return
+            var pathStr = String(selectedFile)
+            var hadDraft = composer.editor.text.trim().length > 0
+            desk.liveController.openPdfDocument(pathStr, composer.editor.text)
+            if (hadDraft && /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(pathStr) && desk.liveController.snapshot.busy) {
+                composer.editor.text = ""
+            }
+        }
     }
     function openPdfDialog() { pdfDialog.open() }
     function openReadingProfileDialog() { readingProfileDialog.open() }
@@ -485,12 +501,20 @@ Rectangle {
         anchors.fill: parent
         enabled: desk.liveMode
         onDropped: drop => {
-            if (drop.hasUrls && drop.urls.length === 1) {
-                if (desk.liveSnapshot.view === "reading" && /\.json$/i.test(String(drop.urls[0]))) {
-                    drop.accepted = desk.liveController.importReadingProfile(String(drop.urls[0]))
+            if (drop.hasUrls && drop.urls.length > 1) {
+                desk.liveController.dropImage(drop.urls, composer.editor.text)
+                drop.accepted = true
+            } else if (drop.hasUrls && drop.urls.length === 1) {
+                var urlStr = String(drop.urls[0])
+                if (desk.liveSnapshot.view === "reading" && /\.json$/i.test(urlStr)) {
+                    drop.accepted = desk.liveController.importReadingProfile(urlStr)
                     return
                 }
-                desk.liveController.openPdfDocument(String(drop.urls[0]))
+                var hadDraft = composer.editor.text.trim().length > 0
+                desk.liveController.openPdfDocument(urlStr, composer.editor.text)
+                if (hadDraft && /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(urlStr) && desk.liveController.snapshot.busy) {
+                    composer.editor.text = ""
+                }
                 drop.accepted = true
             } else drop.accepted = false
         }

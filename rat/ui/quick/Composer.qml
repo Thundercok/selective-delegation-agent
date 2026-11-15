@@ -117,8 +117,8 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     text: desk.liveSnapshot.activeContext ? desk.liveSnapshot.activeContext.title : ""
-                    iconName: desk.liveSnapshot.fileName ? "pdf" : "file"
-                    iconColor: desk.liveSnapshot.fileName ? desk.pdfInk : "transparent"
+                    iconName: desk.liveSnapshot.fileName ? "pdf" : ((desk.liveSnapshot.activeContext && desk.liveSnapshot.activeContext.type === "image") ? "sparkle" : "file")
+                    iconColor: desk.liveSnapshot.fileName ? desk.pdfInk : ((desk.liveSnapshot.activeContext && desk.liveSnapshot.activeContext.type === "image") ? desk.accent : "transparent")
                     trailingIconName: ""
                     iconSize: 14
                     trailingIconSize: 0
@@ -128,11 +128,15 @@ Rectangle {
                     bottomPadding: 2
                     leftPadding: 4
                     rightPadding: 4
-                    Accessible.name: "Tài liệu đang chọn: " + text + ", mở trang đang đọc"
-                    enabled: Boolean(desk.liveSnapshot.fileName)
-                    onClicked: { if (desk.liveController) desk.liveController.showCurrentPdfPage() }
+                    Accessible.name: "Tài liệu đang chọn: " + text + (desk.liveSnapshot.fileName ? ", mở trang đang đọc" : ", xem nội dung đã nhận diện")
+                    enabled: Boolean(desk.liveSnapshot.fileName || (desk.liveSnapshot.activeContext && desk.liveSnapshot.activeContext.type === "image"))
+                    onClicked: {
+                        if (!desk.liveController) return
+                        if (desk.liveSnapshot.fileName) desk.liveController.showCurrentPdfPage()
+                        else if (desk.liveSnapshot.activeContext && desk.liveSnapshot.activeContext.type === "image") desk.liveController.showCurrentImageSource()
+                    }
                     ToolTip.visible: hovered
-                    ToolTip.text: desk.liveSnapshot.activeContext ? desk.liveSnapshot.activeContext.title : ""
+                    ToolTip.text: desk.liveSnapshot.activeContext ? (desk.liveSnapshot.activeContext.subtitle ? (desk.liveSnapshot.activeContext.title + " · " + desk.liveSnapshot.activeContext.subtitle) : desk.liveSnapshot.activeContext.title) : ""
                 }
                 IconButton {
                     objectName: "openPdfSearch"
@@ -164,7 +168,7 @@ Rectangle {
         RowLayout {
             id: ambientPromptsRow
             objectName: "ambientPromptsRow"
-            visible: desk.liveMode && Boolean(desk.liveSnapshot.fileName) && !desk.liveSnapshot.busy && Boolean(desk.liveSnapshot.quickPrompts && desk.liveSnapshot.quickPrompts.length > 0)
+            visible: desk.liveMode && Boolean(desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) && !desk.liveSnapshot.busy && Boolean(desk.liveSnapshot.quickPrompts && desk.liveSnapshot.quickPrompts.length > 0)
             Layout.fillWidth: true
             Layout.maximumWidth: editorColumn.width
             implicitHeight: 20
@@ -195,7 +199,11 @@ Rectangle {
                             cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 editor.text = (modelData.text || "")
-                                editor.forceActiveFocus()
+                                if (modelData.autoSubmit) {
+                                    composer.submitDraft()
+                                } else {
+                                    editor.forceActiveFocus()
+                                }
                             }
                         }
                     }
@@ -238,7 +246,8 @@ Rectangle {
                 placeholderText: desk.liveMode ? (
                     desk.liveSnapshot.view === "apps" ? "Tìm ứng dụng…"
                     : desk.liveSnapshot.view === "reading" ? "Bản nháp của phiên xem · chưa nối soạn luận…"
-                    : (desk.liveSnapshot.fileName ? "Hỏi tiếp về tài liệu này…" : "Tìm tệp, mở app hoặc hỏi Chuột…")
+                    : desk.liveSnapshot.fileName ? "Hỏi tiếp về tài liệu này…"
+                    : (desk.liveSnapshot.activeContext ? (desk.liveSnapshot.activeContext.type === "image" ? "Hỏi hoặc dịch nội dung ảnh này…" : "Hỏi tiếp về tệp đính kèm này…") : "Tìm tệp, mở app hoặc hỏi Chuột…")
                 ) : desk.phase === "idle" ? "Chuột nghe đây. Bạn cần gì?" : "Hỏi tiếp hoặc sửa điều gì đó…"
                 wrapMode: TextEdit.Wrap
                 selectByMouse: true
@@ -381,7 +390,7 @@ Rectangle {
         RowLayout {
             id: suggestionChipsRow
             objectName: "suggestionChipsRow"
-            visible: desk.liveMode && editor.text.length === 0 && !desk.liveSnapshot.busy && desk.liveSnapshot.view === "none" && !desk.expanded && !desk.liveSnapshot.fileName
+            visible: desk.liveMode && editor.text.length === 0 && !desk.liveSnapshot.busy && desk.liveSnapshot.view === "none" && !desk.expanded && !desk.liveSnapshot.fileName && !desk.liveSnapshot.activeContext
             Layout.fillWidth: true
             spacing: 6
             Chip {
@@ -458,7 +467,7 @@ Rectangle {
                 Label {
                     objectName: "composerDropStatus"
                     Layout.fillWidth: true
-                    text: containsDrag ? "Thả PDF vào bàn Chuột"
+                    text: containsDrag ? "Thả PDF hoặc ảnh vào bàn Chuột"
                         : desk.liveSnapshot.finderFeedback ? desk.liveSnapshot.finderFeedback
                         : desk.liveSnapshot.indexStatus ? desk.liveSnapshot.indexStatus
                         : (desk.composerKeyHints && desk.composerKeyHints.length > 0) ? ""
@@ -485,9 +494,9 @@ Rectangle {
                 bottomPadding: 0
                 implicitWidth: 30
                 implicitHeight: 30
-                Accessible.name: desk.liveSnapshot.view === "reading" ? "Mở hồ sơ lá số JSON" : (desk.liveSnapshot.fileName ? "Đổi PDF" : "Chọn PDF")
+                Accessible.name: desk.liveSnapshot.view === "reading" ? "Mở hồ sơ lá số JSON" : ((desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi PDF hoặc ảnh" : "Chọn PDF hoặc ảnh")
                 ToolTip.visible: hovered
-                ToolTip.text: desk.liveSnapshot.view === "reading" ? "Mở hoặc thả hồ sơ lá số JSON" : (desk.liveSnapshot.fileName ? "Đổi hoặc kéo thả PDF khác" : "Chọn hoặc kéo thả PDF")
+                ToolTip.text: desk.liveSnapshot.view === "reading" ? "Mở hoặc thả hồ sơ lá số JSON" : ((desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi hoặc kéo thả PDF / ảnh khác" : "Chọn hoặc kéo thả PDF / ảnh")
                 onClicked: { if (desk.liveSnapshot.view === "reading") desk.openReadingProfileDialog(); else desk.openPdfDialog() }
             }
             QuietButton {
@@ -563,6 +572,12 @@ Rectangle {
                 if (editor.text.trim().toLowerCase() === "/reading") {
                     desk.liveController.openReadingDesk()
                     editor.text = ""
+                    editor.forceActiveFocus()
+                    return
+                }
+                if (desk.isSettingsCommand(editor.text)) {
+                    desk.liveController.openSettings()
+                    if (desk.liveController.snapshot.view === "settings") editor.text = ""
                     editor.forceActiveFocus()
                     return
                 }

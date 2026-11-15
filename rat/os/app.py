@@ -549,8 +549,11 @@ class ResidentApplication(QObject):
             view.requestActivate()
             activate_macos_app()
             if controller is not None:
-                controller._status = "Tùy chọn: Giao diện cấu hình QtQuick chuyên biệt đang được phát triển."
-                controller.changed.emit()
+                if hasattr(controller, "openSettings"):
+                    controller.openSettings()
+                else:
+                    controller._status = "Tùy chọn: Giao diện cấu hình QtQuick chuyên biệt đang được phát triển."
+                    controller.changed.emit()
         except Exception as e:
             logger.error(f"Error opening settings on RAT Desk: {e}", exc_info=True)
 
@@ -568,8 +571,12 @@ class ResidentApplication(QObject):
             view.requestActivate()
             activate_macos_app()
             if controller is not None:
-                controller._status = "Thời khóa biểu: Thẻ sắp xếp lịch CoT trên Desk đang được phát triển."
-                controller.changed.emit()
+                if hasattr(controller, "setExpanded") and hasattr(controller, "submit"):
+                    controller.setExpanded(True)
+                    controller.submit("Thời khóa biểu hôm nay", origin="ui_action")
+                else:
+                    controller._status = "Thời khóa biểu: Thẻ sắp xếp lịch CoT trên Desk đang được phát triển."
+                    controller.changed.emit()
         except Exception as e:
             logger.error(f"Error opening schedule on RAT Desk: {e}", exc_info=True)
 

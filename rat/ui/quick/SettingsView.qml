@@ -200,6 +200,56 @@ ColumnLayout {
         }
     }
 
+    Rectangle {
+        objectName: "aboutAttributionCard"
+        Layout.fillWidth: true
+        implicitHeight: aboutCol.implicitHeight + 24
+        radius: desk.cardRadius
+        color: desk.utilitySurface
+        border.width: 1
+        border.color: desk.edge
+
+        ColumnLayout {
+            id: aboutCol
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: 14
+            spacing: 6
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 6
+                DeskIcon { name: "file"; color: desk.accent; width: 14; height: 14; Layout.preferredWidth: 14; Layout.preferredHeight: 14 }
+                Label {
+                    text: "Giới thiệu & Bản quyền"
+                    font.pixelSize: 13
+                    font.weight: Font.DemiBold
+                    color: desk.ink
+                    Layout.fillWidth: true
+                }
+            }
+
+            Label {
+                text: "RAT (Selective Delegation Agent) · Phát hành theo giấy phép GNU AGPL-3.0-or-later."
+                textFormat: Text.PlainText
+                font.pixelSize: 12
+                color: desk.muted
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+            }
+
+            Label {
+                text: "Mô hình dịch ngoại tuyến: OPUS-MT của Jörg Tiedemann và Santhosh Thottingal (2020), đóng gói bởi Argos Open Technologies, giấy phép CC-BY-4.0, không chỉnh sửa. Lịch thiên văn: Swiss Ephemeris của Astrodienst AG (AGPL-3.0)."
+                textFormat: Text.PlainText
+                font.pixelSize: 12
+                color: desk.muted
+                Layout.fillWidth: true
+                wrapMode: Text.Wrap
+            }
+        }
+    }
+
     FolderDialog {
         id: folderDialog
         title: "Chọn thư mục cần theo dõi"

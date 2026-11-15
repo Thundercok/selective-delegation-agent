@@ -15,11 +15,8 @@ class QuickNavigationStack:
             self._history.append(view)
 
     def pop(self) -> Optional[str]:
-        if len(self._history) > 1:
-            self._history.pop()
-            return self._history[-1]
-        elif self._history:
-            return self._history[0]
+        if self._history:
+            return self._history.pop()
         return None
 
     def clear(self) -> None:

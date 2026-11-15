@@ -152,3 +152,39 @@ def test_escape_on_a_folded_page_stays_folded(quick_env):
     press_escape(quick_env)
     assert control.snapshot["view"] == "page"
     assert not control.snapshot["expanded"]
+
+
+def test_settings_opens_and_escape_restores_previous_view(quick_env):
+    control = quick_env.controller
+    root = quick_env.root
+
+    assert control.snapshot["view"] == "none"
+    assert not control.snapshot["expanded"]
+
+    control.openSettings()
+    QTest.qWait(40)
+    assert control.snapshot["view"] == "settings"
+    assert control.snapshot["expanded"]
+    settings_view = root.findChild(QQuickItem, "settingsView")
+    about_card = root.findChild(QQuickItem, "aboutAttributionCard")
+    assert settings_view is not None and settings_view.isVisible()
+    assert about_card is not None and about_card.isVisible()
+
+    press_escape(quick_env)
+    assert control.snapshot["view"] == "none"
+    assert not control.snapshot["expanded"]
+
+    control._last_assistant_answer = "Câu trả lời trước đó"
+    control._view = "answer"
+    control._expanded = True
+    control.changed.emit()
+    QTest.qWait(30)
+
+    control.openSettings()
+    QTest.qWait(30)
+    assert control.snapshot["view"] == "settings"
+    assert control.snapshot["expanded"]
+
+    press_escape(quick_env)
+    assert control.snapshot["view"] == "answer"
+    assert control.snapshot["expanded"]
