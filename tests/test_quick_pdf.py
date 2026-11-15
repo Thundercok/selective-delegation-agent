@@ -910,3 +910,26 @@ def test_quick_pdf_startup_indexing_retries_when_busy(tmp_path, monkeypatch):
 
 
 
+
+
+def test_desk_shortcut_label_follows_the_configured_chord(app, controller, monkeypatch):
+    # The hint used to be the literal "⌥Space", which stopped matching once the default became ⌥⇧Space.
+    from rat.config import config
+
+    monkeypatch.setattr(config, "global_hotkey", "control_shift_space")
+    assert controller.snapshot["shortcutLabel"] == "⌃⇧Space"
+
+    view = QQuickView()
+    view.setInitialProperties({"liveController": controller, "reduceMotion": True})
+    view.setSource(QUrl.fromLocalFile(str(PROJECT / "rat/ui/quick/PDFDesk.qml")))
+    assert view.status() == QQuickView.Status.Ready, [e.toString() for e in view.errors()]
+    try:
+        texts, pending = [], [view.rootObject()]
+        while pending:
+            item = pending.pop()
+            texts.append(str(item.property("text") or ""))
+            pending.extend(item.childItems())
+        hints = [t for t in texts if t.endswith("mở bàn")]
+        assert hints == ["⌃⇧Space mở bàn"], hints
+    finally:
+        view.deleteLater()

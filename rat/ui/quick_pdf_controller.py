@@ -468,6 +468,7 @@ class QuickPDFController(QObject):
             "phase": "startup" if not self._ready else "working" if busy else "result" if self._view != "none" else "idle",
             "busy": busy,
             "expanded": self._expanded,
+            "shortcutLabel": config.get_hotkey_display(),
             "workspaceMode": self._workspace_mode,
             "previewPageNumber": self._preview_page,
             "previewSnippet": self._preview_snippet,

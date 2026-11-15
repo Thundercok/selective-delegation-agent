@@ -610,7 +610,7 @@ Rectangle {
                             implicitWidth: 16; implicitHeight: 16; radius: 8; color: desk.selectedSurface
                             Label { anchors.centerIn: parent; text: "1"; font.pixelSize: 10; font.weight: Font.Bold; color: desk.accent }
                         }
-                        Label { text: "⌥Space mở bàn"; font.pixelSize: 11; color: desk.ink }
+                        Label { text: (desk.liveSnapshot.shortcutLabel || "⌥⇧Space") + " mở bàn"; font.pixelSize: 11; color: desk.ink }
                     }
 
                     RowLayout {
