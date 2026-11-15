@@ -146,6 +146,18 @@ def model_asset_problems(info: dict) -> list[str]:
     return problems
 
 
+def accessibility_message(trusted: bool, native_helper: bool, selection_chord: str) -> str | None:
+    """What is actually lost without Accessibility. The native helper registers hotkeys
+    without it, but reading the live selection always needs it."""
+    if trusted:
+        return None
+    selection = (f"Reading selected text ({selection_chord}) needs Accessibility; "
+                 "without it RAT only uses text copied in the last 2 minutes.")
+    if native_helper:
+        return "Hotkeys work through the native helper. " + selection
+    return "Global hotkeys need Accessibility (native helper missing). " + selection
+
+
 def collect_system_diagnostics() -> dict[str, any]:
     """Collect structured health and environment telemetry with deterministic schema."""
     report = {
@@ -263,19 +275,20 @@ def collect_system_diagnostics() -> dict[str, any]:
     # 5. macOS Permissions & Identity
     from rat.os.permissions import accessibility_status, runtime_identity
     perm_status = accessibility_status(prompt=False)
+    from rat.os.hotkey import native_helper_available
     perm_info = {
         "trusted": perm_status.trusted,
         "state": perm_status.state,
         "identity": runtime_identity(),
+        "native_hotkey_helper": native_helper_available(),
     }
-    if perm_status.trusted or sys.platform != "darwin":
+    message = accessibility_message(perm_status.trusted or sys.platform != "darwin",
+                                    perm_info["native_hotkey_helper"],
+                                    config.get_hotkey_display(config.quicklook_hotkey))
+    if message is None:
         report["checks"]["permissions"] = {"status": "PASS", "details": perm_info}
     else:
-        report["checks"]["permissions"] = {
-            "status": "WARN",
-            "details": perm_info,
-            "message": "Accessibility permission not granted. Hotkeys may be restricted.",
-        }
+        report["checks"]["permissions"] = {"status": "WARN", "details": perm_info, "message": message}
         has_warning = True
 
     # Compute overall status

@@ -80,3 +80,24 @@ def test_dangling_model_symlink_is_not_ready(tmp_path):
     target.unlink()
     target.symlink_to(tmp_path / "gone" / "model.bin")
     assert not is_local_models_ready(tmp_path)
+
+
+def test_accessibility_message_silent_when_trusted():
+    from rat.os.diagnostics import accessibility_message
+
+    assert accessibility_message(True, True, "⌥⇧R") is None
+    assert accessibility_message(True, False, "⌥⇧R") is None
+
+
+def test_accessibility_message_does_not_blame_hotkeys_when_native_helper_runs():
+    from rat.os.diagnostics import accessibility_message
+
+    message = accessibility_message(False, True, "⌥⇧R")
+    assert "Hotkeys work through the native helper" in message
+    assert "⌥⇧R" in message and "2 minutes" in message
+
+
+def test_accessibility_message_names_hotkeys_without_native_helper():
+    from rat.os.diagnostics import accessibility_message
+
+    assert "Global hotkeys need Accessibility" in accessibility_message(False, False, "⌥⇧R")
