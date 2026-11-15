@@ -226,7 +226,7 @@ def cmd_ask_file(file_path, model_path, *, db_path=None, questions=None,
                     if source.get('path') == str(current_path) and source.get('read'):
                         scope = f"{source.get('read_chars')}/{source.get('total_chars')} ký tự"
                         suffix = ' · chỉ là trích đoạn' if source.get('truncated') else ''
-                        console.print(f'Nguồn: {current_path} · {scope}{suffix}', markup=False)
+                        console.print(f'Nguồn: {current_path} · {scope}{suffix}', markup=False, soft_wrap=True)
                 return True
 
             if questions:

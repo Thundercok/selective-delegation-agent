@@ -333,7 +333,10 @@ def test_cli_batch_and_interactive_reuse_model_without_search_or_ui(resident_env
     from rat import cli
     runtime, paths, backend, model = resident_env
     output = io.StringIO()
-    monkeypatch.setattr(cli, 'console', Console(file=output, width=120, color_system=None))
+    # Rich folds an over-long path at the console width. Choose the width so the fold lands inside the file name:
+    # hard-wrapping the source line split "second.txt" on CI, where the temp path is longer than it is locally.
+    fold_width = len(str(paths[1])) - len(paths[1].name) // 2
+    monkeypatch.setattr(cli, 'console', Console(file=output, width=fold_width, color_system=None))
     db_path = runtime.db.db_path
     assert cli.cmd_ask_file(str(paths[0]), model, db_path=db_path, questions=['Mã?', 'Code?']) == 0
     assert backend.loads == 1 and backend.prefills == 1 and backend.clears == 1
