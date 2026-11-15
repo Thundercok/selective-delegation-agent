@@ -183,3 +183,13 @@ uv run pytest tests/test_rat_verification.py
 - [ ] Decouple resident background watcher lifecycle from UI presentation.
 - [ ] Export standardized diagnostic health reports with JSON schema validation.
 - [ ] Expand standalone cross-platform CLI capabilities.
+
+---
+
+## 10. License
+
+Copyright (C) 2026 Thundercok.
+
+RAT is free software under the [GNU Affero General Public License v3.0 or later](LICENSE). Anyone who receives a build of RAT, or uses a modified version of it over a network, is entitled to the corresponding source code.
+
+The natal chart uses [Swiss Ephemeris](https://www.astro.com/swisseph/) through `pyswisseph`, which is distributed under the AGPL; see `rat/astrology/ephemeris/LICENSE`. The offline translation models are OPUS-MT / Argos models under CC-BY-4.0; see `rat/assets/translation/ATTRIBUTION.txt`.

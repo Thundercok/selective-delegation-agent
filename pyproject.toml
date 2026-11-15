@@ -3,6 +3,8 @@ name = "selective-delegation-agent"
 version = "0.1.0"
 description = "Selective Delegation Agent — Local-first macOS desktop assistant for document search, contextual reasoning, and bounded execution."
 readme = "README.md"
+license = "AGPL-3.0-or-later"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "PyQt6>=6.8.0",

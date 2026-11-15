@@ -11,7 +11,10 @@ Các mục ghi `[CẦN ĐIỀN]` chưa có dữ liệu. Không điền bằng s�
 - [ ] Gỡ các PDF và mã nguồn sách của Molnar trong `_archive_book/` khỏi repo public. Chỉ xóa ở bản mới vẫn để lại trong lịch sử git, nên cần quyết định có viết lại lịch sử không.
 - [ ] Rà soát `work/`, nơi có mã nguồn và tài liệu của dự án cũ.
 - [x] Giữ tính năng lá số trong bản phát hành (quyết định 15/11/2026), nên `pyswisseph` được đóng vào `.app`.
-- [ ] Chọn giấy phép cho Swiss Ephemeris **trước khi đưa `.app` cho bất kỳ ai**, theo `rat/astrology/ephemeris/LICENSE`: (a) đặt toàn bộ RAT theo AGPL hoặc giấy phép tương thích, phải công khai mã nguồn của bản phát hành; hoặc (b) mua Swiss Ephemeris Professional License của Astrodienst (giá: `[CẦN ĐIỀN]`, xem astro.com/swisseph). Bán `.app` đóng chỉ đi được với (b). Repo hiện chưa có file `LICENSE`.
+- [x] Giấy phép: toàn bộ RAT theo **AGPL-3.0-or-later** (quyết định 15/11/2026), file `LICENSE` ở gốc repo. Đây là lựa chọn (a) trong `rat/astrology/ephemeris/LICENSE` của Swiss Ephemeris.
+  - Hệ quả: không bán được `.app` đóng. Vẫn được thu tiền (bản build sẵn, cài đặt, hỗ trợ), nhưng ai nhận `.app` cũng phải lấy được mã nguồn đúng bản đó, kể cả phần sửa đổi.
+  - PyQt6 theo GPL-3.0-only, nên dù không có Swiss Ephemeris, bán `.app` đóng vẫn cần mua giấy phép thương mại PyQt. AGPL-3.0 kết hợp được với GPL-3.0 (điều 13).
+  - Các phụ thuộc còn lại (MIT, BSD, Apache-2.0, LGPL-3.0, MPL-2.0) tương thích. Chưa kiểm tra giấy phép của các binary trong `rat/bin/` (`spider`, `rat-hotkey`, `apple_translate`).
 - [ ] Ghi công mô hình dịch (OPUS-MT và Argos, CC-BY-4.0) theo `rat/assets/translation/ATTRIBUTION.txt`.
 - [ ] Kiểm tra giấy phép của model SLM và sprite linh vật.
 

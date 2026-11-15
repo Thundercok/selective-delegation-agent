@@ -10,6 +10,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, co
 ROOT = Path(SPECPATH).parent
 
 datas = [
+    (str(ROOT / "LICENSE"), "."),                # AGPL: every copy of the app carries its license
     (str(ROOT / "rat/ui/quick"), "rat/ui/quick"),
     (str(ROOT / "rat/assets"), "rat/assets"),
     (str(ROOT / "rat/astrology/ephemeris"), "rat/astrology/ephemeris"),
