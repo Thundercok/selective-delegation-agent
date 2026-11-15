@@ -36,3 +36,47 @@ def test_diagnostics_cli_execution():
 
     code = cmd_doctor(as_json=True)
     assert code in (0, 1)
+
+
+READY = {"translation_ready": True, "embedding_bundled": True, "mlx_installed": True}
+
+
+def test_model_asset_problems_empty_when_everything_present():
+    from rat.os.diagnostics import model_asset_problems
+
+    assert model_asset_problems(READY) == []
+
+
+def test_model_asset_problems_names_each_missing_asset():
+    from rat.os.diagnostics import model_asset_problems
+
+    problems = " ".join(model_asset_problems({**READY, "translation_ready": False, "embedding_bundled": False}))
+    assert "prepare_rat_translation_models.py" in problems
+    assert "prepare_rat_embedding_model.py" in problems
+
+
+def test_missing_translation_models_turn_doctor_to_warn(monkeypatch):
+    import rat.os.diagnostics as diag
+
+    monkeypatch.setattr(diag, "local_model_assets", lambda: {**READY, "translation_ready": False})
+    models = diag.collect_system_diagnostics()["checks"]["models"]
+    assert models["status"] == "WARN"
+    assert "Translation models missing" in models["message"]
+
+
+def test_dangling_model_symlink_is_not_ready(tmp_path):
+    """The models were once symlinks into another repo; when it was cleaned, translation stopped silently."""
+    import json
+    from rat.engine.local_translation import is_local_models_ready
+
+    (tmp_path / "manifest.json").write_text(json.dumps({"models": {"en-vi": {}, "vi-en": {}}}))
+    for pair in ("en-vi", "vi-en"):
+        (tmp_path / pair / "model").mkdir(parents=True)
+        for rel in ("sentencepiece.model", "model/config.json", "model/model.bin", "model/shared_vocabulary.json"):
+            (tmp_path / pair / rel).write_bytes(b"x")
+    assert is_local_models_ready(tmp_path)
+
+    target = tmp_path / "en-vi" / "model" / "model.bin"
+    target.unlink()
+    target.symlink_to(tmp_path / "gone" / "model.bin")
+    assert not is_local_models_ready(tmp_path)

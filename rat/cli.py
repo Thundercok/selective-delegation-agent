@@ -456,6 +456,8 @@ def cmd_doctor(as_json: bool = False) -> int:
             info_lines.append(f"Profile: [bold]{details.get('default_profile')}[/bold], Active folders: {details.get('active_directories_found')}")
         elif comp_name == "models":
             info_lines.append(f"Provider: {details.get('provider')}, SLM installed: {'Yes' if details.get('slm_model_installed') else 'No'}")
+            yes = lambda key: "Yes" if details.get(key) else "No"
+            info_lines.append(f"Translation: {yes('translation_ready')}, Embedding: {yes('embedding_bundled')}, MLX: {yes('mlx_installed')}")
         elif comp_name == "permissions":
             info_lines.append(f"Accessibility: {'Granted' if details.get('trusted') else 'Not Granted'}")
 

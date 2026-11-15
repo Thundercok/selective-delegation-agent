@@ -120,6 +120,32 @@ def run_session(argv=None):
         qInstallMessageHandler(previous_handler)
 
 
+def local_model_assets() -> dict:
+    """Which on-device model files are present. Features that need a missing one switch off quietly."""
+    import importlib.util
+    from rat.engine.local_translation import find_translation_directory, is_local_models_ready
+    from rat.engine.semantic_index import find_embedding_directory
+
+    translation_dir = find_translation_directory()
+    return {
+        "translation_dir": str(translation_dir),
+        "translation_ready": is_local_models_ready(translation_dir),
+        "embedding_bundled": find_embedding_directory() is not None,
+        "mlx_installed": importlib.util.find_spec("mlx_lm") is not None,
+    }
+
+
+def model_asset_problems(info: dict) -> list[str]:
+    problems = []
+    if not info.get("translation_ready"):
+        problems.append("Translation models missing: run tools/prepare_rat_translation_models.py.")
+    if not info.get("embedding_bundled"):
+        problems.append("Bundled embedding model missing: run tools/prepare_rat_embedding_model.py.")
+    if sys.platform == "darwin" and not info.get("mlx_installed"):
+        problems.append("mlx-lm not installed: run `uv sync`.")
+    return problems
+
+
 def collect_system_diagnostics() -> dict[str, any]:
     """Collect structured health and environment telemetry with deterministic schema."""
     report = {
@@ -225,8 +251,14 @@ def collect_system_diagnostics() -> dict[str, any]:
         "provider": config.llm_provider,
         "use_slm": config.use_slm,
         "slm_model_installed": slm_engine.is_model_installed(),
+        **local_model_assets(),
     }
-    report["checks"]["models"] = {"status": "PASS", "details": model_info}
+    problems = model_asset_problems(model_info)
+    if problems:
+        report["checks"]["models"] = {"status": "WARN", "details": model_info, "message": " ".join(problems)}
+        has_warning = True
+    else:
+        report["checks"]["models"] = {"status": "PASS", "details": model_info}
 
     # 5. macOS Permissions & Identity
     from rat.os.permissions import accessibility_status, runtime_identity
