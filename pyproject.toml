@@ -30,6 +30,8 @@ dependencies = [
     "pyobjc-framework-Quartz>=11.0; sys_platform == 'darwin'",
     "scikit-learn>=1.5.0",
     "gymnasium>=1.0.0",
+    "mlx>=0.32 ; platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "mlx-lm>=0.32 ; platform_machine == 'arm64' and sys_platform == 'darwin'",
 ]
 
 [tool.uv]
