@@ -180,7 +180,9 @@ def render(spec: dict, payload: dict) -> str:
             elif t == "card_grid":
                 cards = "".join(
                     f"<div class='card {'down' if d.get('face') == 'down' else ''}' onclick=\"this.classList.toggle('down')\">"
-                    f"<b>{e(str(it.get(d['title_key'], '')))}</b><i>{e(str(it.get(d.get('subtitle_key', ''), '')))}</i>"
+                    f"<b>{e(str(it.get(d['title_key'], '')))}</b>"
+                    + (f"<span class=badge>{e(d['badge_key'])}</span>" if d.get("badge_key") and it.get(d["badge_key"]) else "")
+                    + f"<i>{e(str(it.get(d.get('subtitle_key', ''), '')))}</i>"
                     f"<p>{e(str(it.get(d.get('body_key', ''), '')))}</p></div>" for it in get(d["items_field"]))
                 parts.append(f"<section class=grid style='--cols:{int(d.get('per_row', 3))}'>{cards}</section>")
             elif t == "metric_chart":
@@ -220,7 +222,7 @@ def render(spec: dict, payload: dict) -> str:
              ".grid{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px}"
              ".card{border:1px solid #999;border-radius:8px;padding:10px;cursor:pointer;min-height:90px}"
              ".card.down>*{visibility:hidden}.card.down{background:repeating-linear-gradient(45deg,#335,#335 6px,#446 6px,#446 12px)}"
-             ".card i{display:block;color:#666}.stat b{font-size:32px}.err{color:#b00}"
+             ".card i{display:block;color:#666}.badge{margin-left:6px;font-size:11px;background:#fde;padding:1px 6px;border-radius:6px}.stat b{font-size:32px}.err{color:#b00}"
              "table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:4px 8px}")
     return f"<!doctype html><meta charset=utf-8><style>{style}</style>{''.join(parts)}"
 

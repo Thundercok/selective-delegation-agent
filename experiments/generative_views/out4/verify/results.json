@@ -1,0 +1,1684 @@
+{
+  "summary": {
+    "v1": {
+      "seed1": {
+        "bad_passed": 11,
+        "right_passed": 18,
+        "bad_total": 12,
+        "right_total": 18
+      },
+      "any_seed": {
+        "bad_passed": 10,
+        "right_passed": 18,
+        "bad_total": 12,
+        "right_total": 18
+      }
+    },
+    "v2": {
+      "seed1": {
+        "bad_passed": 9,
+        "right_passed": 18,
+        "bad_total": 12,
+        "right_total": 18
+      },
+      "any_seed": {
+        "bad_passed": 9,
+        "right_passed": 18,
+        "bad_total": 12,
+        "right_total": 18
+      }
+    }
+  },
+  "rows": [
+    {
+      "quiz": "1",
+      "q": 1,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 2,
+      "label": "right",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 3,
+      "label": "ambiguous",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 4,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 5,
+      "label": "right",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 6,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 7,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 8,
+      "label": "right",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 9,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "1",
+      "q": 10,
+      "label": "right",
+      "key": "A",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 1,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          true,
+          false,
+          true
+        ],
+        "v2": [
+          true,
+          true,
+          true
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 2,
+      "label": "right",
+      "key": "A",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 3,
+      "label": "ambiguous",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 4,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 5,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 6,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 7,
+      "label": "ambiguous",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 8,
+      "label": "right",
+      "key": "A",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 9,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "2",
+      "q": 10,
+      "label": "right",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 1,
+      "label": "ambiguous",
+      "key": "C",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          true,
+          false
+        ],
+        "v2": [
+          true,
+          true,
+          true
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "C",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "C",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": true,
+            "B": true,
+            "C": true,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 2,
+      "label": "right",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 3,
+      "label": "ambiguous",
+      "key": "A",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          },
+          {
+            "answer": "A",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": true,
+            "B": false,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 4,
+      "label": "ambiguous",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          true,
+          true,
+          true
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": true,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 5,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 6,
+      "label": "right",
+      "key": "D",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          },
+          {
+            "answer": "D",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          },
+          {
+            "A": false,
+            "B": false,
+            "C": false,
+            "D": true
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 7,
+      "label": "ambiguous",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 8,
+      "label": "right",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 9,
+      "label": "right",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    },
+    {
+      "quiz": "3",
+      "q": 10,
+      "label": "right",
+      "key": "B",
+      "duplicate": false,
+      "flags": {
+        "v1": [
+          false,
+          false,
+          false
+        ],
+        "v2": [
+          false,
+          false,
+          false
+        ]
+      },
+      "raw": {
+        "v1": [
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          },
+          {
+            "answer": "B",
+            "other_correct": []
+          }
+        ],
+        "v2": [
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          },
+          {
+            "A": false,
+            "B": true,
+            "C": false,
+            "D": false
+          }
+        ]
+      }
+    }
+  ]
+}

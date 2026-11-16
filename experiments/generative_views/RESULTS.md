@@ -34,3 +34,126 @@ Findings:
    The check also has two blind spots. It tests day, month and year one by one, so a
    swapped date passes. And the quiz payload is model-generated (stage A), so "backed by
    the payload" says nothing about whether a quiz number matches the PDF.
+
+# Run 2: are the composition failures cheap to fix? (2026-11-16)
+
+Rescoring run 1 with stricter checks (quiz `choices_key` must point at lists,
+`metric_chart` values must be numbers, `face` is up/down) fails all 3 bills specs,
+so run 1's "9/9 structural pass" overstated the result. Two of the failures were
+the catalog's fault, not the model's: `stat` accepted only numbers (no way to
+show `next_due`), and `card_grid` had no slot for `reversed`. Both are fixed.
+
+Pass means: no structural errors, every `MUST_SHOW` field on screen, no noise block.
+`MUST_SHOW` is the experimenter's judgement. One repair turn with validator errors.
+Quiz questions are reused from run 1, so content is held fixed.
+
+Thresholds, fixed before running (final pass, out of 9 per arm):
+- Arm A (catalog + prompt) >= 8/9: model composition is viable at 4B; next, test it on new requests.
+- Only arm B >= 8/9: a "what must be shown" step is the missing piece; next, test whether the model can write that list itself.
+- Both arms <= 6/9: drop on-demand composition for the 4B model; use fixed templates per intent.
+- Anything in between: inconclusive at this sample size; say so rather than pick.
+
+## Run 2 results
+
+| Task | Arm A pass (first / after repair) | Arm B pass (first / after repair) |
+|---|---|---|
+| Tarot | 0/3 / 0/3 | 1/3 / 1/3 |
+| Bills | 0/3 / 0/3 | 0/3 / 0/3 |
+| Quiz view | 3/3 / 3/3 | 3/3 / 3/3 |
+| **Total** | **3/9** | **4/9** |
+
+Verdict against the pre-set thresholds: both arms are at or below 6/9, so on-demand
+composition with `qwen3:4b-instruct` is dropped. Use fixed templates per intent.
+
+What failed:
+
+1. The repair turn fixed nothing (0 of 9 failing specs passed after it). With bills,
+   the model repeated the same error after being told what it was.
+2. Bills never passed. Arm B wrote a column label into a key slot (`title_key: "Tháng"`)
+   3/3 times. Arm A still added a quiz block over bills (seed 1) despite rule 2.
+3. Tarot: even when told the 4 fields to show (arm B), the model left a free slot
+   unused and dropped the card name in 2/3 (e.g. `title_key: position`, no `subtitle_key`).
+4. The quiz view passes every time, but it is a one-to-one mapping (one list, one
+   block, field names that match the block's keys). It is the easiest case, not
+   evidence that composition works.
+5. 0 invented numbers in all 18, as in run 1.
+
+Limits: 3 seeds per cell, one 4B model, `MUST_SHOW` written by the experimenter.
+A stronger model was not tested (no API key), so this verdict is about 4B, not the idea.
+
+# Run 3: can a second pass catch wrong quiz answers? (2026-11-16)
+
+Relabelling all 30 run 1 questions (`quiz_labels.json`, labelled by Claude, no second
+labeller): 16 right, 10 wrong key, 4 ambiguous. Run 1's "3/10 wrong" was seed 1 only;
+over three seeds, 14/30 questions should not reach a student.
+
+A checker sees page 4 and the question, never the key. V1 solves the question
+(answer or NONE, plus any other correct options). V2 marks each option true or false
+against the page. A question is flagged if the checker disagrees with the key or finds
+zero or several correct options. Both also flag identical options, in code.
+
+Thresholds, fixed before running (per checker, seed 1, 30 questions):
+- GO: at most 1 bad question left among those that pass, and at least 8 of 16 right ones pass.
+- KILL: 4 or more bad questions pass. A 4B checker cannot guard quiz content; quiz
+  needs a stronger model or answer keys taken from the material, not generated.
+- In between: iterate (e.g. ensemble of seeds), and say it is not yet good enough.
+
+## Run 3 results
+
+| Checker | Bad questions that pass (of 14) | Right questions that pass (of 16) | Same flags on all 3 seeds |
+|---|---|---|---|
+| V1 (solve blind) | 0 | 16 | 30/30 |
+| V2 (judge each option) | 0 | 16 | 30/30 |
+
+Verdict against the pre-set thresholds: GO. On these 30 questions a blind second pass by the
+same 4B model removes every bad question and keeps every right one.
+
+Why it works, and why that limits the result: the generator's errors were mostly a wrong
+letter. The content held a correct option, but the key pointed at another one (10 of 14). When
+the same model is asked to solve the question instead of writing it, it finds the right option
+every time (V1 answered B for seed 1 Q1 and Q9, NONE for Q2). So the failure is binding a letter
+while generating, not knowing the material.
+
+Limits: one page, one topic (logic gates, where a truth table answers most questions), labels
+by Claude only, 30 questions. The questions came from this experiment's naive generator (the
+model writes four options and a letter). RAT's `rat/engine/quiz_generator.py` already avoids the
+letter step: the model writes the correct answer as text and code shuffles the options. Next:
+run that generator and check whether it still needs this pass.
+
+# Run 4: RAT's own generator, then the same checker (2026-11-16)
+
+`run4.py` calls `rat/engine/quiz_generator.generate_quiz_from_text` on page 4 with RAT's
+SLM settings (temperature 0.1, num_ctx 8192) and seeds 1-3, 10 questions each, about 190 s
+per quiz. All 30 quotes were grounded. Labels in `quiz_labels_rat.json` (Claude only).
+
+| | Count of 30 |
+|---|---|
+| Wrong key | 0 |
+| Several options true (Q1 in every seed: true statements about different gates; seed 1 Q1 is also ill-posed) | 3 |
+| A distractor is a true sufficient condition (e.g. "XNOR is 1 when both inputs are 1") | 9 |
+| Right | 18 |
+
+The wrong-letter failure from run 1 is gone: the model writes the answer as text and code
+assigns the letter. The remaining failure is distractors that are true. The model treats
+"output is 1 when ..." as asking for the defining condition, so a true special case counts as
+"wrong" to it. Whether that is a defect depends on the reading. Under the strict reading
+(a student who picks a true statement should not lose the point) it is 12/30 bad. If only the
+defining condition counts as the answer, it is 3/30 bad.
+
+Checker (`verify.py --src out4`), against run 3's thresholds:
+
+| Checker | Bad that pass (of 12) | Right that pass (of 18) |
+|---|---|---|
+| V1 (solve blind) | 11 | 18 |
+| V2 (judge each option) | 9 | 18 |
+
+KILL for this failure: the 4B checker shares the generator's reading, so it does not see a
+true special case as true. V2 caught Q1 in seeds 2 and 3 (it marked all four options true)
+and seed 3 Q4, nothing else. Run 3's GO only holds for wrong-letter errors, which RAT's
+generator no longer makes.
+
+What this means for RAT's quiz: no answer key was wrong in 30 questions. The open problem is
+question wording, not facts. The cheap next test is a generator prompt change: ask for stems
+that request the complete condition ("phát biểu nào mô tả đầy đủ ...") and for distractors that
+are false in every case. Then relabel 30 questions and compare 12/30. A second 4B pass is not
+the fix.

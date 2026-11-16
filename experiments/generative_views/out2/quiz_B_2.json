@@ -1,0 +1,149 @@
+{
+  "spec": {
+    "blocks": [
+      {
+        "data": {
+          "title": "Trắc nghiệm Chương 3: Cổng logic",
+          "text": "Chọn đáp án đúng cho mỗi câu hỏi dưới đây. Sau đó nhấn nút 'Gửi' để kiểm tra kết quả."
+        },
+        "type": "summary"
+      },
+      {
+        "data": {
+          "items_field": "questions",
+          "prompt_key": "prompt",
+          "choices_key": "choices",
+          "answer_key": "answer",
+          "source_key": "source_page"
+        },
+        "type": "quiz"
+      },
+      {
+        "data": {
+          "action_ids": [
+            "submit_quiz",
+            "export_pdf"
+          ]
+        },
+        "type": "actions"
+      }
+    ],
+    "title": "Trắc nghiệm Chương 3: Cổng logic"
+  },
+  "payload": {
+    "chapter": "3. Cổng logic",
+    "document": "ly-thuyet-giua-ky-502044.pdf",
+    "questions": [
+      {
+        "answer": "A",
+        "choices": [
+          "A. Cổng AND cho ra 1 khi cả hai đầu vào đều bằng 0",
+          "B. Cổng AND cho ra 1 khi ít nhất một đầu vào bằng 1",
+          "C. Cổng AND cho ra 1 khi hai đầu vào khác nhau",
+          "D. Cổng AND cho ra 1 khi cả hai đầu vào đều bằng 1"
+        ],
+        "prompt": "Cổng logic AND cho ra giá trị 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "D",
+        "choices": [
+          "A. Cổng OR cho ra 1 khi cả hai đầu vào đều bằng 0",
+          "B. Cổng OR cho ra 1 khi ít nhất một đầu vào bằng 0",
+          "C. Cổng OR cho ra 1 khi hai đầu vào đều bằng 1",
+          "D. Cổng OR cho ra 1 khi ít nhất một đầu vào bằng 1"
+        ],
+        "prompt": "Cổng logic OR cho ra giá trị 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "A",
+        "choices": [
+          "A. NAND cho ra 1 khi cả hai đầu vào đều bằng 1",
+          "B. NAND cho ra 1 khi ít nhất một đầu vào bằng 0",
+          "C. NAND cho ra 1 khi hai đầu vào khác nhau",
+          "D. NAND cho ra 1 khi cả hai đầu vào đều bằng 0"
+        ],
+        "prompt": "Cổng NAND cho ra giá trị 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "C",
+        "choices": [
+          "A. XOR cho ra 1 khi hai đầu vào giống nhau",
+          "B. XOR cho ra 1 khi hai đầu vào đều bằng 0",
+          "C. XOR cho ra 1 khi hai đầu vào khác nhau",
+          "D. XOR cho ra 1 khi hai đầu vào đều bằng 1"
+        ],
+        "prompt": "Cổng XOR cho ra giá trị 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "B",
+        "choices": [
+          "A. XNOR cho ra 1 khi hai đầu vào đều bằng 0",
+          "B. XNOR cho ra 1 khi hai đầu vào khác nhau",
+          "C. XNOR cho ra 1 khi hai đầu vào giống nhau",
+          "D. XNOR cho ra 1 khi một đầu vào bằng 1"
+        ],
+        "prompt": "Cổng XNOR cho ra giá trị 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "D",
+        "choices": [
+          "A. Cổng NOT có đầu ra bằng đầu vào",
+          "B. Cổng NOT có đầu ra bằng đầu vào đảo",
+          "C. Cổng NOT có đầu ra bằng 0 khi đầu vào bằng 1",
+          "D. Cổng NOT có đầu ra là nghịch đảo của đầu vào"
+        ],
+        "prompt": "Cổng NOT (NOT) hoạt động như thế nào?",
+        "source_page": 4
+      },
+      {
+        "answer": "A",
+        "choices": [
+          "A. Chỉ dùng NOR có thể dựng mọi hàm logic",
+          "B. Chỉ dùng NAND có thể dựng mọi hàm logic",
+          "C. Cả NAND và NOR đều không thể dựng mọi hàm",
+          "D. Cả NAND và NOR đều có thể dựng mọi hàm nhưng không hiệu quả"
+        ],
+        "prompt": "Điều nào sau đây đúng về cổng vạn năng?",
+        "source_page": 4
+      },
+      {
+        "answer": "B",
+        "choices": [
+          "A. Biểu thức SOP có thể chuyển trực tiếp thành NAND–NAND",
+          "B. Biểu thức POS có thể chuyển trực tiếp thành NAND–NAND",
+          "C. Biểu thức SOP có thể chuyển thành NOR–NOR",
+          "D. Biến đứng một mình ở mức hai không cần đảo"
+        ],
+        "prompt": "Biểu thức SOP (AND–OR) có thể được chuyển đổi thành dạng nào?",
+        "source_page": 4
+      },
+      {
+        "answer": "C",
+        "choices": [
+          "A. Fan-in là số đầu ra của cổng",
+          "B. Fan-in là số đầu vào có thể nối với một đầu ra",
+          "C. Fan-in là số đầu vào của cổng",
+          "D. Fan-in là thời gian truyền tín hiệu"
+        ],
+        "prompt": "Fan-in trong mạch logic là gì?",
+        "source_page": 4
+      },
+      {
+        "answer": "D",
+        "choices": [
+          "A. Trễ lan truyền là thời gian từ đầu vào đến đầu ra khi đầu vào không đổi",
+          "B. Trễ lan truyền là thời gian từ đầu vào đến đầu ra khi đầu ra thay đổi",
+          "C. Trễ lan truyền là thời gian từ đầu vào đến đầu ra khi đầu vào thay đổi",
+          "D. Trễ lan truyền là thời gian từ khi đầu vào đổi đến khi đầu ra ổn định"
+        ],
+        "prompt": "Trễ lan truyền trong mạch logic là gì?",
+        "source_page": 4
+      }
+    ]
+  }
+}

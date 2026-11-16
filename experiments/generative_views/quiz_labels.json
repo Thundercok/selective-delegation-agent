@@ -1,0 +1,21 @@
+{
+  "_doc": "Hand labels for run 1 quiz questions (out/quiz_N.json), checked against page 4 of ly-thuyet-giua-ky-502044.pdf. right = the key is the only correct option; wrong = the key is not correct; ambiguous = more than one option is correct or two options are the same. Labelled by Claude on 2026-11-16, not by a second person.",
+  "1": {"1": ["wrong", "key D says XOR is 1 when inputs match; B is correct"],
+        "2": ["wrong", "no option is the OR expression"],
+        "3": ["right", ""], "4": ["right", ""], "5": ["right", ""],
+        "6": ["ambiguous", "A and D are both true"],
+        "7": ["right", ""], "8": ["right", ""],
+        "9": ["wrong", "key D says H = 0; A and D are identical; B is correct"],
+        "10": ["right", ""]},
+  "2": {"1": ["wrong", "key A; D is correct"], "2": ["right", ""],
+        "3": ["wrong", "key A says NAND is 1 when both inputs are 1; B is correct"],
+        "4": ["right", ""], "5": ["wrong", "key B; C is correct"],
+        "6": ["ambiguous", "B, C and D are all true"],
+        "7": ["ambiguous", "A and B are both true"],
+        "8": ["wrong", "key B is about POS; A is correct"], "9": ["right", ""], "10": ["right", ""]},
+  "3": {"1": ["wrong", "key A; D is correct; C is truncated"], "2": ["right", ""],
+        "3": ["right", "A (both 0) is the only true option, though not the full condition"],
+        "4": ["right", ""], "5": ["wrong", "key B; C is correct"], "6": ["right", ""],
+        "7": ["ambiguous", "A and D are identical"], "8": ["right", ""],
+        "9": ["wrong", "key A says NOR-NOR; B is correct"], "10": ["right", ""]}
+}

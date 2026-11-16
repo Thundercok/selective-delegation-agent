@@ -1,0 +1,129 @@
+{
+  "_doc": "Hand labels for RAT's own generator (out4/quiz_N.json), page 4. right = only the key is correct; ambiguous = another option is also true; wrong = the key is not correct. Strict reading: a distractor that is a sufficient condition (e.g. 'XNOR is 1 when both inputs are 1') counts as true. Labelled by Claude on 2026-11-16, no second labeller.",
+  "1": {
+    "1": [
+      "ambiguous",
+      "ill-posed: asks which inputs give 1 without naming a gate; the key is the table header"
+    ],
+    "2": [
+      "right",
+      ""
+    ],
+    "3": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "4": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "5": [
+      "right",
+      ""
+    ],
+    "6": [
+      "right",
+      ""
+    ],
+    "7": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "8": [
+      "right",
+      ""
+    ],
+    "9": [
+      "right",
+      ""
+    ],
+    "10": [
+      "right",
+      ""
+    ]
+  },
+  "2": {
+    "1": [
+      "ambiguous",
+      "several options are true statements about different gates"
+    ],
+    "2": [
+      "right",
+      ""
+    ],
+    "3": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "4": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "5": [
+      "right",
+      ""
+    ],
+    "6": [
+      "right",
+      ""
+    ],
+    "7": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "8": [
+      "right",
+      ""
+    ],
+    "9": [
+      "right",
+      ""
+    ],
+    "10": [
+      "right",
+      ""
+    ]
+  },
+  "3": {
+    "1": [
+      "ambiguous",
+      "several options are true statements about different gates"
+    ],
+    "2": [
+      "right",
+      ""
+    ],
+    "3": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "4": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "5": [
+      "right",
+      ""
+    ],
+    "6": [
+      "right",
+      ""
+    ],
+    "7": [
+      "ambiguous",
+      "a distractor is also true (a sufficient condition)"
+    ],
+    "8": [
+      "right",
+      ""
+    ],
+    "9": [
+      "right",
+      ""
+    ],
+    "10": [
+      "right",
+      ""
+    ]
+  }
+}

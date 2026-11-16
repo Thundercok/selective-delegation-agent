@@ -1,0 +1,503 @@
+[
+  {
+    "task": "tarot",
+    "arm": "A",
+    "seed": 1,
+    "seconds": 29.0,
+    "first_try": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].meaning"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "final": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].meaning"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "arm": "B",
+    "seed": 1,
+    "seconds": 22.4,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "A",
+    "seed": 1,
+    "seconds": 154.3,
+    "first_try": {
+      "errors": [
+        "block 1 (stat): value_field='due_date' not in payload",
+        "block 5 (quiz): choices_key 'month' is not a list of choices"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 5 (quiz): choices_key 'month' is not a list of choices"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "metric_chart",
+      "table",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "B",
+    "seed": 1,
+    "seconds": 70.9,
+    "first_try": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "A",
+    "seed": 1,
+    "seconds": 23.4,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "B",
+    "seed": 1,
+    "seconds": 25.9,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "arm": "A",
+    "seed": 2,
+    "seconds": 21.3,
+    "first_try": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].meaning"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "final": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].meaning"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "arm": "B",
+    "seed": 2,
+    "seconds": 28.3,
+    "first_try": {
+      "errors": [],
+      "missing": [
+        "cards[].name"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "final": {
+      "errors": [],
+      "missing": [
+        "cards[].name"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "A",
+    "seed": 2,
+    "seconds": 79.1,
+    "first_try": {
+      "errors": [
+        "block 1 (stat): value_field='amount_vnd' not in payload",
+        "block 2 (metric_chart): unexpected key title_key",
+        "block 2 (metric_chart): item key 'Tháng' missing",
+        "block 3 (card_grid): missing title_key",
+        "block 3 (card_grid): unexpected key title",
+        "block 3 (card_grid): unexpected key label_key",
+        "block 3 (card_grid): unexpected key due_date_key"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 2 (card_grid): unexpected key due_date_key"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "metric_chart",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "B",
+    "seed": 2,
+    "seconds": 48.6,
+    "first_try": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "A",
+    "seed": 2,
+    "seconds": 20.3,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "B",
+    "seed": 2,
+    "seconds": 20.7,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "arm": "A",
+    "seed": 3,
+    "seconds": 17.9,
+    "first_try": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].reversed"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "final": {
+      "errors": [],
+      "missing": [
+        "cards[].position",
+        "cards[].reversed"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "arm": "B",
+    "seed": 3,
+    "seconds": 18.8,
+    "first_try": {
+      "errors": [],
+      "missing": [
+        "cards[].name"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "final": {
+      "errors": [],
+      "missing": [
+        "cards[].name"
+      ],
+      "noise": [],
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "A",
+    "seed": 3,
+    "seconds": 98.6,
+    "first_try": {
+      "errors": [
+        "block 1 (stat): value_field='amount_vnd' not in payload",
+        "block 2 (metric_chart): unexpected key title_key",
+        "block 2 (metric_chart): item key 'Thời gian' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 1 (stat): value_field='amount_vnd' not in payload"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "stat",
+      "metric_chart",
+      "table",
+      "stat",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "arm": "B",
+    "seed": 3,
+    "seconds": 42.3,
+    "first_try": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "final": {
+      "errors": [
+        "block 2 (card_grid): item key 'Tháng' missing"
+      ],
+      "missing": null,
+      "noise": null,
+      "passed": false
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "A",
+    "seed": 3,
+    "seconds": 19.3,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "arm": "B",
+    "seed": 3,
+    "seconds": 20.5,
+    "first_try": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "final": {
+      "errors": [],
+      "missing": [],
+      "noise": [],
+      "passed": true
+    },
+    "invented_numbers": [],
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  }
+]

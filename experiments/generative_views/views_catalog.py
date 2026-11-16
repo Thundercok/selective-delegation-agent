@@ -21,13 +21,14 @@ BLOCKS: dict[str, dict[str, Any]] = {
         "required": ["title"], "optional": ["text", "text_field"],
     },
     "stat": {
-        "doc": "One big number with a label, e.g. the latest bill. value_field points at a number.",
+        "doc": "One big value with a label, e.g. the latest bill or the next due date. value_field points at a number or a short string.",
         "required": ["value_field", "label"], "optional": ["unit"],
     },
     "card_grid": {
-        "doc": "Grid of cards that can be shown face up or face down and flipped (tarot, flashcards).",
+        "doc": "Grid of cards that can be shown face up or face down and flipped (tarot, flashcards). "
+               "face is 'up' or 'down'. badge_key names a boolean item field shown as a mark when true (e.g. reversed).",
         "required": ["items_field", "title_key"],
-        "optional": ["subtitle_key", "body_key", "face", "per_row"],
+        "optional": ["subtitle_key", "body_key", "badge_key", "face", "per_row"],
     },
     "metric_chart": {
         "doc": "Bar or line chart over a list: x_key for the axis, y_key for the value.",
@@ -95,8 +96,8 @@ def validate(spec: Any, payload: dict, allowed_actions: list[str]) -> list[str]:
                         errors.append(f"{where} ({btype}): {ref!r} is not a list of records")
                     else:
                         items = value
-                if key == "value_field" and not isinstance(value, (int, float)):
-                    errors.append(f"{where} ({btype}): {ref!r} is not a number")
+                if key == "value_field" and (isinstance(value, bool) or not isinstance(value, (int, float, str))):
+                    errors.append(f"{where} ({btype}): {ref!r} is not a number or string")
         if items is not None:
             keys = [data[k] for k in data if k.endswith("_key")]
             columns = data.get("columns") if btype == "table" else []
@@ -107,10 +108,19 @@ def validate(spec: Any, payload: dict, allowed_actions: list[str]) -> list[str]:
             for key in keys:
                 if any(key not in item for item in items):
                     errors.append(f"{where} ({btype}): item key {key!r} missing")
+            ck = data.get("choices_key")
+            if btype == "quiz" and ck and not all(isinstance(it.get(ck), list) for it in items):
+                errors.append(f"{where} (quiz): choices_key {ck!r} is not a list of choices")
+            yk = data.get("y_key")
+            if btype == "metric_chart" and yk and not all(
+                    isinstance(it.get(yk), (int, float)) and not isinstance(it.get(yk), bool) for it in items):
+                errors.append(f"{where} (metric_chart): y_key {yk!r} is not numeric")
         if btype == "actions":
             for aid in data.get("action_ids", []):
                 if aid not in allowed_actions:
                     errors.append(f"{where}: action {aid!r} is not allowed")
+        if btype == "card_grid" and data.get("face", "up") not in ("up", "down"):
+            errors.append(f"{where}: face must be up or down")
         if btype == "metric_chart" and data.get("kind") not in ("bar", "line"):
             errors.append(f"{where}: kind must be bar or line")
     return errors
@@ -180,3 +190,38 @@ def _list_lengths(payload: Any) -> set[int]:
                 walk(x)
     walk(payload)
     return found
+
+
+def shown_paths(spec: dict) -> set[str]:
+    """Payload paths a spec puts on screen: "latest.kwh", or "bills[].month" for list items."""
+    shown: set[str] = set()
+    for block in spec.get("blocks", []):
+        data = block.get("data", {}) if isinstance(block, dict) else {}
+        base = data.get("items_field")
+        for key, ref in data.items():
+            if key.endswith("_field") and key != "items_field" and isinstance(ref, str):
+                shown.add(ref)
+            elif key.endswith("_key") and isinstance(base, str) and isinstance(ref, str):
+                shown.add(f"{base}[].{ref}")
+        cols = data.get("columns") if isinstance(data.get("columns"), list) else []
+        if isinstance(base, str):
+            shown |= {f"{base}[].{c['key']}" for c in cols if isinstance(c, dict) and isinstance(c.get("key"), str)}
+    return shown
+
+
+def coverage(spec: dict, must_show: list[str]) -> list[str]:
+    """Entries of must_show the spec leaves off screen. "a|b" means either path will do."""
+    shown = shown_paths(spec)
+    return [need for need in must_show if not any(alt in shown for alt in need.split("|"))]
+
+
+def noise_blocks(spec: dict, must_show: list[str], extra: tuple[str, ...] = ()) -> list[str]:
+    """Data blocks that show none of the required or useful-extra paths (summary and actions are exempt)."""
+    wanted = {alt for need in must_show for alt in need.split("|")} | set(extra)
+    out = []
+    for block in spec.get("blocks", []):
+        if not isinstance(block, dict) or block.get("type") in ("summary", "actions"):
+            continue
+        if not shown_paths({"blocks": [block]}) & wanted:
+            out.append(block.get("type"))
+    return out

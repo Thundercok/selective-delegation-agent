@@ -1,0 +1,127 @@
+{
+  "payload": {
+    "questions": [
+      {
+        "prompt": "Trong bảng chân trị của cổng logic, điều nào sau đây đúng về giá trị đầu ra khi các đầu vào là 00, 01, 10, 11?",
+        "choices": [
+          "A. Đầu ra bằng 1 khi ít nhất một đầu vào bằng 1 (với cổng OR)",
+          "B. Đầu ra bằng 0 khi tất cả đầu vào bằng 0 (với cổng NOR)",
+          "C. Đầu ra bằng 1 khi tất cả các đầu vào đều bằng 1 (với cổng AND)",
+          "D. Đầu ra bằng 1 khi hai đầu vào khác nhau (với cổng XOR)"
+        ],
+        "answer": "C",
+        "quote": "Cổng Biểu thức Ra 1 khi 00 01 10 11",
+        "grounded": true
+      },
+      {
+        "prompt": "Cổng AND cho đầu ra bằng 1 khi điều kiện nào sau đây được thỏa mãn?",
+        "choices": [
+          "A. Tất cả các đầu vào đều bằng 1",
+          "B. Ít nhất một đầu vào bằng 1",
+          "C. Một đầu vào bằng 0",
+          "D. Các đầu vào khác nhau"
+        ],
+        "answer": "A",
+        "quote": "AND xy tất cả bằng 1 0 0 0 1",
+        "grounded": true
+      },
+      {
+        "prompt": "Cổng OR cho đầu ra bằng 1 khi điều kiện nào sau đây xảy ra?",
+        "choices": [
+          "A. Các đầu vào đều bằng 1",
+          "B. Tất cả đầu vào bằng 0",
+          "C. Hai đầu vào khác nhau",
+          "D. Ít nhất một đầu vào bằng 1"
+        ],
+        "answer": "D",
+        "quote": "OR x + y ít nhất một bằng 1 0 1 1 1",
+        "grounded": true
+      },
+      {
+        "prompt": "Đầu ra của cổng NAND bằng 1 khi điều kiện nào sau đây đúng?",
+        "choices": [
+          "A. Các đầu vào đều bằng 1",
+          "B. Một đầu vào bằng 0 và một đầu vào bằng 1",
+          "C. Không phải tất cả đầu vào đều bằng 1",
+          "D. Tất cả đầu vào đều bằng 0"
+        ],
+        "answer": "C",
+        "quote": "NAND (xy)' không phải tất cả bằng 1 1 1 1 0",
+        "grounded": true
+      },
+      {
+        "prompt": "Cổng NOR cho đầu ra bằng 1 khi điều kiện nào sau đây xảy ra?",
+        "choices": [
+          "A. Các đầu vào khác nhau",
+          "B. Một đầu vào bằng 1",
+          "C. Ít nhất một đầu vào bằng 1",
+          "D. Tất cả đầu vào đều bằng 0"
+        ],
+        "answer": "D",
+        "quote": "NOR (x + y)' tất cả bằng 0 1 0 0 0",
+        "grounded": true
+      },
+      {
+        "prompt": "Cổng XOR cho đầu ra bằng 1 khi điều kiện nào sau đây đúng?",
+        "choices": [
+          "A. Hai đầu vào đều bằng 1",
+          "B. Tất cả đầu vào đều bằng 0",
+          "C. Hai đầu vào đều bằng 0",
+          "D. Hai đầu vào khác nhau"
+        ],
+        "answer": "D",
+        "quote": "XOR x ⊕ y = x'y + xy' hai đầu vào khác nhau 0 1 1 0",
+        "grounded": true
+      },
+      {
+        "prompt": "Cổng XNOR cho đầu ra bằng 1 khi điều kiện nào sau đây xảy ra?",
+        "choices": [
+          "A. Tất cả đầu vào bằng 1",
+          "B. Hai đầu vào khác nhau",
+          "C. Một đầu vào bằng 0",
+          "D. Hai đầu vào giống nhau"
+        ],
+        "answer": "D",
+        "quote": "XNOR (x ⊕ y)' = xy + x'y' hai đầu vào giống nhau 1 0 0 1",
+        "grounded": true
+      },
+      {
+        "prompt": "Tại sao cổng XOR được dùng để kiểm tra chẵn lẻ (parity)?",
+        "choices": [
+          "A. Vì đầu ra bằng 1 khi số bit 1 là lẻ",
+          "B. Vì đầu ra bằng 0 khi có ít nhất một đầu vào bằng 1",
+          "C. Vì đầu ra bằng 1 khi tất cả đầu vào bằng 1",
+          "D. Vì đầu ra luôn bằng 1"
+        ],
+        "answer": "A",
+        "quote": "Cổng NOT (x') và cổng đệm (buffer, ra x) có một đầu vào. XOR nhiều đầu vào ra 1 khi số bit 1 là lẻ, nên dùng làm bộ sinh và kiểm tra chẵn lẻ (parity).",
+        "grounded": true
+      },
+      {
+        "prompt": "Để tạo cổng NOT bằng cổng NAND, ta cần làm gì?",
+        "choices": [
+          "A. Dùng cổng AND kết hợp với NAND",
+          "B. Đảo đầu ra của cổng NAND",
+          "C. Nối một đầu vào với đầu ra của cổng NAND",
+          "D. Nối hai đầu vào của cổng NAND với nhau"
+        ],
+        "answer": "D",
+        "quote": "Chỉ dùng NAND (hoặc chỉ dùng NOR) có thể dựng mọi hàm: NOT: x' = (x·x)' (nối hai đầu vào NAND với nhau).",
+        "grounded": true
+      },
+      {
+        "prompt": "Khi rút gọn biểu thức SOP thành dạng NAND–NAND, biến nào đứng một mình ở mức hai cần được xử lý như thế nào?",
+        "choices": [
+          "A. Phải giữ nguyên giá trị",
+          "B. Phải đảo trước khi đưa vào",
+          "C. Phải nối với một cổng OR",
+          "D. Phải thêm một cổng AND"
+        ],
+        "answer": "B",
+        "quote": "Biểu thức SOP (AND–OR) đổi thẳng thành NAND–NAND cùng sơ đồ. Biểu thức POS (OR–AND) đổi thành NOR–NOR. Biến đứng một mình ở mức hai thì phải đảo trước khi đưa vào.",
+        "grounded": true
+      }
+    ]
+  },
+  "seconds": 195.2
+}
