@@ -1,0 +1,149 @@
+[
+  {
+    "task": "tarot",
+    "seed": 1,
+    "model": "qwen3:4b-instruct",
+    "seconds": 12.6,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "seed": 1,
+    "model": "qwen3:4b-instruct",
+    "seconds": 30.5,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "metric_chart",
+      "table",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "seed": 1,
+    "model": "qwen3:4b-instruct",
+    "seconds": 11.6,
+    "questions": {
+      "count": 10,
+      "four_choices": 10,
+      "cites_page": 10,
+      "seconds": 59.7
+    },
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "seed": 2,
+    "model": "qwen3:4b-instruct",
+    "seconds": 19.3,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "seed": 2,
+    "model": "qwen3:4b-instruct",
+    "seconds": 37.9,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "metric_chart",
+      "table",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "seed": 2,
+    "model": "qwen3:4b-instruct",
+    "seconds": 12.1,
+    "questions": {
+      "count": 10,
+      "four_choices": 10,
+      "cites_page": 10,
+      "seconds": 171.9
+    },
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "tarot",
+    "seed": 3,
+    "model": "qwen3:4b-instruct",
+    "seconds": 12.9,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "card_grid",
+      "actions"
+    ]
+  },
+  {
+    "task": "bills",
+    "seed": 3,
+    "model": "qwen3:4b-instruct",
+    "seconds": 37.2,
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "stat",
+      "card_grid",
+      "metric_chart",
+      "table",
+      "quiz",
+      "actions"
+    ]
+  },
+  {
+    "task": "quiz",
+    "seed": 3,
+    "model": "qwen3:4b-instruct",
+    "seconds": 16.4,
+    "questions": {
+      "count": 10,
+      "four_choices": 10,
+      "cites_page": 10,
+      "seconds": 74.6
+    },
+    "errors": [],
+    "invented_numbers": "pending",
+    "block_types": [
+      "summary",
+      "quiz",
+      "actions"
+    ]
+  }
+]

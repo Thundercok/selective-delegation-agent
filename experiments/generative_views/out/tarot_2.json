@@ -1,0 +1,55 @@
+{
+  "spec": {
+    "blocks": [
+      {
+        "data": {
+          "title": "Trải 3 lá tarot",
+          "text": "Quá khứ – Hiện tại – Tương lai"
+        },
+        "type": "summary"
+      },
+      {
+        "data": {
+          "title_key": "name",
+          "items_field": "cards",
+          "face": "face_up",
+          "per_row": 3
+        },
+        "type": "card_grid"
+      },
+      {
+        "data": {
+          "action_ids": [
+            "draw_again",
+            "save_reading"
+          ]
+        },
+        "type": "actions"
+      }
+    ],
+    "title": "Trải 3 lá tar"
+  },
+  "payload": {
+    "spread": "Quá khứ – Hiện tại – Tương lai",
+    "cards": [
+      {
+        "position": "Quá khứ",
+        "name": "The Magician",
+        "meaning": "đủ công cụ trong tay, biến ý định thành việc",
+        "reversed": false
+      },
+      {
+        "position": "Hiện tại",
+        "name": "The High Priestess",
+        "meaning": "trực giác, điều chưa nói ra",
+        "reversed": false
+      },
+      {
+        "position": "Tương lai",
+        "name": "Justice",
+        "meaning": "công bằng, nhân quả, quyết định rõ ràng",
+        "reversed": false
+      }
+    ]
+  }
+}

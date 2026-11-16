@@ -1,0 +1,149 @@
+{
+  "spec": {
+    "blocks": [
+      {
+        "data": {
+          "title": "Chương 3: Cổng Logic",
+          "text": "Hãy trả lời 10 câu trắc nghiệm về các cổng logic."
+        },
+        "type": "summary"
+      },
+      {
+        "data": {
+          "items_field": "questions",
+          "prompt_key": "prompt",
+          "choices_key": "choices",
+          "answer_key": "answer",
+          "source_key": "source_page"
+        },
+        "type": "quiz"
+      },
+      {
+        "data": {
+          "action_ids": [
+            "submit_quiz",
+            "export_pdf"
+          ]
+        },
+        "type": "actions"
+      }
+    ],
+    "title": "Trắc nghiệm Chương 3: Cổng Logic"
+  },
+  "payload": {
+    "chapter": "3. Cổng logic",
+    "document": "ly-thuyet-giua-ky-502044.pdf",
+    "questions": [
+      {
+        "answer": "D",
+        "choices": [
+          "A. Cổng AND ra 1 khi cả hai đầu vào đều bằng 0",
+          "B. Cổng OR ra 1 khi ít nhất một đầu vào bằng 1",
+          "C. Cổng NAND ra 1 khi cả hai đầu vào đều bằng 0",
+          "D. Cổng XOR ra 1 khi hai đầu vào giống nhau"
+        ],
+        "prompt": "Trong các cổng logic sau, cổng nào ra 1 khi ít nhất một đầu vào bằng 1?",
+        "source_page": 4
+      },
+      {
+        "answer": "A",
+        "choices": [
+          "A. Cổng AND có biểu thức ra là x + y",
+          "B. Cổng OR có biểu thức ra là (x + y)'",
+          "C. Cổng NAND có biểu thức ra là (xy)'",
+          "D. Cổng NOR có biểu thức ra là xy + x'y'"
+        ],
+        "prompt": "Biểu thức nào dưới đây là biểu thức của cổng OR?",
+        "source_page": 4
+      },
+      {
+        "answer": "C",
+        "choices": [
+          "A. XOR ra 1 khi hai đầu vào đều bằng 0",
+          "B. XOR ra 1 khi hai đầu vào đều bằng 1",
+          "C. XOR ra 1 khi hai đầu vào khác nhau",
+          "D. XOR ra -1 khi hai đầu vào khác nhau"
+        ],
+        "prompt": "Cổng XOR ra 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "B",
+        "choices": [
+          "A. XNOR ra 1 khi hai đầu vào khác nhau",
+          "B. XNOR ra 1 khi hai đầu vào giống nhau",
+          "C. XNOR ra 1 khi một đầu vào bằng 0",
+          "D. XNOR ra 1 khi cả hai đầu vào bằng 1"
+        ],
+        "prompt": "Cổng XNOR ra 1 khi điều kiện nào sau đây xảy ra?",
+        "source_page": 4
+      },
+      {
+        "answer": "D",
+        "choices": [
+          "A. Cổng NOT có đầu ra bằng đầu vào",
+          "B. Cổng NAND có đầu ra bằng (x·y)'",
+          "C. Cổng OR có đầu ra bằng (x + y)'",
+          "D. Cổng NOT có thể được thực hiện bằng cách nối hai đầu vào NAND với nhau"
+        ],
+        "prompt": "Để thực hiện cổng NOT bằng cổng NAND, ta cần làm gì?",
+        "source_page": 4
+      },
+      {
+        "answer": "A",
+        "choices": [
+          "A. AND có thể được xây dựng bằng cách nối hai cổng NAND",
+          "B. OR có thể được xây dựng bằng cách nối hai cổng NAND",
+          "C. AND có thể được xây dựng bằng cách nối hai cổng NAND rồi thêm một cổng NOT",
+          "D. Mọi hàm logic đều có thể được xây dựng chỉ bằng cổng NAND"
+        ],
+        "prompt": "Điều nào sau đây đúng về việc xây dựng mọi hàm logic chỉ bằng cổng NAND?",
+        "source_page": 4
+      },
+      {
+        "answer": "C",
+        "choices": [
+          "A. Mạch tổ hợp có đầu ra phụ thuộc vào trạng thái trước đó",
+          "B. Mạch tuần tự không có bộ nhớ",
+          "C. Mạch tổ hợp có đầu ra chỉ phụ thuộc vào đầu vào hiện tại",
+          "D. Fan-in là số đầu ra của một cổng"
+        ],
+        "prompt": "Đặc điểm nào sau đây đúng với mạch tổ hợp?",
+        "source_page": 4
+      },
+      {
+        "answer": "B",
+        "choices": [
+          "A. Fan-in là số đầu vào có thể nối tới một cổng",
+          "B. Fan-out là số đầu vào khác mà một đầu ra có thể nối tới",
+          "C. Trễ lan truyền là thời gian từ đầu ra đổi đến đầu vào ổn định",
+          "D. Đường dài nhất không ảnh hưởng đến tốc độ mạch"
+        ],
+        "prompt": "Định nghĩa nào sau đây đúng về fan-out?",
+        "source_page": 4
+      },
+      {
+        "answer": "D",
+        "choices": [
+          "A. Mức logic dương là H = 0",
+          "B. Mức logic dương là H = 1",
+          "C. Mức logic dương là L = 1",
+          "D. Mức logic dương là H = 0"
+        ],
+        "prompt": "Trong logic dương, mức cao (H) được định nghĩa là bao nhiêu?",
+        "source_page": 4
+      },
+      {
+        "answer": "A",
+        "choices": [
+          "A. Bìa K sắp xếp các ô theo mã Gray để hai ô kề nhau chỉ khác một biến",
+          "B. Bìa K chỉ dùng cho 3 biến, không dùng cho 4 biến",
+          "C. Bìa K không cần sắp xếp theo mã Gray",
+          "D. Bìa K chỉ gộp được khi hai ô có cùng giá trị"
+        ],
+        "prompt": "Tại sao hai ô kề nhau trong bìa K được gộp lại?",
+        "source_page": 4
+      }
+    ]
+  }
+}

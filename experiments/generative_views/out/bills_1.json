@@ -1,0 +1,131 @@
+{
+  "spec": {
+    "blocks": [
+      {
+        "data": {
+          "title": "Theo dõi hóa đơn điện",
+          "text": "Dưới đây là lịch sử hóa đơn và hạn đóng gần nhất."
+        },
+        "type": "summary"
+      },
+      {
+        "data": {
+          "value_field": "latest.amount_vnd",
+          "label": "Tổng tiền hóa đơn gần nhất",
+          "unit": "VND"
+        },
+        "type": "stat"
+      },
+      {
+        "data": {
+          "title_key": "month",
+          "items_field": "bills",
+          "body_key": "amount_vnd",
+          "subtitle_key": "due_date",
+          "face": "face_up",
+          "per_row": 2
+        },
+        "type": "card_grid"
+      },
+      {
+        "data": {
+          "items_field": "bills",
+          "x_key": "month",
+          "y_key": "amount_vnd",
+          "kind": "bar",
+          "title": "So sánh hóa đơn theo tháng"
+        },
+        "type": "metric_chart"
+      },
+      {
+        "data": {
+          "items_field": "bills",
+          "columns": [
+            {
+              "key": "month",
+              "label": "Tháng"
+            },
+            {
+              "key": "kwh",
+              "label": "Số kWh"
+            },
+            {
+              "key": "amount_vnd",
+              "label": "Tiền (VND)"
+            }
+          ],
+          "title": "Danh sách hóa đơn"
+        },
+        "type": "table"
+      },
+      {
+        "data": {
+          "items_field": "bills",
+          "prompt_key": "month",
+          "choices_key": "due_date",
+          "answer_key": "due_date",
+          "title": "Hạn đóng gần nhất là?"
+        },
+        "type": "quiz"
+      },
+      {
+        "data": {
+          "action_ids": [
+            "add_bill",
+            "set_reminder"
+          ]
+        },
+        "type": "actions"
+      }
+    ],
+    "title": "Theo dõi hóa đơn điện"
+  },
+  "payload": {
+    "source": "6 hoá đơn EVN (dữ liệu giả lập cho thí nghiệm)",
+    "bills": [
+      {
+        "month": "2026-06",
+        "kwh": 182,
+        "amount_vnd": 512400,
+        "due_date": "2026-07-10"
+      },
+      {
+        "month": "2026-07",
+        "kwh": 236,
+        "amount_vnd": 689300,
+        "due_date": "2026-08-10"
+      },
+      {
+        "month": "2026-08",
+        "kwh": 251,
+        "amount_vnd": 741800,
+        "due_date": "2026-09-10"
+      },
+      {
+        "month": "2026-09",
+        "kwh": 204,
+        "amount_vnd": 583100,
+        "due_date": "2026-10-10"
+      },
+      {
+        "month": "2026-10",
+        "kwh": 167,
+        "amount_vnd": 466900,
+        "due_date": "2026-11-10"
+      },
+      {
+        "month": "2026-11",
+        "kwh": 158,
+        "amount_vnd": 438200,
+        "due_date": "2026-12-10"
+      }
+    ],
+    "latest": {
+      "month": "2026-11",
+      "kwh": 158,
+      "amount_vnd": 438200,
+      "due_date": "2026-12-10"
+    },
+    "next_due": "2026-12-10"
+  }
+}

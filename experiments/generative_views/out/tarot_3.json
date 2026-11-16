@@ -1,0 +1,57 @@
+{
+  "spec": {
+    "blocks": [
+      {
+        "data": {
+          "title": "Trải 3 lá tarot",
+          "text": "Quá khứ – Hiện tại – Tương lai"
+        },
+        "type": "summary"
+      },
+      {
+        "data": {
+          "items_field": "cards",
+          "title_key": "position",
+          "body_key": "name",
+          "subtitle_key": "meaning",
+          "face": "face_up",
+          "per_row": 3
+        },
+        "type": "card_grid"
+      },
+      {
+        "data": {
+          "action_ids": [
+            "draw_again",
+            "save_reading"
+          ]
+        },
+        "type": "actions"
+      }
+    ],
+    "title": "Trải 3 lá tarot"
+  },
+  "payload": {
+    "spread": "Quá khứ – Hiện tại – Tương lai",
+    "cards": [
+      {
+        "position": "Quá khứ",
+        "name": "The Chariot",
+        "meaning": "ý chí, tiến lên bằng kiểm soát",
+        "reversed": true
+      },
+      {
+        "position": "Hiện tại",
+        "name": "The Moon",
+        "meaning": "mơ hồ, lo âu, điều chưa rõ",
+        "reversed": false
+      },
+      {
+        "position": "Tương lai",
+        "name": "The Star",
+        "meaning": "hy vọng, hồi phục",
+        "reversed": false
+      }
+    ]
+  }
+}
