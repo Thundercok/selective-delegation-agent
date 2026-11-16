@@ -394,6 +394,76 @@ def source_rows(sources, selected_path=None, page_count=0):
     return rows
 
 
+_TOOL_STAGE_META: dict[str, tuple[str, str, str]] = {
+    "read_document": ("Tìm", "Tìm đoạn", "search"),
+    "read_book_page": ("Tìm", "Đọc trang sách", "search"),
+    "search_documents": ("Tìm", "Tìm tài liệu", "search"),
+    "search_book_pages": ("Tìm", "Tìm trang sách", "search"),
+    "expand_document_context": ("Mở rộng", "Mở rộng", "maximize"),
+    "calculate": ("Tính", "Tính toán", "calculator"),
+    "read_web_page": ("Web", "Đọc trang web", "external"),
+    "translate_text": ("Dịch", "Dịch văn bản", "sparkle"),
+    "find_file_or_app": ("Tìm tệp", "Tìm tệp & ứng dụng", "search"),
+    "find_files": ("Tìm tệp", "Tìm tệp & ứng dụng", "search"),
+    "open_application": ("Mở", "Mở tệp / ứng dụng", "external"),
+    "open_document": ("Mở", "Mở tệp / ứng dụng", "external"),
+    "deliver_document": ("Mở", "Mở tệp / ứng dụng", "external"),
+    "reveal_in_finder": ("Mở", "Mở tệp / ứng dụng", "external"),
+    "get_schedule": ("Lịch", "Tra lịch học", "file-text"),
+    "locate_room": ("Lịch", "Tra phòng học", "file-text"),
+    "get_group_availability": ("Lịch", "Tra lịch nhóm", "file-text"),
+    "compose_result_table": ("Bảng", "Lập bảng kết quả", "file-text"),
+    "synthesize_smart_note": ("Ghi chú", "Lưu ghi chú", "file-text"),
+    "record_work_note": ("Ghi chú", "Lưu ghi chú", "file-text"),
+    "prepare_reading_spread": ("Trải bài", "Bàn trải bài", "sparkle"),
+    "load_reading_profile": ("Trải bài", "Bàn trải bài", "sparkle"),
+    "synthesize_reading_draft": ("Trải bài", "Bàn trải bài", "sparkle"),
+    "generate_quiz": ("Quiz", "Tạo trắc nghiệm", "sparkle"),
+    "create_natal_chart": ("Lá số", "Bản đồ sao", "sparkle"),
+    "search_birth_places": ("Lá số", "Bản đồ sao", "sparkle"),
+    "update_birth_data": ("Lá số", "Bản đồ sao", "sparkle"),
+    "interpret_aspect": ("Lá số", "Bản đồ sao", "sparkle"),
+    "export_natal_chart": ("Lá số", "Bản đồ sao", "sparkle"),
+    "review_code_file": ("Code", "Kiểm tra mã nguồn", "file-text"),
+}
+
+_INTERNAL_STEP_TOOLS = frozenset({"request_operation_tools", "update_task_state", "select_work_results"})
+_LEGACY_READ_TOOLS = frozenset({"read_document", "read_book_page", "search_documents", "search_book_pages"})
+_LEGACY_PDF_TOOLS = _LEGACY_READ_TOOLS | frozenset({"expand_document_context", "calculate"})
+
+
+def _step_field(step: Any, key: str, default: Any = None) -> Any:
+    return step.get(key, default) if isinstance(step, dict) else getattr(step, key, default)
+
+
+def _format_tool_detail(full_label: str, tool_name: str, args: dict[str, Any], dur: Any) -> str:
+    detail = ""
+    if args.get("url"):
+        detail = f"{full_label}: {str(args['url'])[:70]}"
+    elif args.get("query"):
+        detail = f"{full_label}: {str(args['query'])[:60]}"
+    elif args.get("file_path") or args.get("path"):
+        detail = f"{full_label}: {Path(str(args.get('file_path') or args.get('path'))).name}"
+    elif args.get("expression"):
+        detail = f"Tính biểu thức {args['expression']}"
+    elif args.get("target_date"):
+        detail = f"{full_label} ({args['target_date']})"
+    elif args.get("title"):
+        detail = f"{full_label}: {str(args['title'])[:60]}"
+    elif args.get("text"):
+        raw = str(args["text"]).strip().replace("\n", " ")
+        detail = f"{full_label}: {raw[:50]}{'…' if len(raw) > 50 else ''}"
+    else:
+        detail = full_label
+    try:
+        dur_num = float(dur or 0)
+    except (TypeError, ValueError):
+        dur_num = 0.0
+    if dur_num > 0:
+        detail += f" ({int(round(dur_num))}ms)"
+    return detail
+
+
 def format_process_steps(
     steps: Sequence[Any] | None,
     answer_verification: str = "UNKNOWN",
@@ -402,7 +472,7 @@ def format_process_steps(
     """Format observed runtime execution steps into a dynamic user-facing reasoning trajectory.
 
     Grounds each step in actual AgentStep records while maintaining a clear,
-    accessible progression: [Locate/Read] -> [Grounding/Verification] -> [Synthesis/Source].
+    accessible progression across general multi-step tools and document QA.
     Never invents unobserved steps or hardcoded done statuses.
     """
     raw_steps = list(steps or [])
@@ -410,89 +480,108 @@ def format_process_steps(
     if not raw_steps and not src_list:
         return []
 
+    tool_steps = [
+        s for s in raw_steps
+        if (_step_field(s, "tool_name") or "") and _step_field(s, "tool_name") not in _INTERNAL_STEP_TOOLS
+    ]
+    tool_names = [_step_field(s, "tool_name") for s in tool_steps]
+    use_legacy_trio = (
+        all(name in _LEGACY_PDF_TOOLS for name in tool_names)
+        and sum(1 for name in tool_names if name in _LEGACY_READ_TOOLS) <= 1
+        and tool_names.count("expand_document_context") <= 1
+        and tool_names.count("calculate") <= 1
+    )
+
     stages: list[dict[str, Any]] = []
-
-    # 1. Look for document reading or search steps
-    read_step = next(
-        (s for s in raw_steps if (s.get("tool_name") if isinstance(s, dict) else getattr(s, "tool_name", None)) in
-         ("read_document", "read_book_page", "search_documents", "search_book_pages")),
-        None,
-    )
-
-    # 2. Check for context expansion
-    expand_step = next(
-        (s for s in raw_steps if (s.get("tool_name") if isinstance(s, dict) else getattr(s, "tool_name", None)) == "expand_document_context"),
-        None,
-    )
-
-    # 3. Check for calculation / reasoning tool steps
-    calc_step = next(
-        (s for s in raw_steps if (s.get("tool_name") if isinstance(s, dict) else getattr(s, "tool_name", None)) == "calculate"),
-        None,
-    )
-
     step_idx = 1
-    if read_step:
-        args = read_step.get("tool_args", {}) if isinstance(read_step, dict) else getattr(read_step, "tool_args", {}) or {}
-        p_name = Path(args.get("file_path", "")).name if args.get("file_path") else ""
-        dur = read_step.get("duration_ms", 0) if isinstance(read_step, dict) else getattr(read_step, "duration_ms", 0)
-        detail = f"Đọc đoạn trích {p_name}" if p_name else "Đọc dữ kiện từ tài liệu được chọn"
-        thought = read_step.get("thought", "") if isinstance(read_step, dict) else getattr(read_step, "thought", "")
-        if dur:
-            detail += f" ({dur}ms)"
-        stages.append({
-            "stepNumber": step_idx,
-            "shortTitle": "Tìm",
-            "fullTitle": f"{step_idx}. Tìm đoạn",
-            "iconName": "search",
-            "status": "done",
-            "detail": detail,
-            "thought": thought or "",
-        })
-        step_idx += 1
-    elif src_list:
-        first_src = src_list[0]
-        p_path = first_src.get("path") or first_src.get("file_path") or ""
-        p_name = Path(p_path).name if p_path else (first_src.get("title") or "")
-        detail = f"Đọc dữ kiện từ {p_name}" if p_name else "Đọc dữ kiện từ tài liệu được chọn"
-        stages.append({
-            "stepNumber": step_idx,
-            "shortTitle": "Tìm",
-            "fullTitle": f"{step_idx}. Tìm đoạn",
-            "iconName": "search",
-            "status": "done",
-            "detail": detail,
-            "thought": "",
-        })
-        step_idx += 1
 
-    if expand_step:
-        thought = expand_step.get("thought", "") if isinstance(expand_step, dict) else getattr(expand_step, "thought", "")
-        stages.append({
-            "stepNumber": step_idx,
-            "shortTitle": "Mở rộng",
-            "fullTitle": f"{step_idx}. Mở rộng",
-            "iconName": "maximize",
-            "status": "done",
-            "detail": "Mở rộng văn bản xung quanh vị trí tìm thấy",
-            "thought": thought or "",
-        })
-        step_idx += 1
+    if not use_legacy_trio:
+        for s in tool_steps:
+            t_name = _step_field(s, "tool_name") or ""
+            args = _step_field(s, "tool_args") or {}
+            if not isinstance(args, dict):
+                args = {}
+            res = _step_field(s, "tool_result")
+            err = _step_field(s, "error") or (res.get("error") if isinstance(res, dict) else "")
+            dur = _step_field(s, "duration_ms") or _step_field(s, "tool_duration_ms") or 0
+            thought = _step_field(s, "thought") or ""
+            short_title, full_label, icon_name = _TOOL_STAGE_META.get(t_name, ("Bước", t_name, "sparkle"))
+            stages.append({
+                "stepNumber": step_idx,
+                "shortTitle": short_title,
+                "fullTitle": f"{step_idx}. {full_label}",
+                "iconName": icon_name,
+                "status": "verified_fail" if err else "done",
+                "detail": _format_tool_detail(full_label, t_name, args, dur),
+                "thought": str(thought or ""),
+            })
+            step_idx += 1
+    else:
+        read_step = next((s for s in tool_steps if _step_field(s, "tool_name") in _LEGACY_READ_TOOLS), None)
+        expand_step = next((s for s in tool_steps if _step_field(s, "tool_name") == "expand_document_context"), None)
+        calc_step = next((s for s in tool_steps if _step_field(s, "tool_name") == "calculate"), None)
 
-    if calc_step:
-        args = calc_step.get("tool_args", {}) if isinstance(calc_step, dict) else getattr(calc_step, "tool_args", {}) or {}
-        expr = args.get("expression", "")
-        thought = calc_step.get("thought", "") if isinstance(calc_step, dict) else getattr(calc_step, "thought", "")
-        stages.append({
-            "stepNumber": step_idx,
-            "shortTitle": "Tính",
-            "fullTitle": f"{step_idx}. Tính toán",
-            "iconName": "calculator",
-            "status": "done",
-            "detail": f"Tính biểu thức {expr}" if expr else "Tính toán số học",
-            "thought": thought or "",
-        })
-        step_idx += 1
+        if read_step:
+            args = _step_field(read_step, "tool_args") or {}
+            p_name = Path(args.get("file_path", "")).name if isinstance(args, dict) and args.get("file_path") else ""
+            dur = _step_field(read_step, "duration_ms") or 0
+            detail = f"Đọc đoạn trích {p_name}" if p_name else "Đọc dữ kiện từ tài liệu được chọn"
+            thought = _step_field(read_step, "thought") or ""
+            if dur:
+                detail += f" ({dur}ms)"
+            stages.append({
+                "stepNumber": step_idx,
+                "shortTitle": "Tìm",
+                "fullTitle": f"{step_idx}. Tìm đoạn",
+                "iconName": "search",
+                "status": "done",
+                "detail": detail,
+                "thought": thought or "",
+            })
+            step_idx += 1
+        elif src_list:
+            first_src = src_list[0]
+            p_path = first_src.get("path") or first_src.get("file_path") or ""
+            p_name = Path(p_path).name if p_path else (first_src.get("title") or "")
+            detail = f"Đọc dữ kiện từ {p_name}" if p_name else "Đọc dữ kiện từ tài liệu được chọn"
+            stages.append({
+                "stepNumber": step_idx,
+                "shortTitle": "Tìm",
+                "fullTitle": f"{step_idx}. Tìm đoạn",
+                "iconName": "search",
+                "status": "done",
+                "detail": detail,
+                "thought": "",
+            })
+            step_idx += 1
+
+        if expand_step:
+            thought = _step_field(expand_step, "thought") or ""
+            stages.append({
+                "stepNumber": step_idx,
+                "shortTitle": "Mở rộng",
+                "fullTitle": f"{step_idx}. Mở rộng",
+                "iconName": "maximize",
+                "status": "done",
+                "detail": "Mở rộng văn bản xung quanh vị trí tìm thấy",
+                "thought": thought or "",
+            })
+            step_idx += 1
+
+        if calc_step:
+            args = _step_field(calc_step, "tool_args") or {}
+            expr = args.get("expression", "") if isinstance(args, dict) else ""
+            thought = _step_field(calc_step, "thought") or ""
+            stages.append({
+                "stepNumber": step_idx,
+                "shortTitle": "Tính",
+                "fullTitle": f"{step_idx}. Tính toán",
+                "iconName": "calculator",
+                "status": "done",
+                "detail": f"Tính biểu thức {expr}" if expr else "Tính toán số học",
+                "thought": thought or "",
+            })
+            step_idx += 1
 
     # Verification / Grounding stage
     if answer_verification == "PASS":

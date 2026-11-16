@@ -186,3 +186,26 @@ def view_finder_results(artifact, context) -> ViewSpec:
         blocks.append(ViewBlock('summary', {'title': 'Cần làm rõ', 'text': data['clarification_prompt']}))
     return ViewSpec(1, artifact.id, artifact.revision, title=f'Truy hồi · {query}', blocks=blocks)
 
+
+def view_quiz(artifact, context) -> ViewSpec:
+    data = artifact.payload
+    title = data.get('title', 'Trắc nghiệm ôn tập')
+    questions = data.get('questions', [])
+    page = data.get('source_page', 0)
+    subtitle = f"Gồm {len(questions)} câu hỏi" + (f" · Trang {page}" if page else "")
+    lines = [
+        f"{i + 1}. {q.get('question', '')}\n   Đáp án: {q['options'][q['correct_index']]}"
+        for i, q in enumerate(questions)
+        if q.get('options') and 0 <= q.get('correct_index', -1) < len(q.get('options', []))
+    ]
+    return ViewSpec(
+        schema_version=1,
+        artifact_id=artifact.id,
+        revision=artifact.revision,
+        title=title,
+        blocks=[
+            ViewBlock('summary', {'title': title, 'text': subtitle}),
+            ViewBlock('details', {'title': 'Bộ câu hỏi & đáp án', 'content': '\n\n'.join(lines)}),
+        ],
+    )
+

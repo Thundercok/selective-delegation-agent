@@ -13,6 +13,7 @@ import subprocess
 import sys
 import threading
 import time
+from urllib.parse import urlparse
 from xml.parsers.expat import ExpatError
 from uuid import uuid4
 from typing import Any, Dict, List, Optional
@@ -71,6 +72,119 @@ ERROR_MESSAGES = {
     "image_multiple": "Hãy thả từng tệp một vào bàn Chuột.",
     "ocr_empty": "Không nhận ra chữ trong ảnh này. Hãy chọn ảnh có chữ rõ hơn.",
 }
+
+
+_MULTISTEP_CONNECTOR_RE = re.compile(
+    r"\b(rồi|sau đó|tiếp theo|xong rồi|kết hợp với|đồng thời|bước 1|bước 2|step 1|step 2|then)\b"
+)
+
+
+def is_multistep_query(query: str) -> bool:
+    """Return True when the query chains multiple steps or combines multiple domains."""
+    q_low = (query or "").strip().lower()
+    if not q_low:
+        return False
+    if _MULTISTEP_CONNECTOR_RE.search(q_low):
+        return True
+
+    buckets = (
+        any(k in q_low for k in ("kinh dịch", "kinh dich", "gieo quẻ", "gieo que", "bói quẻ", "boi que", "quẻ dịch", "que dich")),
+        any(k in q_low for k in ("lenormand", "rút bài", "rut bai", "bói bài", "boi bai", "rút 3 lá", "rut 3 la", "tarot")),
+        bool(re.search(r"https?://", q_low)),
+        any(k in q_low for k in ("thời khóa biểu", "thoi khoa bieu", "lịch học", "lich hoc", "tkb", "xem lịch", "xem lich", "hôm nay học gì", "mai học gì")),
+        any(k in q_low for k in (
+            "lưu ghi chú", "tạo ghi chú", "ghi lại", "trắc nghiệm", "câu hỏi ôn tập",
+            "quiz", "dịch sang", "lập bảng", "tạo bảng", "so sánh với",
+            "tìm tài liệu", "tìm file", "tìm tệp", "mở ứng dụng", "bản đồ sao", "lá số",
+        )),
+    )
+    return sum(1 for matched in buckets if matched) >= 2
+
+
+def _step_to_dict(step_obj: Any) -> Optional[Dict[str, Any]]:
+    """Normalize an AgentStep or dict into a plain dict for UI presentation."""
+    if isinstance(step_obj, dict):
+        return dict(step_obj)
+    if hasattr(step_obj, "to_dict"):
+        return step_obj.to_dict()
+    if hasattr(step_obj, "__dataclass_fields__") or hasattr(step_obj, "tool_name"):
+        res = getattr(step_obj, "tool_result", None)
+        return {
+            "step_number": getattr(step_obj, "step_number", 1),
+            "thought": getattr(step_obj, "thought", "") or "",
+            "tool_name": getattr(step_obj, "tool_name", "") or "",
+            "tool_args": dict(getattr(step_obj, "tool_args", {}) or {}),
+            "tool_result": res if isinstance(res, (dict, list, str, int, float, bool)) else None,
+            "duration_ms": round(float(getattr(step_obj, "duration_ms", 0.0) or getattr(step_obj, "tool_duration_ms", 0.0) or 0.0), 2),
+            "error": getattr(step_obj, "error", "") or "",
+        }
+    return None
+
+
+def _extract_artifact_card(response: AgentResponse) -> Optional[Dict[str, Any]]:
+    """Map the latest visual artifact produced in a multi-step response into an ArtifactCard payload."""
+    card: Optional[Dict[str, Any]] = None
+    for art in (getattr(response, "artifacts", None) or []):
+        kind = getattr(art, "kind", None)
+        payload = getattr(art, "payload", None) or {}
+        inputs = getattr(art, "inputs", None) or {}
+        if not isinstance(payload, dict):
+            continue
+        if kind == "schedule":
+            card = {
+                "visual_type": "timetable",
+                "day": inputs.get("target_date", "Hôm nay"),
+                "sessions": list(payload.get("items", []) or []),
+            }
+        elif kind == "web_page_snapshot":
+            url = payload.get("final_url") or payload.get("requested_url") or ""
+            domain = urlparse(url).netloc if url else ""
+            title = payload.get("title") or domain or "Trang web"
+            lines = [
+                line.strip()
+                for line in str(payload.get("content") or "").splitlines()
+                if len(line.strip()) > 30
+            ][:3]
+            card = {
+                "visual_type": "web",
+                "url": url,
+                "domain": domain,
+                "title": title,
+                "bullets": lines,
+                "summary": "\n".join(lines),
+            }
+        elif kind == "result_table":
+            card = {
+                "visual_type": "table",
+                "title": getattr(art, "title", None) or payload.get("title", "Bảng tổng hợp"),
+                "headers": list(payload.get("columns", payload.get("headers", [])) or []),
+                "rows": list(payload.get("rows", []) or []),
+                "summary": payload.get("summary", ""),
+            }
+        elif kind == "reading_spread":
+            mapped_cards = [
+                {
+                    "slot": c.get("position", f"Lá {i + 1}"),
+                    "icon": "🃏",
+                    "name": c.get("name", ""),
+                    "meaning": c.get("meaning", c.get("keywords", "")),
+                }
+                for i, c in enumerate(payload.get("cards", []) or [])
+                if isinstance(c, dict)
+            ]
+            card = {
+                "visual_type": "lenormand",
+                "question": inputs.get("question", "Trải bài"),
+                "cards": mapped_cards,
+            }
+        elif kind == "quiz":
+            card = {
+                "visual_type": "quiz",
+                "title": getattr(art, "title", None) or payload.get("title", "Trắc nghiệm ôn tập"),
+                "source_page": payload.get("source_page", 0),
+                "questions": list(payload.get("questions", []) or []),
+            }
+    return card
 
 
 def extract_image_ocr(image_input: ImageInput, path: Path) -> str:
@@ -234,6 +348,7 @@ class QuickPDFController(QObject):
     copyConfirmed = pyqtSignal(str)
     _delivered = pyqtSignal(int, str, object)
     _execution_delivered = pyqtSignal(object, object)
+    _execution_step_delivered = pyqtSignal(str, int, object)
     _execution_status_delivered = pyqtSignal(str, int, str)
     _finder_delivered = pyqtSignal(object)
     _catalog_ready = pyqtSignal(object)
@@ -285,6 +400,7 @@ class QuickPDFController(QObject):
         self._snapshot_renderer = PdfSnapshotRenderer()
         self._delivered.connect(self._finish, Qt.ConnectionType.QueuedConnection)
         self._execution_delivered.connect(self._handle_execution_delivered, Qt.ConnectionType.QueuedConnection)
+        self._execution_step_delivered.connect(self._on_execution_step, Qt.ConnectionType.QueuedConnection)
         self._execution_status_delivered.connect(self._on_execution_status, Qt.ConnectionType.QueuedConnection)
         self._finder_delivered.connect(self._handle_finder_snapshot, Qt.ConnectionType.QueuedConnection)
         self._catalog_ready.connect(self._on_catalog_ready, Qt.ConnectionType.QueuedConnection)
@@ -311,6 +427,7 @@ class QuickPDFController(QObject):
         self._telemetry = {}
         self._assistant_sources = []
         self._assistant_task_state = {}
+        self._live_steps: List[Dict[str, Any]] = []
 
         # Progressive finder integration
         self._finder_coordinator = finder_coordinator
@@ -398,7 +515,7 @@ class QuickPDFController(QObject):
     @property
     def assistant_runtime(self) -> AssistantRuntime:
         if self._assistant_runtime is None:
-            self._assistant_runtime = AssistantRuntime(discover_tools=True)
+            self._assistant_runtime = AssistantRuntime(active_tool_packs=[])
         return self._assistant_runtime
 
     @property
@@ -419,11 +536,14 @@ class QuickPDFController(QObject):
             self._selection.path if self._selection else None,
             self._selection.page_count if self._selection else 0,
         )
-        process_steps = format_process_steps(
-            displayed.steps if displayed else [],
-            displayed.answer_verification_status if displayed else "UNKNOWN",
-            references,
-        )
+        if busy and self._live_steps:
+            process_steps = format_process_steps(self._live_steps, "UNKNOWN", [])
+        else:
+            process_steps = format_process_steps(
+                displayed.steps if displayed else [],
+                displayed.answer_verification_status if displayed else "UNKNOWN",
+                references,
+            )
         if busy:
             if self._request:
                 title = {"select": "Đang mở PDF.", "search": "Đang tìm trang khớp.", "page": "Đang đọc trang đã chọn.",
@@ -1137,6 +1257,7 @@ class QuickPDFController(QObject):
                 self._unread = False
             self._current_worker = None
 
+        self._live_steps = []
         self._status = "Đã dừng yêu cầu. Nội dung đang nhập vẫn được giữ."
         self._events.append(self._status)
         self.changed.emit()
@@ -1277,6 +1398,8 @@ class QuickPDFController(QObject):
 
     def _dispatch_instant_tool(self, q: str, origin: str = "chat") -> bool:
         """Handle standalone instant tools: Kinh Dịch, Lenormand, Web crawl, and Timetable."""
+        if origin != "ui_action" and is_multistep_query(q):
+            return False
         q_low = q.lower()
         res_card: Optional[Dict[str, Any]] = None
         ans_text: str = ""
@@ -1378,22 +1501,109 @@ class QuickPDFController(QObject):
             }
 
         if res_card is not None:
-            turn_snap = self.conversation.begin_turn(q, kind="chat")
-            self.conversation.complete_turn(turn_snap.turn_ref.turn_id, ans_text, execution_id=turn_snap.execution_id)
-            self._current_turn_id = turn_snap.turn_ref.turn_id
-            self._displayed_turn_id = turn_snap.turn_ref.turn_id
-            self._current_execution_id = turn_snap.execution_id
-            self._last_user_query = q
-            self._last_assistant_answer = ans_text
-            self._artifact_card = res_card
-            self._view = "answer"
-            self._unread = not self._expanded
-            self._status = "Đã trả lời · có thể hỏi tiếp"
-            self._events.append(f"Chuột đã xong {res_card.get('visual_type')}: {q}")
-            self.changed.emit()
-            return True
+            return self._complete_instant_card(q, ans_text, res_card)
 
         return False
+
+    def _complete_instant_card(
+        self,
+        q: str,
+        ans_text: str,
+        res_card: Dict[str, Any],
+        status: str = "Đã trả lời · có thể hỏi tiếp",
+    ) -> bool:
+        turn_snap = self.conversation.begin_turn(q, kind="chat")
+        self.conversation.complete_turn(turn_snap.turn_ref.turn_id, ans_text, execution_id=turn_snap.execution_id)
+        self._current_turn_id = turn_snap.turn_ref.turn_id
+        self._displayed_turn_id = turn_snap.turn_ref.turn_id
+        self._current_execution_id = turn_snap.execution_id
+        self._last_user_query = q
+        self._last_assistant_answer = ans_text
+        self._artifact_card = res_card
+        self._view = "answer"
+        self._unread = not self._expanded
+        self._status = status
+        self._events.append(f"Chuột đã xong {res_card.get('visual_type')}: {q}")
+        self.changed.emit()
+        return True
+
+    def _dispatch_quiz_shortcut(self, q: str) -> bool:
+        """Generate an interactive quiz card directly from the active PDF page or attached source."""
+        q_low = q.lower()
+        quiz_keywords = ("trắc nghiệm", "trac nghiem", "câu hỏi ôn tập", "cau hoi on tap", "tạo quiz", "tao quiz")
+        if not any(k in q_low for k in quiz_keywords) or is_multistep_query(q):
+            return False
+        if self._selection is None and not self._assistant_sources:
+            return False
+
+        count_match = re.search(r"(\d+)\s*câu", q_low)
+        count = max(1, min(10, int(count_match.group(1)))) if count_match else 5
+        source_text = ""
+        doc_title = "Tài liệu"
+        target_page = 0
+
+        if self._selection is not None:
+            doc_title = self._selection.path.name
+            page_match = re.search(r"trang\s*(\d+)", q_low)
+            raw_page = int(page_match.group(1)) if page_match else int(self._page.get("page", 1) if self._page else 1)
+            target_page = max(1, min(self._selection.page_count, raw_page))
+            if self._page and self._page.get("page") == target_page and self._page.get("content"):
+                source_text = str(self._page["content"])
+            else:
+                try:
+                    from pypdf import PdfReader
+                    source_text = PdfReader(str(self._selection.path)).pages[target_page - 1].extract_text() or ""
+                except Exception:
+                    source_text = ""
+        elif self._assistant_sources:
+            src = self._assistant_sources[-1]
+            doc_title = src.get("name", "Tài liệu đính kèm")
+            source_text = str(src.get("content") or "")
+
+        if not source_text.strip():
+            return False
+
+        from rat.engine.quiz_generator import generate_quiz_from_text
+        title_suffix = f" (Trang {target_page})" if target_page else ""
+        res_card = generate_quiz_from_text(
+            source_text,
+            title=f"Trắc nghiệm · {doc_title}{title_suffix}",
+            count=count,
+            source_page=target_page,
+        )
+        questions = res_card.get("questions") or []
+        if not questions:
+            return False
+
+        ans_text = (
+            f"📝 Đã tạo {len(questions)} câu trắc nghiệm từ {doc_title}{title_suffix}.\n\n"
+            "Bấm chọn trực tiếp đáp án trên thẻ phía trên để kiểm tra ngay cùng trích dẫn nguồn."
+        )
+        return self._complete_instant_card(
+            q,
+            ans_text,
+            res_card,
+            status="Đã tạo bộ trắc nghiệm · bấm chọn đáp án để kiểm tra",
+        )
+
+    def _ensure_query_tool_packs(self, q: str) -> None:
+        """Load domain tool packs needed by the prompt when allowed by profile."""
+        runtime = self.assistant_runtime
+        profile = getattr(runtime, "profile", None)
+        if not getattr(profile, "enable_tool_packs", False):
+            return
+        q_low = (q or "").lower()
+        pack_keywords = (
+            ("timetable", ("lịch", "lich", "tkb", "thời khóa biểu", "thoi khoa bieu", "phòng", "tiết")),
+            ("divination", ("tarot", "lenormand", "rút bài", "rut bai", "rút 3 lá", "rut 3 la", "trải bài", "kinh dịch", "kinh dich", "gieo quẻ", "gieo que", "lá bài")),
+            ("astrology", ("bản đồ sao", "ban do sao", "lá số", "la so", "cung mọc", "natal")),
+        )
+        for pack_id, keywords in pack_keywords:
+            if any(k in q_low for k in keywords):
+                try:
+                    runtime.load_tool_pack(pack_id)
+                except Exception:
+                    pass
 
     def submit(
         self,
@@ -1423,9 +1633,14 @@ class QuickPDFController(QObject):
         if self._finder_coordinator is not None:
             self._finder_coordinator.cancel()
 
+        if self._dispatch_quiz_shortcut(q):
+            return True
+
         if self._selection is None and self._dispatch_instant_tool(q, origin=origin):
             return True
 
+        self._ensure_query_tool_packs(q)
+        self._live_steps = []
         self._artifact_card = None
 
         history_messages = self.conversation.messages_with_turn_ids()
@@ -1567,6 +1782,10 @@ class QuickPDFController(QObject):
         self._execution_workers.add(worker)
         worker.finished.connect(lambda w=worker: self._execution_workers.discard(w))
         worker.response_ready.connect(lambda res, req=request: self._execution_delivered.emit(req, res))
+        if hasattr(worker, "step_completed"):
+            worker.step_completed.connect(
+                lambda st, eid=execution_id, gen=self._chat_generation: self._execution_step_delivered.emit(eid, gen, st)
+            )
         status_signal = (worker.status_changed if hasattr(worker, "status_changed")
                          else worker.progress_changed)
         status_signal.connect(
@@ -1595,6 +1814,7 @@ class QuickPDFController(QObject):
             return
 
         self._current_worker = None
+        self._live_steps = []
         turn_id = self._current_turn_id
         self._displayed_turn_id = turn_id
 
@@ -1649,20 +1869,9 @@ class QuickPDFController(QObject):
 
         steps_data = []
         for s in (response.steps or []):
-            if hasattr(s, "to_dict"):
-                steps_data.append(s.to_dict())
-            elif hasattr(s, "__dataclass_fields__"):
-                steps_data.append({
-                    "step_number": getattr(s, "step_number", 1),
-                    "thought": getattr(s, "thought", "") or "",
-                    "tool_name": getattr(s, "tool_name", "") or "",
-                    "tool_args": dict(getattr(s, "tool_args", {}) or {}),
-                    "tool_result": s.tool_result if isinstance(s.tool_result, (dict, list, str, int, float, bool)) else None,
-                    "duration_ms": round(float(getattr(s, "duration_ms", 0.0) or getattr(s, "tool_duration_ms", 0.0) or 0.0), 2),
-                    "error": getattr(s, "error", "") or "",
-                })
-            elif isinstance(s, dict):
-                steps_data.append(s)
+            step_dict = _step_to_dict(s)
+            if step_dict is not None:
+                steps_data.append(step_dict)
 
         self.conversation.complete_turn(
             turn_id,
@@ -1676,6 +1885,7 @@ class QuickPDFController(QObject):
         )
 
         self._last_assistant_answer = response.answer
+        self._artifact_card = _extract_artifact_card(response)
         self._view = "answer"
         refs = [s for s in (response.sources or []) if hasattr(s, "page") or (isinstance(s, dict) and "page" in s)]
         if refs:
@@ -1699,6 +1909,19 @@ class QuickPDFController(QObject):
         blocked = curr_telem.get("blocked_actions")
         if blocked:
             self._events.append(f"Chuột đã chặn: {blocked[0]['label']}. Tệp tự yêu cầu việc này; muốn làm thì bạn cứ bảo.")
+        self.changed.emit()
+
+    @pyqtSlot(str, int, object)
+    def _on_execution_step(self, eid: str, gen: int, step_obj: object):
+        if self._closed or self._current_worker is None or eid != self._current_execution_id or gen != self._chat_generation:
+            return
+        step_dict = _step_to_dict(step_obj)
+        if not step_dict or not step_dict.get("tool_name"):
+            return
+        self._live_steps.append(step_dict)
+        step_label = step_dict.get("thought") or step_dict.get("tool_name")
+        self._status = f"Bước {len(self._live_steps)}: {step_label}"
+        self._events.append(self._status)
         self.changed.emit()
 
     @pyqtSlot(str, int, str)

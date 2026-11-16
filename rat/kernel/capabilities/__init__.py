@@ -32,6 +32,7 @@ def build_core_registry(
     from rat.kernel.capabilities.smart_notes import create_smart_notes_capability
     from rat.kernel.capabilities.code_review import create_code_review_capability
     from rat.kernel.capabilities.translation import create_translation_capability
+    from rat.kernel.capabilities.quiz import create_quiz_capability
     from rat.kernel.capabilities.web import create_web_capability
     from rat.engine.snippet_translation import SnippetTranslator
     registry = CapabilityRegistry()
@@ -44,6 +45,7 @@ def build_core_registry(
     registry.register_capability(create_smart_notes_capability())
     registry.register_capability(create_code_review_capability())
     registry.register_capability(create_translation_capability(SnippetTranslator()))
+    registry.register_capability(create_quiz_capability(db=db))
 
     if enable_web:
         registry.register_capability(create_web_capability(enabled=True))
@@ -122,6 +124,7 @@ def build_core_registry(
         view_document_search,
         view_file_export,
         view_finder_results,
+        view_quiz,
         view_web_page_snapshot,
     )
     core_factories = {
@@ -134,6 +137,7 @@ def build_core_registry(
         "web_page_snapshot": view_web_page_snapshot,
         "application_launch": view_application_launch,
         "finder_results": view_finder_results,
+        "quiz": view_quiz,
     }
 
     for op in registry.list_operations():

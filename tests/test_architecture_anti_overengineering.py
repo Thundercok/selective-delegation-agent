@@ -41,6 +41,20 @@ FORBIDDEN_PATHS = (
     "tools/export_rat_app_icons.py",
     "rat/bin/spider",
     "rat/crawler/spider_adapter.py",
+    "rat/mini.py",
+    "rat/mini_bundle_check.py",
+    "rat/kernel/capabilities/mini_setup.py",
+    "rat/ui/mini_quick.py",
+    "rat/ui/mini_quick_controller.py",
+    "rat/ui/mini_views.py",
+    "rat/ui/mini_shell.py",
+    "rat/ui/mini_preferences.py",
+    "rat/ui/mini_presentation.py",
+    "rat/ui/mini_worker.py",
+    "rat/ui/mini_diagnostics.py",
+    "rat/ui/mini_instance.py",
+    "rat/ui/mini_placement.py",
+    "rat/ui/selection_placement.py",
 )
 
 

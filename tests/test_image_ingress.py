@@ -24,7 +24,6 @@ from rat.ui.image_input import (
     parse_pasted_mime_content,
 )
 from rat.ui.image_preview import ImagePreviewProvider
-from rat.ui.mini_quick_controller import MiniQuickController
 from rat.ui.quick_pdf_controller import QuickPDFController
 import rat.ui.quick_pdf_controller as qpc_mod
 
@@ -96,46 +95,6 @@ def test_image_preview_provider(qapp):
     retrieved, size = provider.requestImage(inp.input_id, None)
     assert not retrieved.isNull()
     assert size.width() > 0
-
-
-@pytest.mark.unlaunched_surface
-def test_controller_image_drop_handling(tmp_path, monkeypatch, qapp):
-    """Mini desk image drops: a preview and a queued OCR-and-translate job.
-
-    This covers an UNLAUNCHED surface. Nothing starts rat/ui/mini_quick.py (not the router, not
-    pyproject, not packaging), and the main desk that users get sends every dropped file to
-    openPdfDocument(), which rejects anything that is not a PDF. So this test proves the Mini
-    controller works, not that a user can drop an image today. Wiring image drops into the main
-    desk is open work; when it lands, add a test against QuickPDFController and retire this marker.
-    """
-    controller = MiniQuickController()
-    assert not controller.snapshot["dropActive"]
-
-    controller.setDropActive(True)
-    assert controller.snapshot["dropActive"]
-
-    controller.setDropActive(False)
-    assert not controller.snapshot["dropActive"]
-
-    img = QImage(30, 30, QImage.Format.Format_RGB32)
-    img.fill(0xFFFFFF)
-    path = tmp_path / "diagram.png"
-    img.save(str(path), "PNG")
-
-    queued = []
-    monkeypatch.setattr(controller, "enqueue", lambda kind, payload, *rest: queued.append((kind, payload)))
-
-    assert controller.dropImage([QUrl.fromLocalFile(str(path))]) is True
-
-    assert len(queued) == 1
-    kind, payload = queued[0]
-    assert kind == "capture_translate"
-    assert payload["mode"] == "image"
-    assert isinstance(payload["image_input"], ImageInput)
-    assert controller.snapshot["imageLabel"]
-    assert controller.snapshot["imagePreviewUrl"].startswith("image://mini-input/")
-
-    controller.quit()
 
 
 def test_main_desk_image_drop_attaches_ocr_context_and_quick_prompts(tmp_path, monkeypatch, qapp):

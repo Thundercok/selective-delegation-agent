@@ -27,7 +27,7 @@ READS_OUTSIDE_CONTENT = frozenset({
 SAFE_AFTER_OUTSIDE_CONTENT = frozenset({
     "read_document", "read_book_page", "search_book_pages", "expand_document_context",
     "search_documents", "find_file_or_app", "inspect_artifact", "inspect_archive", "search_filesystem_live",
-    "calculate", "compose_result_table", "detect_conflicts", "find_free_slots",
+    "calculate", "compose_result_table", "detect_conflicts", "find_free_slots", "generate_quiz",
     "get_group_availability", "get_schedule", "locate_room", "request_operation_tools",
     "search_birth_places", "select_work_results", "update_task_state",
     "create_natal_chart", "synthesize_reading_draft",

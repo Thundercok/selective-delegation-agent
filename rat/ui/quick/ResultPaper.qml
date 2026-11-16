@@ -227,6 +227,53 @@ import QtQuick.Layouts
                             }
                         }
                     }
+                    Flow {
+                        id: liveProcessStepsRow
+                        objectName: "liveProcessStepsRow"
+                        visible: desk.liveMode && desk.liveSnapshot.busy && Boolean(desk.liveSnapshot.processSteps && desk.liveSnapshot.processSteps.length > 0)
+                        Layout.fillWidth: true
+                        spacing: 6
+                        Repeater {
+                            model: desk.liveSnapshot.busy ? (desk.liveSnapshot.processSteps || []) : []
+                            delegate: Rectangle {
+                                required property var modelData
+                                radius: 5
+                                color: modelData.status === "verified_fail"
+                                    ? Qt.rgba(desk.warningInk.r, desk.warningInk.g, desk.warningInk.b, 0.14)
+                                    : (modelData.status === "unverified" ? desk.utilitySurface : desk.selectedSurface)
+                                border.width: 1
+                                border.color: modelData.status === "verified_fail"
+                                    ? desk.warningInk
+                                    : (modelData.status === "unverified" ? desk.edge : desk.selectedEdge)
+                                implicitHeight: 22
+                                implicitWidth: livePillRow.implicitWidth + 12
+                                RowLayout {
+                                    id: livePillRow
+                                    anchors.centerIn: parent
+                                    spacing: 4
+                                    DeskIcon {
+                                        name: modelData.iconName || "sparkle"
+                                        color: modelData.status === "verified_fail"
+                                            ? desk.warningInk
+                                            : (modelData.status === "unverified" ? desk.muted : desk.accent)
+                                        width: 11
+                                        height: 11
+                                        Layout.preferredWidth: 11
+                                        Layout.preferredHeight: 11
+                                    }
+                                    Label {
+                                        text: modelData.fullTitle || modelData.shortTitle || ""
+                                        textFormat: Text.PlainText
+                                        font.pixelSize: 11
+                                        font.weight: Font.Medium
+                                        color: modelData.status === "verified_fail"
+                                            ? desk.warningInk
+                                            : (modelData.status === "unverified" ? desk.muted : desk.accent)
+                                    }
+                                }
+                            }
+                        }
+                    }
                     RowLayout {
                         visible: desk.liveMode && desk.liveSnapshot.busy
                         Layout.fillWidth: true
