@@ -27,4 +27,10 @@ Findings:
    wrong facts. This is the "data must be reliable" side and needs verification or a
    stronger model, not a better layout.
 
-Not yet scored: `invented_numbers` (literal numbers not backed by the payload).
+4. `invented_numbers` (scored later on the saved specs, no recompose): 0 invented numbers
+   in 9/9 specs. This is weak evidence. There were 18 literal number tokens across 8 specs (bills seed 1 had
+   none), nearly all repeats of the same counts ("3 lá", "10 câu", "6 hoá đơn") and one date ("10/12/2026", which matches
+   `next_due` 2026-12-10). Binding by reference left the model almost nothing to invent.
+   The check also has two blind spots. It tests day, month and year one by one, so a
+   swapped date passes. And the quiz payload is model-generated (stage A), so "backed by
+   the payload" says nothing about whether a quiz number matches the PDF.

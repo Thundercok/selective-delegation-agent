@@ -5,7 +5,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 12.6,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "card_grid",
@@ -18,7 +18,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 30.5,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "stat",
@@ -41,7 +41,7 @@
       "seconds": 59.7
     },
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "quiz",
@@ -54,7 +54,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 19.3,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "card_grid",
@@ -67,7 +67,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 37.9,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "stat",
@@ -90,7 +90,7 @@
       "seconds": 171.9
     },
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "quiz",
@@ -103,7 +103,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 12.9,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "card_grid",
@@ -116,7 +116,7 @@
     "model": "qwen3:4b-instruct",
     "seconds": 37.2,
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "stat",
@@ -139,7 +139,7 @@
       "seconds": 74.6
     },
     "errors": [],
-    "invented_numbers": "pending",
+    "invented_numbers": [],
     "block_types": [
       "summary",
       "quiz",

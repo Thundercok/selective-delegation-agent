@@ -146,6 +146,37 @@ def invented_numbers(spec: dict, payload: dict) -> list[str]:
     """Numbers the model typed into literal text that the payload does not back.
 
     This is the reliability line: layout may be "good enough", facts may not.
+
+    A token is a run like "2.450.000", "10/12/2026" or "3,5". Dots or commas
+    followed by 3-digit groups are Vietnamese thousands separators, so the
+    token is one number; otherwise every part (day, month, year) must be backed
+    on its own. Compared as ints so "05" matches 5. Counts are backed by list
+    lengths ("3 lá", "10 câu"). Limitation: parts are checked one by one, so a
+    date with day and month swapped would still pass.
     """
-    # TODO(human)
-    raise NotImplementedError
+    backed = {int(n) for n in payload_numbers(payload)} | _list_lengths(payload)
+    invented = []
+    for text in literal_strings(spec):
+        for token in re.findall(r"\d+(?:[.,/:-]\d+)*", text):
+            groups = re.split(r"[.,]", token)
+            if len(groups) > 1 and all(len(g) == 3 for g in groups[1:]) and "/" not in token:
+                parts = [int("".join(groups))]
+            else:
+                parts = [int(p) for p in re.findall(r"\d+", token)]
+            if not all(p in backed for p in parts):
+                invented.append(token)
+    return invented
+
+
+def _list_lengths(payload: Any) -> set[int]:
+    found: set[int] = set()
+    def walk(v):
+        if isinstance(v, dict):
+            for x in v.values():
+                walk(x)
+        elif isinstance(v, list):
+            found.add(len(v))
+            for x in v:
+                walk(x)
+    walk(payload)
+    return found
