@@ -60,12 +60,13 @@ def view_runs(args) -> Result:
     from rat.research import runs
     repo = research_repo()
     if args.action in ("pause", "resume"):
-        if args.run:
-            active = runs.active_run(repo)
-            if active is None or active.name != args.run:
-                raise Refused(f"{args.run} không phải run đang chạy"
-                              + (f" (đang chạy: {active.name})." if active else "."))
-        sent = (runs.pause if args.action == "pause" else runs.resume)()
+        if not args.run:
+            raise Refused(f"Ghi tên run: rat runs {args.action} <run>. Không ghi tên thì không gửi tín hiệu, "
+                          "để không dừng nhầm một run khác.")
+        try:
+            sent = runs.signal_run(repo, args.run, args.action)
+        except runs.RunMismatch as error:
+            raise Refused(str(error)) from error
         verb = "Tạm dừng" if args.action == "pause" else "Tiếp tục"
         text = (f"Đã gửi {'SIGSTOP' if args.action == 'pause' else 'SIGCONT'} tới {len(sent)} tiến trình: "
                 + ", ".join(map(str, sent))) if sent else "Không có job MLX nào đang chạy."
@@ -95,8 +96,15 @@ def view_runs(args) -> Result:
         blocks = [ViewBlock("summary", {"title": "Không có run đang chạy", "text": job_text,
                                         "refresh_seconds": 30})]
     else:
-        eta = (f"ước còn {_duration(status.eta_s)} (từ bước cùng loại trước đó)" if status.eta_s is not None
-               else "chưa ước được (chưa có bước cùng loại đã xong)")
+        if status.eta_source == "progress":
+            eta = (f"{status.progress['done']}/{status.progress['total']} hàng · ước còn "
+                   f"{_duration(status.eta_s)} (theo tiến độ {status.progress['file']})")
+        elif status.eta_source == "steps":
+            eta = f"ước còn {_duration(status.eta_s)} (từ bước cùng loại trước đó)"
+        elif status.overdue:
+            eta = "đã quá thời lượng của bước cùng loại trước đó; chưa ước được"
+        else:
+            eta = "chưa ước được (chưa có tiến độ hay bước cùng loại đã xong)"
         blocks = [
             ViewBlock("summary", {"title": f"{status.name} · {status.current}",
                                   "text": f"Đã chạy {_duration(status.elapsed_s)} · {eta}\n{job_text}",
@@ -105,9 +113,9 @@ def view_runs(args) -> Result:
                                 "rows": [[s["name"], s["started"], _duration(s["duration_s"])]
                                          for s in status.steps]}),
         ]
-    if tree:
-        blocks.append(_commands(("Tiếp tục job", ["runs", "resume"]) if paused
-                                else ("Tạm dừng job", ["runs", "pause"])))
+    if tree and status is not None:
+        blocks.append(_commands(("Tiếp tục job", ["runs", "resume", status.name]) if paused
+                                else ("Tạm dừng job", ["runs", "pause", status.name])))
     return _spec("runs", "Theo dõi run", blocks), {
         "repo": str(repo), "active": asdict(status) if status else None, "paused": paused,
         "jobs": [{"pid": p.pid, "ppid": p.ppid, "stat": p.stat, "command": p.command} for p in tree]}
@@ -256,7 +264,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     p = sub.add_parser("runs", help="Theo dõi run nghiên cứu; tạm dừng/tiếp tục job MLX")
     p.add_argument("action", nargs="?", default="status", choices=("status", "list", "pause", "resume"))
-    p.add_argument("run", nargs="?", help="Với pause/resume: chỉ gửi tín hiệu nếu đây là run đang chạy")
+    p.add_argument("run", nargs="?", help="Bắt buộc với pause/resume: chỉ gửi tín hiệu nếu đây là run đang chạy")
     p = sub.add_parser("papers", help="Bàn bài báo: thêm PDF, hỏi kèm trích dẫn trang")
     p.add_argument("action", nargs="?", default="list", choices=("list", "add", "ask"))
     p.add_argument("items", nargs="*")

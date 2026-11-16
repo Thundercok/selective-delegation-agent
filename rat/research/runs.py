@@ -1,15 +1,19 @@
 """Monitor research runs from ``audit/*/run.log`` and pause the running MLX job.
 
 A run script writes one line per step: ``>>> <step> at <date>``. The last step is
-``done`` when the script finished. The time left for the current step is estimated
-from earlier steps of the same kind (``clean cf`` predicts ``clean plain``); with no
-such step there is no estimate.
+``done`` when the script finished. The time left for the current step comes first
+from progress: the newest output folder of the run that has a ``manifest.json`` with
+``limit``, and the rows already written to its newest ``.jsonl`` (lines are counted,
+never read). Without that, it comes from earlier steps of the same kind (``clean cf``
+predicts ``clean plain``); a step that runs past that estimate is reported overdue,
+not as zero minutes left.
 
 The machine runs one MLX job at a time, so RAT must not load its own MLX model while
 a research job exists, even a paused one (SIGSTOP frees the GPU, not the memory).
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import signal
@@ -22,6 +26,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 STEP_LINE = re.compile(r"^>>> (?P<name>.+?) at (?P<date>.+)$")
 JOB_PATTERN = re.compile(r"mlx_lm|structured_llm")
 TREE_ROOT_PATTERN = re.compile(r"caffeinate|run\.sh")
+MIN_PROGRESS_ROWS = 5
 
 
 def parse_date(text: str) -> Optional[datetime]:
@@ -61,6 +66,9 @@ class RunStatus:
     current: Optional[str] = None
     elapsed_s: float = 0.0
     eta_s: Optional[float] = None
+    eta_source: Optional[str] = None
+    overdue: bool = False
+    progress: Optional[Dict] = None
     done: bool = False
 
 
@@ -89,11 +97,53 @@ def run_status(log_path: Path, now: Optional[datetime] = None) -> RunStatus:
     now = now or datetime.now(started.tzinfo)
     status.current = name
     status.elapsed_s = max(0.0, (now - started).total_seconds())
+    status.progress = find_progress(log_path.parent, started.timestamp())
+    if status.progress:
+        eta = progress_eta(status.progress["done"], status.progress["total"], status.elapsed_s)
+        if eta is not None:
+            status.eta_s, status.eta_source = eta, "progress"
+            return status
     earlier = [s["duration_s"] for s in status.steps[:-1]
                if _kind(s["name"]) == _kind(name) and s["duration_s"]]
     if earlier:
-        status.eta_s = max(0.0, sum(earlier) / len(earlier) - status.elapsed_s)
+        mean = sum(earlier) / len(earlier)
+        if status.elapsed_s > mean:
+            status.overdue = True
+        else:
+            status.eta_s, status.eta_source = mean - status.elapsed_s, "steps"
     return status
+
+
+def find_progress(run_dir: Path, since: float) -> Optional[Dict]:
+    """Rows written by the current step: newest ``.jsonl`` in a folder whose manifest has ``limit``."""
+    best = None
+    for manifest in run_dir.glob("*/manifest.json"):
+        for output in manifest.parent.glob("*.jsonl"):
+            mtime = output.stat().st_mtime
+            if mtime >= since and (best is None or mtime > best[0]):
+                best = (mtime, manifest, output)
+    if best is None:
+        return None
+    try:
+        total = int(json.loads(best[1].read_text()).get("limit") or 0)
+    except (ValueError, OSError):
+        return None
+    with best[2].open("rb") as stream:
+        done = sum(1 for line in stream if line.strip())
+    if total <= 0 or done > total:
+        return None
+    return {"file": str(best[2].relative_to(run_dir)), "done": done, "total": total}
+
+
+def progress_eta(done: int, total: int, elapsed_s: float) -> Optional[float]:
+    """Seconds left for the step from rows done out of total, or None when it cannot tell.
+
+    Needs a few rows first: the first row also pays for loading the model. A full file
+    gives None, since scoring may still follow, so the step estimate takes over.
+    """
+    if done < MIN_PROGRESS_ROWS or done >= total:
+        return None
+    return elapsed_s / done * (total - done)
 
 
 def list_runs(repo: Path) -> List[Path]:
@@ -164,7 +214,8 @@ def is_paused(tree: Sequence[Proc]) -> bool:
     return bool(jobs) and all("T" in p.stat for p in jobs)
 
 
-def signal_tree(sig: int, table: Optional[Sequence[Proc]] = None, *, kill=os.kill) -> List[int]:
+def signal_tree(sig: int, table: Optional[Sequence[Proc]] = None, *, kill=None) -> List[int]:
+    kill = kill or os.kill  # looked up at call time, so tests can replace it
     tree = job_tree(table if table is not None else process_table())
     sent = []
     for proc in tree:
@@ -176,12 +227,25 @@ def signal_tree(sig: int, table: Optional[Sequence[Proc]] = None, *, kill=os.kil
     return sent
 
 
-def pause(table=None, *, kill=os.kill) -> List[int]:
+def pause(table=None, *, kill=None) -> List[int]:
     return signal_tree(signal.SIGSTOP, table, kill=kill)
 
 
-def resume(table=None, *, kill=os.kill) -> List[int]:
+def resume(table=None, *, kill=None) -> List[int]:
     return signal_tree(signal.SIGCONT, table, kill=kill)
+
+
+class RunMismatch(RuntimeError):
+    """The named run is not the active one, so no signal is sent."""
+
+
+def signal_run(repo: Path, run: str, action: str, table=None, *, kill=None) -> List[int]:
+    """Pause or resume only when ``run`` is the active run: never stop a run by accident."""
+    active = active_run(repo)
+    if active is None or active.name != run:
+        raise RunMismatch(f"{run} không phải run đang chạy"
+                          + (f" (đang chạy: {active.name})." if active else "."))
+    return (pause if action == "pause" else resume)(table, kill=kill)
 
 
 class ResearchJobRunning(RuntimeError):
@@ -206,8 +270,12 @@ def monitor_line(status: Optional[RunStatus], tree: Sequence[Proc]) -> str:
     if status is None:
         return "🧪 Không có run nghiên cứu" + (" · có job MLX" if tree else "")
     line = f"🧪 {status.name} · {status.current} · {minutes(status.elapsed_s)}"
+    if status.progress:
+        line += f" · {status.progress['done']}/{status.progress['total']}"
     if status.eta_s is not None:
         line += f" · còn ~{minutes(status.eta_s)}"
+    elif status.overdue:
+        line += " · quá ước lượng"
     if is_paused(tree):
         line += " · ⏸"
     return line

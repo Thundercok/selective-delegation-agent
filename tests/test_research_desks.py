@@ -252,17 +252,59 @@ def test_json_envelope_and_exit_codes_for_agents(tmp_path, monkeypatch, capsys):
     assert call("tool", "run", "no_such_operation")[0] == cli_views.EXIT_FAILED
 
 
-def test_pause_with_a_run_name_refuses_unless_it_is_the_active_run(tmp_path, monkeypatch):
+def test_pause_needs_the_active_run_name(tmp_path, monkeypatch):
     from rat import cli_views
     repo = research_repo(tmp_path)
     write_log(repo / "audit" / "live_run", [("clean cf", 1)])
     monkeypatch.setenv("RAT_RESEARCH_REPO", str(repo))
+    table = [Proc(10, 1, "S", "caffeinate -i ./run.sh"), Proc(11, 10, "R", "python -m structured_llm.evaluate")]
+    monkeypatch.setattr(runs, "process_table", lambda: table)
     sent = []
-    monkeypatch.setattr(runs, "pause", lambda: sent.append("stop") or [11, 12])
-    spec, data, code = cli_views.run_command(["runs", "pause", "demo_run"])
-    assert code == cli_views.EXIT_REFUSED and sent == [] and "live_run" in data["error"]
-    spec, data, code = cli_views.run_command(["runs", "pause", "live_run"])
-    assert code == 0 and data == {"action": "pause", "signal": "SIGSTOP", "pids": [11, 12]}
+    monkeypatch.setattr(runs.os, "kill", lambda pid, sig: sent.append((pid, sig)))
+    for argv in (["runs", "pause"], ["runs", "pause", "demo_run"], ["runs", "resume", "nope"]):
+        _, data, code = cli_views.run_command(argv)
+        assert code == cli_views.EXIT_REFUSED and sent == [], argv
+    assert "live_run" in cli_views.run_command(["runs", "pause", "demo_run"])[1]["error"]
+    _, data, code = cli_views.run_command(["runs", "pause", "live_run"])
+    assert code == 0 and data == {"action": "pause", "signal": "SIGSTOP", "pids": [10, 11]}
+    assert sent == [(10, signal.SIGSTOP), (11, signal.SIGSTOP)]
+    button = cli_views.run_command(["runs"])[0].blocks[-1].data["commands"][0]
+    assert button["argv"] == ["runs", "pause", "live_run"]
+
+
+def test_signal_run_refuses_without_an_active_run(tmp_path):
+    repo = research_repo(tmp_path)
+    with pytest.raises(runs.RunMismatch):
+        runs.signal_run(repo, "demo_run", "pause", [], kill=lambda *a: None)
+
+
+def test_estimate_comes_from_rows_written_against_the_manifest_limit(tmp_path):
+    run = tmp_path / "audit" / "r"
+    write_log(run, [("clean 50", 1), ("clean 50", 2)])
+    out = run / "eval_50"
+    out.mkdir()
+    (out / "manifest.json").write_text(json.dumps({"limit": 500}))
+    (out / "tuned.jsonl").write_text("{}\n" * 100)
+    status = runs.run_status(run / "run.log", now=datetime(2026, 11, 15, 3, 0, tzinfo=TZ))
+    assert status.progress == {"file": "eval_50/tuned.jsonl", "done": 100, "total": 500}
+    assert status.eta_source == "progress" and status.eta_s == pytest.approx(4 * 3600)
+    assert "100/500" in runs.monitor_line(status, [])
+    (out / "tuned.jsonl").write_text("{}\n" * 3)  # too few rows: falls back to the step estimate
+    assert runs.run_status(run / "run.log", now=datetime(2026, 11, 15, 3, 0, tzinfo=TZ)).eta_source == "steps"
+
+
+def test_progress_eta_edges():
+    assert runs.progress_eta(0, 500, 60) is None
+    assert runs.progress_eta(500, 500, 60) is None
+    assert runs.progress_eta(10, 20, 100) == pytest.approx(100)
+
+
+def test_step_past_its_estimate_is_overdue_not_zero(tmp_path):
+    run = tmp_path / "audit" / "r"
+    write_log(run, [("clean 50", 1), ("clean 50", 2)])
+    status = runs.run_status(run / "run.log", now=datetime(2026, 11, 15, 8, 0, tzinfo=TZ))
+    assert status.overdue and status.eta_s is None
+    assert "quá ước lượng" in runs.monitor_line(status, [])
 
 
 def test_labels_export_and_report_give_raw_data(tmp_path, monkeypatch):

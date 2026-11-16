@@ -168,19 +168,28 @@ class SystemTrayManager:
 
     def _refresh_research(self) -> None:
         from rat.research import research_repo, runs
+        self._research_run = None
         try:
             tree = runs.job_tree(runs.process_table())
-            self.action_research.setText(runs.monitor_line(runs.active_run(research_repo()), tree))
+            status = runs.active_run(research_repo())
+            self._research_run = status.name if status else None
+            self.action_research.setText(runs.monitor_line(status, tree))
         except OSError as error:
             tree = []
             self.action_research.setText(f"🧪 Không đọc được run: {error}")
-        self.action_research_toggle.setVisible(bool(tree))
+        # Pausing needs a named active run: the toggle acts on the run shown above it.
+        self.action_research_toggle.setVisible(bool(tree) and self._research_run is not None)
         self.action_research_toggle.setText("▶︎ Tiếp tục job MLX" if runs.is_paused(tree) else "⏸ Tạm dừng job MLX")
 
     def _toggle_research_job(self) -> None:
-        from rat.research import runs
-        tree = runs.job_tree(runs.process_table())
-        (runs.resume if runs.is_paused(tree) else runs.pause)()
+        from rat.research import research_repo, runs
+        shown = getattr(self, "_research_run", None)
+        if shown:
+            tree = runs.job_tree(runs.process_table())
+            try:
+                runs.signal_run(research_repo(), shown, "resume" if runs.is_paused(tree) else "pause")
+            except runs.RunMismatch as error:
+                logger.warning("Research toggle skipped: %s", error)
         self._refresh_research()
 
     def _toggle_launch_at_login(self, checked: bool) -> None:

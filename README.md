@@ -165,7 +165,7 @@ because the run's `analyze.py` has not run, the named run is not the active one,
 ```bash
 rat runs status --json            # active run, current step, elapsed time, estimated time left, MLX jobs
 rat runs list --json
-rat runs pause <run> --json       # SIGSTOP the job tree; refused if <run> is not the active run
+rat runs pause <run> --json       # SIGSTOP the job tree; <run> is required and must be the active run
 rat runs resume <run> --json      # SIGCONT
 rat papers add <pdf>... --json    # copy into ~/.rat/papers and index
 rat papers ask "<question>" --json  # answer + citations [{n, file, page, snippet}]
