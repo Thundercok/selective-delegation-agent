@@ -473,7 +473,15 @@ def cmd_doctor(as_json: bool = False) -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="rat — Smart Local File Finder with Context Engineering & SLM")
+    from rat.cli_views import VIEW_COMMANDS
+    if len(sys.argv) > 1 and sys.argv[1] in VIEW_COMMANDS:
+        from rat.cli_views import main as view_main
+        raise SystemExit(view_main(sys.argv[1:]))
+    parser = argparse.ArgumentParser(
+        description="rat — Smart Local File Finder with Context Engineering & SLM",
+        epilog="Lệnh có view (in ra terminal, --json, hoặc mở trên desk bằng `rat ui <lệnh>`): "
+               "runs, papers, label, labels, tool (thêm --json cho agent). Ví dụ: rat runs; rat papers ask \"...\"; rat label <run>; rat ui runs",
+    )
     subparsers = parser.add_subparsers(dest="command")
 
     # Index command

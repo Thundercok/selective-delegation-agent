@@ -48,6 +48,9 @@ def _native_backend():
     return Native
 
 
+_REAL_NATIVE_BACKEND = _native_backend
+
+
 class MLXDocumentSession:
     """Inject as selected-document Q&A's model_client after explicit load().
 
@@ -83,6 +86,10 @@ class MLXDocumentSession:
         started = time.perf_counter()
         with self._lock:
             if not self.is_loaded:
+                if self._factory is _REAL_NATIVE_BACKEND:
+                    # One MLX job fits this 16 GB machine; a research run owns it.
+                    from rat.research.runs import ensure_no_research_mlx
+                    ensure_no_research_mlx()
                 backend = self._factory()
                 weights, tokenizer = backend.load(self.model_path)
                 self._backend, self._weights, self._tokenizer = backend, weights, tokenizer

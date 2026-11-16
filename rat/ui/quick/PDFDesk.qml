@@ -432,6 +432,10 @@ Rectangle {
         const command = value.trim().toLowerCase()
         return command === "/apps" || command === "ứng dụng" || command === "mở ứng dụng"
     }
+    function isCliCommand(value) {
+        // CLI-to-UI: "/rat runs", "/rat label <run>", "/rat papers ask ..." render as desk views.
+        return value.trim().toLowerCase().indexOf("/rat ") === 0
+    }
     function isSettingsCommand(value) {
         const command = value.trim().toLowerCase()
         return command === "/settings" || command === "/caidat"

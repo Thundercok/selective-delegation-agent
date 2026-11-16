@@ -237,6 +237,7 @@ class QuickPDFController(QObject):
     _execution_status_delivered = pyqtSignal(str, int, str)
     _finder_delivered = pyqtSignal(object)
     _catalog_ready = pyqtSignal(object)
+    _cli_delivered = pyqtSignal(int, object)
 
     def __init__(
         self,
@@ -287,6 +288,11 @@ class QuickPDFController(QObject):
         self._execution_status_delivered.connect(self._on_execution_status, Qt.ConnectionType.QueuedConnection)
         self._finder_delivered.connect(self._handle_finder_snapshot, Qt.ConnectionType.QueuedConnection)
         self._catalog_ready.connect(self._on_catalog_ready, Qt.ConnectionType.QueuedConnection)
+        self._cli_delivered.connect(self._finish_cli_view, Qt.ConnectionType.QueuedConnection)
+        self._cli_view: Dict[str, Any] = {}
+        self._cli_argv: List[str] = []
+        self._cli_serial = 0
+        self._cli_running = False
 
         # Unified shared runtime & conversation state
         self._assistant_runtime = assistant_runtime
@@ -436,6 +442,8 @@ class QuickPDFController(QObject):
             title = f"Gợi ý tìm kiếm ({found})" if found else "Không có gợi ý khớp"
         elif view == "settings":
             title = "Cài đặt & Giới thiệu"
+        elif view == "cli":
+            title = self._cli_view.get("title") or "rat " + " ".join(self._cli_argv)
         elif view == "error":
             title = "Cần xem lại PDF hoặc yêu cầu."
         else:
@@ -547,6 +555,9 @@ class QuickPDFController(QObject):
             "unread": self._unread,
             "hasWorkbench": busy or self._view != "none",
             "view": view,
+            "cliView": self._cli_view if view == "cli" else {},
+            "cliBusy": self._cli_running,
+            "cliCommand": " ".join(self._cli_argv),
             "fileName": self._selection.path.name if self._selection else "",
             "pageCount": self._selection.page_count if self._selection else 0,
             "activeContext": active_context,
@@ -1757,6 +1768,77 @@ class QuickPDFController(QObject):
             self._index_timer.start()
             self.refresh_index_progress()
         return started
+
+    # ---- CLI-to-UI: render a view command's ViewSpec (rat.cli_views) in the desk ----
+
+    @staticmethod
+    def parse_cli_text(text: str) -> List[str]:
+        import shlex
+        try:
+            argv = shlex.split(text.strip())
+        except ValueError:
+            return []
+        while argv and argv[0] in ("/rat", "rat"):
+            argv = argv[1:]
+        return argv
+
+    @pyqtSlot(str, result=bool)
+    def runCliView(self, text: str) -> bool:
+        return self.runCliArgs(self.parse_cli_text(text))
+
+    @pyqtSlot("QVariantList", result=bool)
+    def runCliArgs(self, argv) -> bool:
+        argv = [str(a) for a in (argv or [])]
+        if self._closed or not argv:
+            return False
+        if self._view != "cli":
+            self._nav_stack.push(self._view)
+        self._cli_serial += 1
+        serial, self._cli_argv, self._cli_running = self._cli_serial, argv, True
+        self._view, self._expanded, self._unread = "cli", True, False
+        self._status = "Đang chạy: rat " + " ".join(argv)
+        self.changed.emit()
+
+        def work():
+            from rat.cli_views import run_view_command
+            try:
+                spec = run_view_command(argv).to_dict()
+            except Exception as error:  # a command bug must not kill the desk
+                spec = {"title": "Lỗi lệnh", "blocks": [{"type": "summary", "data": {
+                    "title": "Lỗi lệnh", "text": str(error), "badge": "lỗi"}}]}
+            if not self._closed:
+                self._cli_delivered.emit(serial, spec)
+
+        threading.Thread(target=work, name="rat-cli-view", daemon=True).start()
+        return True
+
+    @pyqtSlot("QVariantList", "QVariantList", result=bool)
+    def runCliDrop(self, argv, urls) -> bool:
+        paths = [QUrl(str(u)).toLocalFile() or str(u) for u in (urls or [])]
+        return self.runCliArgs([*(str(a) for a in argv or []), *paths]) if paths else False
+
+    @pyqtSlot()
+    def refreshCliView(self) -> None:
+        if self._view == "cli" and not self._cli_running and self._cli_argv:
+            self.runCliArgs(list(self._cli_argv))
+
+    @pyqtSlot(int, object)
+    def _finish_cli_view(self, serial, spec) -> None:
+        if serial != self._cli_serial or self._closed:
+            return
+        self._cli_running = False
+        self._cli_view = spec
+        self._status = "rat " + " ".join(self._cli_argv)
+        self.changed.emit()
+
+    @pyqtSlot()
+    def closeCliView(self) -> None:
+        if self._view == "cli":
+            self._cli_serial += 1
+            self._cli_running = False
+            self._view = self._nav_stack.pop() or "none"
+            self._expanded = self._view != "none"
+            self.changed.emit()
 
     @pyqtSlot()
     def openSettings(self) -> None:

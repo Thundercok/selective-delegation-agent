@@ -575,6 +575,11 @@ Rectangle {
                     editor.forceActiveFocus()
                     return
                 }
+                if (desk.isCliCommand(editor.text)) {
+                    if (desk.liveController.runCliView(editor.text)) editor.text = ""
+                    editor.forceActiveFocus()
+                    return
+                }
                 if (desk.isSettingsCommand(editor.text)) {
                     desk.liveController.openSettings()
                     if (desk.liveController.snapshot.view === "settings") editor.text = ""

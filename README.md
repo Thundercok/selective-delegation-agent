@@ -153,6 +153,35 @@ python3 main.py review 5 --repo owner/repo
 python3 main.py status
 ```
 
+### Dùng từ agent
+
+People and agents such as Claude Code call the same commands (`rat` = `python3 main.py`). With `--json`, each command prints exactly one JSON object to stdout:
+`{"schema": "rat.cli/1", "command", "argv", "ok", "exit_code", "data", "view"}`. Agents parse
+`data`. `view` is the ViewSpec used for display; logs go to stderr. Nothing asks for input interactively.
+
+Exit codes: `0` ok · `1` failed · `2` invalid command · `3` refused on purpose (the label desk is locked
+because the run's `analyze.py` has not run, the named run is not the active one, or a research MLX job is running).
+
+```bash
+rat runs status --json            # active run, current step, elapsed time, estimated time left, MLX jobs
+rat runs list --json
+rat runs pause <run> --json       # SIGSTOP the job tree; refused if <run> is not the active run
+rat runs resume <run> --json      # SIGCONT
+rat papers add <pdf>... --json    # copy into ~/.rat/papers and index
+rat papers ask "<question>" --json  # answer + citations [{n, file, page, snippet}]
+rat labels --json                 # which runs are open or locked for labelling
+rat labels export <run> --json    # human labels from ~/.rat/labels/<run>.jsonl
+rat labels report <run> --json    # Cohen's κ and the confusion matrix
+rat tool list --json              # RAT's registered operations
+rat tool run <operation> --args '{...}' --json
+rat ui <command>                  # open the same command as a view in the desk
+```
+
+The run monitor only reads `audit/*/run.log` and the process table. The research repo does not call or import
+RAT (not even in `run.sh`), so a run behaves the same whether RAT is open or not. Only `pause`/`resume` act on a
+run, and only when someone calls them. The older commands above (`search`, `ask-file`, …) are for people;
+agents should use `rat tool run`.
+
 ---
 
 ## 7. Testing & Reliability

@@ -121,6 +121,16 @@ class SystemTrayManager:
         self.action_rescan.triggered.connect(self._trigger_rescan)
         menu.addAction(self.action_rescan)
 
+        # Research run monitor (read-only on the research repo; pause = SIGSTOP on the MLX job tree)
+        self.action_research = QAction("🧪 Run nghiên cứu", menu)
+        self.action_research.setEnabled(False)
+        menu.addAction(self.action_research)
+        self.action_research_toggle = QAction("⏸ Tạm dừng job MLX", menu)
+        self.action_research_toggle.triggered.connect(self._toggle_research_job)
+        menu.addAction(self.action_research_toggle)
+        menu.aboutToShow.connect(self._refresh_research)
+        self._refresh_research()
+
         # Free RAM Action
         self.action_free_ram = QAction("🧹 Giải phóng RAM (Evict ML Model)", menu)
         self.action_free_ram.triggered.connect(self._trigger_free_ram)
@@ -155,6 +165,23 @@ class SystemTrayManager:
         self.tray_icon.activated.connect(self._on_tray_activated)
         self.tray_icon.show()
         logger.info("macOS System Tray resident item loaded.")
+
+    def _refresh_research(self) -> None:
+        from rat.research import research_repo, runs
+        try:
+            tree = runs.job_tree(runs.process_table())
+            self.action_research.setText(runs.monitor_line(runs.active_run(research_repo()), tree))
+        except OSError as error:
+            tree = []
+            self.action_research.setText(f"🧪 Không đọc được run: {error}")
+        self.action_research_toggle.setVisible(bool(tree))
+        self.action_research_toggle.setText("▶︎ Tiếp tục job MLX" if runs.is_paused(tree) else "⏸ Tạm dừng job MLX")
+
+    def _toggle_research_job(self) -> None:
+        from rat.research import runs
+        tree = runs.job_tree(runs.process_table())
+        (runs.resume if runs.is_paused(tree) else runs.pause)()
+        self._refresh_research()
 
     def _toggle_launch_at_login(self, checked: bool) -> None:
         set_launch_at_login(checked)

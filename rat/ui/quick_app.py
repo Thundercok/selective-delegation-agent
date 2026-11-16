@@ -190,6 +190,7 @@ def main(
     parser.add_argument("--reduced-motion", action="store_true")
     parser.add_argument("--local-assistant-model", help="Installed Ollama model for the assistant in this run")
     parser.add_argument("--discover-tools", action="store_true", help="Start with core document tools; discover other operations as needed")
+    parser.add_argument("--cli", help="Open on a view command's output, e.g. --cli 'runs' (CLI-to-UI mode)")
     args = parser.parse_args(argv)
     if assistant_runtime is not None and (args.local_assistant_model or args.discover_tools):
         parser.error("Assistant CLI options cannot override an injected assistant_runtime")
@@ -219,6 +220,8 @@ def main(
     )
     if view is None:
         return 1
+    if args.cli:
+        controller.runCliView(args.cli)
 
     view.show()
     logging.getLogger(__name__).info("RAT Qt Quick Desk is ready.")

@@ -82,6 +82,14 @@ def route_request(args: Sequence[str] | None = None) -> None:
         elif cmd in ("search", "index", "status", "ask", "ask-file", "dedup", "review", "doctor", "--help", "-h"):
             run_cli_handler()
             return
+        elif cmd in ("runs", "papers", "label", "labels", "tool"):
+            from rat.cli_views import main as view_main
+            raise SystemExit(view_main(list(args)))
+        elif cmd == "ui":
+            # CLI-to-UI: open the desk on a view command's ViewSpec, e.g. `rat ui runs`.
+            import shlex
+            from rat.ui.quick_app import main as quick_main
+            raise SystemExit(quick_main(["--cli", shlex.join(args[1:]) or "runs"]))
         elif cmd in ("init-shell", "shell"):
             from rat.os.shell_integration import generate_shell_init_script
             print(generate_shell_init_script())
