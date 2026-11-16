@@ -23,7 +23,7 @@ def build_core_registry(
     - Formatted result tables
     - Core reasoning utilities (task state, calculate, inspect artifact)
 
-    No specialized domain verticals (astrology, divination, timetable) are registered.
+    No specialized domain verticals (divination, timetable) are registered.
     """
     from rat.kernel.capabilities.applications import create_applications_capability
     from rat.kernel.capabilities.documents import create_documents_capability
@@ -167,7 +167,7 @@ def build_default_registry(
         if env_packs is not None:
             packs_to_load = [p.strip() for p in env_packs.split(",") if p.strip() and p.strip() not in ("none", "core")]
         else:
-            packs_to_load = ["astrology", "divination", "timetable"]
+            packs_to_load = ["divination", "timetable"]
 
     if packs_to_load:
         from rat.plugins import get_plugin_manager

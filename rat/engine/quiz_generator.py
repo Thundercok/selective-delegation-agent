@@ -3,8 +3,8 @@ rat.engine.quiz_generator — Causal-schema grounded quiz generation and determi
 
 Orders schema fields alphabetically (`a_quote` -> `b_question` -> `c_correct` -> `d_distractors`)
 so constrained JSON decoders emit the verbatim quote and question before writing the correct answer
-and 3 distractors. Python code then verifies uniqueness and grounding, shuffles the 4 options
-deterministically, and computes `correct_index`.
+and 3 distractors. Python code then verifies uniqueness and grounding, shuffles the distractors
+deterministically, and rotates `correct_index` through A-D across the set.
 """
 from __future__ import annotations
 
@@ -101,9 +101,15 @@ def compile_quiz_items(
         if len(distractors) < 3:
             continue
 
-        choices_raw = [correct, *distractors[:3]]
-        random.Random(f"{idx}:{question}").shuffle(choices_raw)
-        correct_index = choices_raw.index(correct)
+        choices_raw = list(distractors[:3])
+        rng = random.Random(f"{idx}:{question}")
+        rng.shuffle(choices_raw)
+        # Rotate the answer through A-D across the set so its position carries no pattern;
+        # the start letter is seeded so every quiz does not open with A.
+        if not compiled:
+            rotation = random.Random(question).randrange(4)
+        correct_index = (rotation + len(compiled)) % 4
+        choices_raw.insert(correct_index, correct)
         options = [f"{'ABCD'[i]}. {c}" for i, c in enumerate(choices_raw)]
 
         quote = str(item.get("a_quote") or item.get("quote") or "").strip()
@@ -154,6 +160,9 @@ def _make_stem_from_statement(stmt: str, idx: int) -> tuple[str, str]:
     words = stmt.split()[:6]
     hint = " ".join(words).rstrip(".,;:")
     return f"Câu {idx + 1}: Nội dung nào sau đây phù hợp với tài liệu (\"{hint}…\")?", hint
+
+
+QUIZ_MODEL_TIMEOUT_S = 240.0
 
 
 def extract_fallback_quiz(
@@ -222,6 +231,7 @@ def generate_quiz_from_text(
 
     clean_text = str(source_text or "").strip()
     questions: List[Dict[str, Any]] = []
+    model_error = "model_unavailable"
 
     client = model_client
     if client is None and not os.environ.get("PYTEST_CURRENT_TEST"):
@@ -245,11 +255,16 @@ def generate_quiz_from_text(
             f"Hãy tạo đúng {n_questions} câu trắc nghiệm tiếng Việt bằng JSON đúng schema."
         )
         try:
+            # Measured on qwen3:4b-instruct: ~490 output tokens and 64-90 s for five questions
+            # on one page, so the 90 s chat default times out on longer pages.
             meta = client.chat_with_meta(
                 [{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
                 [],
                 response_format=QUIZ_GENERATION_SCHEMA,
+                max_tokens=400 * n_questions,
+                timeout=QUIZ_MODEL_TIMEOUT_S,
             )
+            model_error = (meta or {}).get("error") or ""
             raw_content = (meta or {}).get("message", {}).get("content", "")
             parsed = json.loads(raw_content) if isinstance(raw_content, str) and raw_content.strip() else {}
             if isinstance(parsed, dict) and isinstance(parsed.get("items"), list):
@@ -259,9 +274,15 @@ def generate_quiz_from_text(
                     source_page=source_page,
                     max_count=n_questions,
                 )
-        except Exception:
+                if not questions:
+                    model_error = "no_grounded_items"
+            else:
+                model_error = model_error or "invalid_model_output"
+        except Exception as exc:
             questions = []
+            model_error = f"model_call_failed: {exc}"
 
+    generator = "model" if questions else "extract"
     if not questions and clean_text:
         questions = extract_fallback_quiz(clean_text, count=n_questions, source_page=source_page)
 
@@ -272,4 +293,7 @@ def generate_quiz_from_text(
         "questions": questions,
         "question_count": len(questions),
         "grounded_count": sum(1 for q in questions if q.get("grounded")),
+        # "extract" means the questions were lifted from source sentences, not written by a model.
+        "generator": generator,
+        "model_error": None if generator == "model" else model_error,
     }

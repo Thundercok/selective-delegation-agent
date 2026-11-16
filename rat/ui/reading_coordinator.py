@@ -59,7 +59,6 @@ class ReadingDeskCoordinator:
         try:
             if hasattr(ctrl, "assistant_runtime") and ctrl.assistant_runtime:
                 ctrl.assistant_runtime.load_tool_pack("divination")
-                ctrl.assistant_runtime.load_tool_pack("astrology")
         except Exception as e:
             logger.debug(f"Note dynamically loading reading pack: {e}")
         if ctrl._view != "reading":

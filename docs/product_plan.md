@@ -10,11 +10,8 @@ Các mục ghi `[CẦN ĐIỀN]` chưa có dữ liệu. Không điền bằng s�
 
 - [x] `_archive_book/` (sách Molnar) và `work/` không còn trong cây hiện tại lẫn lịch sử git local (kiểm tra 16/11/2026, `git log --all` trống).
 - [ ] Bản cache các commit cũ trên GitHub vẫn có thể còn: chủ repo phải tự gửi yêu cầu xoá cho GitHub Support.
-- [x] Giữ tính năng lá số trong bản phát hành (quyết định 15/11/2026), nên `pyswisseph` được đóng vào `.app`.
-- [x] Giấy phép: toàn bộ RAT theo **AGPL-3.0-or-later** (quyết định 15/11/2026), file `LICENSE` ở gốc repo. Đây là lựa chọn (a) trong `rat/astrology/ephemeris/LICENSE` của Swiss Ephemeris.
-  - Hệ quả: không bán được `.app` đóng. Vẫn được thu tiền (bản build sẵn, cài đặt, hỗ trợ), nhưng ai nhận `.app` cũng phải lấy được mã nguồn đúng bản đó, kể cả phần sửa đổi.
-  - PyQt6 theo GPL-3.0-only, nên dù không có Swiss Ephemeris, bán `.app` đóng vẫn cần mua giấy phép thương mại PyQt. AGPL-3.0 kết hợp được với GPL-3.0 (điều 13).
-  - Các phụ thuộc còn lại (MIT, BSD, Apache-2.0, LGPL-3.0, MPL-2.0) tương thích. Binary trong `rat/bin/` chỉ còn `rat-hotkey` và `apple_translate`, build từ `tools/rat_hotkey.c` và `tools/apple_translate.swift` của repo nên toàn bộ thuộc AGPL; binary `spider` ngoài (`spider_cli`, MIT) và `spider_adapter.py` đã được gỡ bỏ và hợp nhất vào bộ đọc web Python thuần `rat/engine/web_reader.py`.
+- [x] Đã gỡ bỏ hoàn toàn tính năng lá số (`rat/astrology/`) và phụ thuộc `pyswisseph` (AGPL) khỏi bản phân phối (quyết định 17/11/2026). RAT tập trung đúng định vị cốt lõi: tìm tệp, đọc PDF, hỏi đáp học tập, dịch thuật và thời khóa biểu.
+- [x] Giấy phép: mã nguồn không còn chứa thư viện AGPL của Swiss Ephemeris. (PyQt6 mã nguồn mở theo GPL-3.0).
 - [x] Không còn binary bên thứ ba trong `rat/bin/` (đã gỡ `spider`), không cần kèm thông báo bản quyền MIT riêng cho binary crawler ngoài.
 - [x] Ghi công mô hình dịch (OPUS-MT và Argos, CC-BY-4.0): đã có trong README, `ATTRIBUTION.txt` đi kèm bundle, và thẻ "Giới thiệu & Bản quyền" trong Cài đặt (`SettingsView.qml`).
 - [ ] Kiểm tra giấy phép của model SLM và sprite linh vật.

@@ -136,7 +136,7 @@ def test_scenario_1_partial_natal_request_and_inline_completion(kernel_env):
     -> get an actual computed chart in the same surface, without constructing a feature
     QMainWindow. Supplied inputs survive progress updates.
     """
-    pytest.importorskip("swisseph")
+    pytest.skip("Astrology capability removed from core distribution")
     from rat.astrology.places import Place
 
     runtime = kernel_env["runtime"]
@@ -208,7 +208,7 @@ def test_scenario_2_birth_time_modification_and_stale_detection(kernel_env):
     model action -> same dispatcher semantics, recomputed chart, stable artifact ID
     and a new revision, prior revision preserved. Stale controls are detected.
     """
-    pytest.importorskip("swisseph")
+    pytest.skip("Astrology capability removed from core distribution")
 
     dispatcher = kernel_env["dispatcher"]
     store = kernel_env["store"]
@@ -367,7 +367,7 @@ def test_scenario_5_ambiguous_chart_reference_prevents_silent_modification(kerne
     """
     Scenario 5: Two charts with an ambiguous reference do not cause silent modification.
     """
-    pytest.importorskip("swisseph")
+    pytest.skip("Astrology capability removed from core distribution")
 
     dispatcher = kernel_env["dispatcher"]
     store = kernel_env["store"]

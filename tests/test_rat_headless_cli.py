@@ -84,19 +84,3 @@ def test_gui_route_keeps_exception_hooks_before_launch(monkeypatch, command, mod
     monkeypatch.setattr(sys, 'argv', ['rat.main', command])
     entry.main()
     assert events == ['shield', ('launch', mode)]
-
-
-@pytest.mark.parametrize('command', ['astrology', 'natal', 'la-so'])
-def test_standalone_gui_keeps_exception_hooks_before_launch(monkeypatch, command):
-    from types import ModuleType
-    from rat import main as entry
-    from rat.os import crash_shield
-
-    events = []
-    monkeypatch.setattr(crash_shield, 'install_crash_shield', lambda: events.append('shield'))
-    backend = ModuleType('rat.astrology.__main__')
-    backend.main = lambda: events.append('launch')
-    monkeypatch.setitem(sys.modules, 'rat.astrology.__main__', backend)
-    monkeypatch.setattr(sys, 'argv', ['rat.main', command])
-    entry.main()
-    assert events == ['shield', 'launch']

@@ -95,10 +95,14 @@ def is_multistep_query(query: str) -> bool:
         any(k in q_low for k in (
             "lưu ghi chú", "tạo ghi chú", "ghi lại", "trắc nghiệm", "câu hỏi ôn tập",
             "quiz", "dịch sang", "lập bảng", "tạo bảng", "so sánh với",
-            "tìm tài liệu", "tìm file", "tìm tệp", "mở ứng dụng", "bản đồ sao", "lá số",
+            "tìm tài liệu", "tìm file", "tìm tệp", "mở ứng dụng",
         )),
     )
     return sum(1 for matched in buckets if matched) >= 2
+
+
+# "Lưu phần này thành ghi chú", "ghi lại giúp mình", "lưu note" (not "tạo ghi chú", which writes a new note).
+_NOTE_SAVE_RE = re.compile(r"\b(?:lưu|luu)\b.{0,40}\b(?:ghi chú|ghi chu|note)\b|\bghi lại\b|\bluu lai\b", re.I)
 
 
 def _step_to_dict(step_obj: Any) -> Optional[Dict[str, Any]]:
@@ -353,6 +357,7 @@ class QuickPDFController(QObject):
     _finder_delivered = pyqtSignal(object)
     _catalog_ready = pyqtSignal(object)
     _cli_delivered = pyqtSignal(int, object)
+    _quiz_delivered = pyqtSignal(int, object)
 
     def __init__(
         self,
@@ -405,6 +410,7 @@ class QuickPDFController(QObject):
         self._finder_delivered.connect(self._handle_finder_snapshot, Qt.ConnectionType.QueuedConnection)
         self._catalog_ready.connect(self._on_catalog_ready, Qt.ConnectionType.QueuedConnection)
         self._cli_delivered.connect(self._finish_cli_view, Qt.ConnectionType.QueuedConnection)
+        self._quiz_delivered.connect(self._finish_quiz, Qt.ConnectionType.QueuedConnection)
         self._cli_view: Dict[str, Any] = {}
         self._cli_argv: List[str] = []
         self._cli_serial = 0
@@ -421,6 +427,13 @@ class QuickPDFController(QObject):
         self._current_execution_id = None
         self._current_turn_id = None
         self._chat_generation = 0
+        # A quiz is written off the UI thread; a late result for an older job is dropped.
+        self._quiz_job: Optional[int] = None
+        self._quiz_seq = 0
+        # save turn id -> the answer turn it saved, so "lưu" twice saves the answer, not the receipt
+        self._note_turns: Dict[str, str] = {}
+        # turn id -> the card it showed (a quiz), so saving that turn saves the card, not its receipt
+        self._turn_cards: Dict[str, Dict[str, Any]] = {}
         self._last_user_query = ""
         self._last_assistant_answer = ""
         self._displayed_turn_id = None
@@ -526,7 +539,7 @@ class QuickPDFController(QObject):
 
     @pyqtProperty("QVariantMap", notify=changed)
     def snapshot(self):
-        busy = (self._request is not None or self._current_worker is not None)
+        busy = (self._request is not None or self._current_worker is not None or self._quiz_job is not None)
         view = "busy" if busy else self._view
         search = self._search or {}
         page = self._page or {}
@@ -1257,6 +1270,8 @@ class QuickPDFController(QObject):
                 self._unread = False
             self._current_worker = None
 
+        self._quiz_job = None  # the thread finishes on its own; its result is ignored
+
         self._live_steps = []
         self._status = "Đã dừng yêu cầu. Nội dung đang nhập vẫn được giữ."
         self._events.append(self._status)
@@ -1511,9 +1526,12 @@ class QuickPDFController(QObject):
         ans_text: str,
         res_card: Dict[str, Any],
         status: str = "Đã trả lời · có thể hỏi tiếp",
+        source_refs: Optional[List[Dict[str, Any]]] = None,
     ) -> bool:
         turn_snap = self.conversation.begin_turn(q, kind="chat")
-        self.conversation.complete_turn(turn_snap.turn_ref.turn_id, ans_text, execution_id=turn_snap.execution_id)
+        self.conversation.complete_turn(turn_snap.turn_ref.turn_id, ans_text, execution_id=turn_snap.execution_id,
+                                        source_refs=list(source_refs or []))
+        self._turn_cards[turn_snap.turn_ref.turn_id] = res_card
         self._current_turn_id = turn_snap.turn_ref.turn_id
         self._displayed_turn_id = turn_snap.turn_ref.turn_id
         self._current_execution_id = turn_snap.execution_id
@@ -1526,6 +1544,72 @@ class QuickPDFController(QObject):
         self._events.append(f"Chuột đã xong {res_card.get('visual_type')}: {q}")
         self.changed.emit()
         return True
+
+    def _dispatch_note_save(self, q: str) -> bool:
+        """Save the answer on screen as a Markdown file when asked to keep it as a note."""
+        # "lưu ghi chú: <text>" carries its own content and stays with the smart-note path.
+        if ":" in q or not _NOTE_SAVE_RE.search(q) or is_multistep_query(q):
+            return False
+        source_id = self._note_turns.get(self._displayed_turn_id or "", self._displayed_turn_id)
+        source = self.conversation.get_turn(source_id) if source_id else None
+        answer = (getattr(source, "answer", "") or "").strip()
+        if not answer or getattr(source, "status", "") != "completed":
+            return self._complete_text_turn(
+                q, "Chưa có câu trả lời nào để lưu. Hỏi Chuột một câu trước, rồi bảo lưu thành ghi chú.",
+                status="Chưa lưu gì")
+        from rat.engine.answer_notes import save_answer_note
+        try:
+            path = save_answer_note(source.query, answer, source.source_refs,
+                                    quiz=self._turn_cards.get(source_id))
+        except OSError as exc:
+            self._events.append(f"Lưu ghi chú thất bại: {exc}")
+            return self._complete_text_turn(
+                q, f"Chuột chưa lưu được ghi chú: không ghi được tệp vào {exc.filename or 'thư mục ghi chú'}.",
+                status="Chưa lưu được ghi chú")
+        turn_id = self._complete_text_turn(
+            q, f"Đã lưu ghi chú \"{path.stem}\" vào thư mục {path.parent}.",
+            status=f"Đã lưu ghi chú · {path.name}", source_refs=source.source_refs, return_turn=True)
+        self._note_turns[turn_id] = source_id
+        self._events.append(f"Đã lưu ghi chú: {path}")
+        return True
+
+    def _complete_text_turn(self, q: str, text: str, *, status: str,
+                            source_refs: Optional[List[Dict[str, Any]]] = None, return_turn: bool = False):
+        turn = self.conversation.begin_turn(q, kind="chat")
+        self.conversation.complete_turn(turn.turn_ref.turn_id, text, execution_id=turn.execution_id,
+                                        source_refs=list(source_refs or []))
+        self._current_turn_id = self._displayed_turn_id = turn.turn_ref.turn_id
+        self._current_execution_id = turn.execution_id
+        self._last_user_query = q
+        self._last_assistant_answer = text
+        self._artifact_card = None
+        self._view = "answer"
+        self._unread = not self._expanded
+        self._status = status
+        self.changed.emit()
+        return turn.turn_ref.turn_id if return_turn else True
+
+    def _answer_source_page(self) -> Optional[int]:
+        """The page the displayed answer cited in the selected PDF, if it cited one."""
+        if self._selection is None or not self._displayed_turn_id:
+            return None
+        turn = self.conversation.get_turn(self._displayed_turn_id)
+        try:
+            selected = self._selection.path.resolve()
+        except OSError:
+            return None
+        for source in (getattr(turn, "source_refs", None) or []):
+            if not isinstance(source, dict):
+                continue
+            page = source.get("page")
+            path = source.get("path") or source.get("file_path")
+            if type(page) is int and page >= 1 and path:
+                try:
+                    if Path(path).resolve() == selected:
+                        return page
+                except OSError:
+                    continue
+        return None
 
     def _dispatch_quiz_shortcut(self, q: str) -> bool:
         """Generate an interactive quiz card directly from the active PDF page or attached source."""
@@ -1542,10 +1626,20 @@ class QuickPDFController(QObject):
         doc_title = "Tài liệu"
         target_page = 0
 
+        page_basis = ""
         if self._selection is not None:
             doc_title = self._selection.path.name
             page_match = re.search(r"trang\s*(\d+)", q_low)
-            raw_page = int(page_match.group(1)) if page_match else int(self._page.get("page", 1) if self._page else 1)
+            # "Phần này" means what the user just looked at: the page the last answer cited,
+            # else the page on screen. Only with neither does it fall back to page 1, and says so.
+            if page_match:
+                raw_page, page_basis = int(page_match.group(1)), "requested"
+            elif (cited := self._answer_source_page()) is not None:
+                raw_page, page_basis = cited, "answer"
+            elif self._page and self._page.get("page"):
+                raw_page, page_basis = int(self._page["page"]), "open_page"
+            else:
+                raw_page, page_basis = 1, "default"
             target_page = max(1, min(self._selection.page_count, raw_page))
             if self._page and self._page.get("page") == target_page and self._page.get("content"):
                 source_text = str(self._page["content"])
@@ -1563,27 +1657,65 @@ class QuickPDFController(QObject):
         if not source_text.strip():
             return False
 
-        from rat.engine.quiz_generator import generate_quiz_from_text
         title_suffix = f" (Trang {target_page})" if target_page else ""
-        res_card = generate_quiz_from_text(
-            source_text,
-            title=f"Trắc nghiệm · {doc_title}{title_suffix}",
-            count=count,
-            source_page=target_page,
-        )
+        self._quiz_seq += 1
+        job = self._quiz_job = self._quiz_seq
+        page_text = f" từ trang {target_page}" if target_page else ""
+        self._last_user_query = q
+        self._status = f"Chuột đang soạn câu hỏi{page_text}… (thường mất khoảng một phút)"
+        self._events.append(f"Đã gửi yêu cầu: {q}")
+        self.changed.emit()
+        plan = {"q": q, "doc_title": doc_title, "target_page": target_page, "page_basis": page_basis}
+
+        def work():
+            from rat.engine.quiz_generator import generate_quiz_from_text
+            try:
+                card = generate_quiz_from_text(source_text, title=f"Trắc nghiệm · {doc_title}{title_suffix}",
+                                               count=count, source_page=target_page)
+            except Exception as exc:  # never leave the desk stuck busy
+                card = {"questions": [], "model_error": str(exc)}
+            self._quiz_delivered.emit(job, {**plan, "card": card})
+
+        threading.Thread(target=work, name="rat-quiz", daemon=True).start()
+        return True
+
+    @pyqtSlot(int, object)
+    def _finish_quiz(self, job: int, result: Dict[str, Any]) -> None:
+        if self._closed or job != self._quiz_job:
+            return
+        self._quiz_job = None
+        q, doc_title = result["q"], result["doc_title"]
+        target_page, page_basis, res_card = result["target_page"], result["page_basis"], result["card"]
         questions = res_card.get("questions") or []
         if not questions:
-            return False
+            self._last_assistant_answer = ("Chuột chưa tạo được câu trắc nghiệm nào từ đoạn này. "
+                                           "Thử chỉ rõ trang, ví dụ \"trắc nghiệm trang 4\".")
+            self._displayed_turn_id = None
+            self._artifact_card = None
+            self._view = "answer"
+            self._status = "Chưa tạo được trắc nghiệm"
+            self.changed.emit()
+            return
 
-        ans_text = (
-            f"📝 Đã tạo {len(questions)} câu trắc nghiệm từ {doc_title}{title_suffix}.\n\n"
-            "Bấm chọn trực tiếp đáp án trên thẻ phía trên để kiểm tra ngay cùng trích dẫn nguồn."
-        )
-        return self._complete_instant_card(
+        where = {
+            "answer": f" trang {target_page}, trang câu trả lời vừa rồi dẫn",
+            "open_page": f" trang {target_page} đang mở",
+            "requested": f" trang {target_page}",
+            "default": f" trang {target_page}, vì chưa rõ bạn muốn phần nào (gõ \"trang N\" để chọn trang khác)",
+        }.get(page_basis, "")
+        lines = [f"Đã tạo {len(questions)} câu trắc nghiệm từ{where or ' ' + doc_title}."]
+        if res_card.get("generator") == "extract":
+            # Honest about the weaker path: these are sentences lifted from the page, not written questions.
+            lines.append("Chuột chưa soạn được câu hỏi bằng mô hình lúc này, nên các câu dưới đây "
+                         "được rút thẳng từ câu chữ trong trang và có thể còn vụng.")
+        lines.append("Bấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.")
+        self._complete_instant_card(
             q,
-            ans_text,
+            "\n\n".join(lines),
             res_card,
             status="Đã tạo bộ trắc nghiệm · bấm chọn đáp án để kiểm tra",
+            source_refs=[{"path": str(self._selection.path), "page": target_page}]
+            if self._selection is not None and target_page else None,
         )
 
     def _ensure_query_tool_packs(self, q: str) -> None:
@@ -1596,7 +1728,6 @@ class QuickPDFController(QObject):
         pack_keywords = (
             ("timetable", ("lịch", "lich", "tkb", "thời khóa biểu", "thoi khoa bieu", "phòng", "tiết")),
             ("divination", ("tarot", "lenormand", "rút bài", "rut bai", "rút 3 lá", "rut 3 la", "trải bài", "kinh dịch", "kinh dich", "gieo quẻ", "gieo que", "lá bài")),
-            ("astrology", ("bản đồ sao", "ban do sao", "lá số", "la so", "cung mọc", "natal")),
         )
         for pack_id, keywords in pack_keywords:
             if any(k in q_low for k in keywords):
@@ -1632,6 +1763,9 @@ class QuickPDFController(QObject):
         self._finder_hits = []
         if self._finder_coordinator is not None:
             self._finder_coordinator.cancel()
+
+        if self._dispatch_note_save(q):
+            return True
 
         if self._dispatch_quiz_shortcut(q):
             return True

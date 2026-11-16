@@ -73,12 +73,6 @@ def route_request(args: Sequence[str] | None = None) -> None:
         elif cmd.lower().endswith(".pdf"):
             from rat.ui.quick_app import main as quick_pdf_main
             raise SystemExit(quick_pdf_main(list(args)))
-        elif cmd in ("astrology", "natal", "la-so"):
-            from rat.os.crash_shield import install_crash_shield
-            install_crash_shield()
-            from rat.astrology.__main__ import main as natal_main
-            natal_main()
-            return
         elif cmd in ("search", "index", "status", "ask", "ask-file", "dedup", "review", "doctor", "--help", "-h"):
             run_cli_handler()
             return

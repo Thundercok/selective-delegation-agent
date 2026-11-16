@@ -147,11 +147,9 @@ class PluginManager:
         """Register all default built-in domain vertical tool packs."""
         with self._lock:
             if not self._packs:
-                from rat.plugins.packs.astrology import AstrologyToolPack
                 from rat.plugins.packs.divination import DivinationToolPack
                 from rat.plugins.packs.timetable import TimetableToolPack
 
-                self.register_pack(AstrologyToolPack())
                 self.register_pack(DivinationToolPack())
                 self.register_pack(TimetableToolPack())
 

@@ -151,11 +151,7 @@ def observed_sources(step: AgentStep, existing=None) -> List[Dict[str, Any]]:
 def model_observation(value, registry=None, enable_observation_pack=False, op_name=None):
     """Format large chart or tool observations (Observation Pack) without changing the full recorded source."""
     if isinstance(value, dict) and isinstance(value.get('chart'), dict):
-        try:
-            from rat.astrology.chart import interpretation_context
-            return {**value, 'chart': interpretation_context(value['chart'])}
-        except ImportError:
-            return value
+        return value
 
     if isinstance(value, dict) and "observation" in value and "verification" in value:
         return {**value, "observation": model_observation(value["observation"], registry,

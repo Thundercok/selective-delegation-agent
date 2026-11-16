@@ -61,28 +61,5 @@ def parse_cards(text):
 
 
 def load_natal_profile(path):
-    """Load explicit saved birth inputs; always recalculate, never trust positions."""
-    from rat.astrology.chart import BirthData, calculate_chart, degree_text
-    source = Path(path)
-    if source.suffix.casefold() != '.json' or not source.is_file():
-        raise ValueError('Chọn một tệp hồ sơ JSON đang tồn tại.')
-    if source.stat().st_size > 20_000:
-        raise ValueError('Hồ sơ quá lớn (tối đa 20 KB).')
-    with source.open('rb') as stream:
-        raw = stream.read(20_001)
-    if len(raw) > 20_000:
-        raise ValueError('Hồ sơ quá lớn (tối đa 20 KB).')
-    payload = json.loads(raw)
-    if not isinstance(payload, dict) or payload.get('schema') != 'rat-natal-v1':
-        raise ValueError('Chọn hồ sơ JSON đã lưu từ Natal Atlas (rat-natal-v1).')
-    birth = BirthData(**payload['birth'])
-    chart = calculate_chart(birth)
-    return {
-        'name': birth.name, 'date': birth.date,
-        'time': birth.time if birth.time_known else 'Chưa rõ giờ', 'place': birth.place,
-        'fileName': source.name,
-        'chart': chart.to_dict(),
-        'positions': [{'name': p.name, 'position': degree_text(p.longitude)}
-                      for p in chart.positions if p.id in ('sun', 'moon', 'mercury', 'venus', 'mars')],
-        'notices': chart.notices,
-    }
+    """Load explicit saved birth inputs; natal calculation is removed."""
+    raise ValueError('Tính năng bản đồ sao đã được gỡ bỏ khỏi bản phân phối này.')

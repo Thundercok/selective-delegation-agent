@@ -120,6 +120,8 @@ def test_fallback_and_model_quiz_generation():
     assert res["visual_type"] == "quiz"
     assert res["question_count"] == 1
     assert res["grounded_count"] == 1
+    assert res["generator"] == "model" and res["model_error"] is None
+    assert mock_model.chat_with_meta.call_args.kwargs["timeout"] >= 180
     q = res["questions"][0]
     assert q["options"][q["correct_index"]].endswith("Cổng NAND")
 
@@ -173,6 +175,9 @@ def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path):
 
         handled = ctrl.submit("tạo 3 câu trắc nghiệm trang 1")
         assert handled is True
+        # Written off the UI thread: the desk shows busy, then the card arrives.
+        assert ctrl.snapshot["busy"] is True
+        wait_for(lambda: not ctrl.snapshot["busy"])
         snap = ctrl.snapshot
         assert snap["view"] == "answer"
         assert snap["artifactCard"] is not None
@@ -209,3 +214,43 @@ def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path):
         view.deleteLater()
         ctrl.deleteLater()
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+
+
+def test_fallback_quiz_says_it_was_extracted_and_why():
+    broken = MagicMock()
+    broken.chat_with_meta.return_value = {"message": {}, "error": "timeout"}
+    res = generate_quiz_from_text(COMPUTER_ORG_SAMPLE, count=2, source_page=4, model_client=broken)
+    assert res["questions"] and res["generator"] == "extract" and res["model_error"] == "timeout"
+
+
+def test_quiz_on_this_part_uses_the_page_the_last_answer_cited(tmp_path):
+    _app = QGuiApplication.instance() or QGuiApplication([])
+    pdf_path = write_pdf(tmp_path / "ToChucMayTinh.pdf", [PDF_ASCII_SAMPLE, PDF_ASCII_SAMPLE])
+    ctrl = QuickPDFController(auto_init_finder=False)
+    ctrl.ready()
+    try:
+        ctrl.selectFile(str(pdf_path))
+        wait_for(lambda: not ctrl.snapshot["busy"])
+        turn = ctrl.conversation.begin_turn("Cổng NAND là gì?", kind="chat")
+        ctrl.conversation.complete_turn(turn.turn_ref.turn_id, "Cổng vạn năng.", execution_id=turn.execution_id,
+                                        source_refs=[{"path": str(pdf_path), "page": 2}])
+        ctrl._displayed_turn_id = turn.turn_ref.turn_id
+
+        assert ctrl.submit("Tạo 2 câu trắc nghiệm từ phần này") is True
+        wait_for(lambda: not ctrl.snapshot["busy"])
+        snap = ctrl.snapshot
+        assert snap["artifactCard"]["source_page"] == 2
+        assert "trang 2, trang câu trả lời vừa rồi dẫn" in snap["answerText"]
+        # Under pytest no model runs, so the card must admit the questions were lifted from the page.
+        assert snap["artifactCard"]["generator"] == "extract"
+        assert "rút thẳng từ câu chữ" in snap["answerText"]
+    finally:
+        ctrl.close()
+
+
+def test_answer_positions_rotate_across_the_set():
+    items = [{"a_quote": "q", "b_question": f"Câu {i}?", "c_correct": f"đúng {i}",
+              "d_distractors": [f"sai {i}a", f"sai {i}b", f"sai {i}c"]} for i in range(4)]
+    compiled = compile_quiz_items(items, source_text="q", max_count=4)
+    assert sorted(q["correct_index"] for q in compiled) == [0, 1, 2, 3]
+    assert all(q["options"][q["correct_index"]].endswith(f"đúng {i}") for i, q in enumerate(compiled))

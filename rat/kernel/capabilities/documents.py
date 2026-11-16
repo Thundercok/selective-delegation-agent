@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Optional
 
 from rat.crawler.db import Database, remove_vietnamese_accents
 from rat.crawler.extractors import extract_document_content
+from rat.engine.page_match import page_window, query_terms
 from rat.kernel.contracts import Artifact, ArtifactAction
 from rat.kernel.registry import Capability, OperationDefinition
 
@@ -233,6 +234,11 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                 start_idx = max(0, match_pos - lead)
                 end_idx = min(total_chars, match_pos + len(target_excerpt.strip()) + (max_chars - lead))
                 expanded_snippet = content[start_idx:end_idx].strip()
+            elif query_term and (window := page_window(content, query_terms(query_term), max_chars)):
+                # Page-marked text: start on the page where the question's rarest terms are.
+                start_idx = window["start"]
+                page_num = window["page"]
+                expanded_snippet = window["content"]
             elif query_term:
                 # Case-insensitive term location across document
                 c_lower = content.lower()

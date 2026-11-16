@@ -1,39 +1,6 @@
 """Registered standard presentation factories for the bundled capabilities."""
 from rat.kernel.view_spec import ViewSpec, ViewBlock
 
-def view_natal_chart(artifact, context) -> ViewSpec:
-    from rat.astrology.chart import degree_text, SIGNS
-    chart_data = artifact.payload.get('chart', artifact.payload)
-    birth = chart_data.get('birth', artifact.inputs)
-    name = birth.get('name', 'Lá số cá nhân')
-    date = birth.get('date', '')
-    time_val = birth.get('time', '') if birth.get('time_known', True) else 'Giờ sinh chưa rõ'
-    place = birth.get('place', '')
-    positions = chart_data.get('positions', [])
-    angles = chart_data.get('angles', {})
-    sun = next((p.get('sign') for p in positions if p.get('id') == 'sun'), 'Mặt Trời')
-    moon = next((p.get('sign') for p in positions if p.get('id') == 'moon'), 'Mặt Trăng')
-    asc = angles.get('ASC')
-    asc_sign = ''
-    if asc is not None and isinstance(asc, (int, float)):
-        sign_idx = int(asc // 30) % 12
-        asc_sign = SIGNS[sign_idx][0]
-    blocks: List[ViewBlock] = []
-    blocks.append(ViewBlock(type='summary', data={'title': f'✧ {name} · {date} {time_val} ({place})', 'text': f'Mặt Trời: {sun} · Mặt Trăng: {moon}' + (f' · Cung Mọc: {asc_sign}' if asc_sign else ''), 'badge': f'Phiên bản {artifact.revision}'}))
-    blocks.append(ViewBlock(type='resource', data={'resource': 'wheel', 'field': 'chart'}))
-    pos_rows = []
-    for p in positions:
-        pos_rows.append([p.get('name', ''), p.get('glyph', ''), degree_text(p['longitude'], seconds=True), f'Nhà {p.get('house')}' if p.get('house') else '—'])
-    blocks.append(ViewBlock(type='details', data={'title': 'Vị trí thiên thể', 'table_headers': ['Thiên thể', 'Ký hiệu', 'Tọa độ', 'Nhà'], 'table_rows': pos_rows}))
-    if chart_data.get('notices'):
-        blocks.insert(1, ViewBlock('summary', {'text': '\n'.join(chart_data['notices'])}))
-    if chart_data.get('cusps'):
-        blocks.append(ViewBlock('details', {'title': 'Các nhà', 'table_headers': ['Nhà', 'Đỉnh nhà'],
-            'table_rows': [[str(i + 1), degree_text(value, seconds=True)] for i, value in enumerate(chart_data['cusps'])]}))
-    blocks.append(ViewBlock('details', {'title': 'Góc chiếu', 'table_headers': ['Điểm', 'Góc', 'Điểm', 'Orb'],
-        'table_rows': [[a['first'], a['name'], a['second'], f"{a['orb']:.4f}°"] for a in chart_data.get('aspects', [])]}))
-    return ViewSpec(schema_version=1, artifact_id=artifact.id, revision=artifact.revision, title=f'Lá số · {name}', blocks=blocks)
-
 def view_schedule(artifact, context) -> ViewSpec:
     items = artifact.payload.get('items', [])
     day_label = artifact.inputs.get('target_date', 'Hôm nay')

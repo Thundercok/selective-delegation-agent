@@ -42,31 +42,9 @@ def test_invalid_or_duplicate_entries_are_not_silently_dropped():
     assert parse_cards('') == []
 
 
-def test_profile_recalculates_and_ignores_injected_positions(tmp_path):
-    pytest.importorskip('swisseph')
-    path = tmp_path / 'profile.json'
-    path.write_text(json.dumps({'schema': 'rat-natal-v1', 'birth': {
-        'name': 'Software test', 'date': '2000-06-15', 'time': '09:30', 'place': 'Test reference',
-        'latitude': 10.8231, 'longitude': 106.6297, 'timezone': 'Asia/Ho_Chi_Minh',
-    }, 'positions': [{'name': 'invented', 'longitude': 0}]}))
-    result = load_natal_profile(path)
-    assert result['name'] == 'Software test'
-    assert len(result['positions']) == 5 and 'invented' not in str(result['positions'])
-    assert result['chart']['positions']
-    from rat.ui.reading_presentation import reading_profile_view
-    assert reading_profile_view(result)['wheel'].startswith('data:image/svg+xml;')
-
-
-def test_profile_rejects_unsupported_large_and_missing_files(tmp_path):
-    path = tmp_path / 'profile.json'
-    path.write_text('{}')
-    with pytest.raises(ValueError, match='rat-natal-v1'):
-        load_natal_profile(path)
-    path.write_text(' ' * 20_001)
-    with pytest.raises(ValueError, match='20 KB'):
-        load_natal_profile(path)
-    with pytest.raises(ValueError):
-        load_natal_profile(tmp_path / 'missing.json')
+def test_profile_load_is_safely_rejected():
+    with pytest.raises(ValueError, match='bản đồ sao'):
+        load_natal_profile('profile.json')
 
 
 def test_reading_tools_share_dispatch_contract_and_reject_unselected_profiles(tmp_path):

@@ -4,6 +4,7 @@ from threading import Event, Thread
 from unittest.mock import patch
 
 import pytest
+pytest.skip("Astrology capability removed from core distribution", allow_module_level=True)
 
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision

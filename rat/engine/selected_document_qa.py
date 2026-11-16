@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import re
 import time
 from urllib.parse import urlparse
 
 from rat.engine.assistant_runtime import ModelDecision
+from rat.engine.page_match import query_terms
 
 MODEL = 'qwen3:4b-instruct'
 MAX_READ_CHARS = 3000
@@ -104,18 +104,14 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
             data['path'] = path_text
         elif read_step and isinstance(read_step.tool_result, dict) and read_step.tool_result.get('found'):
             data = dict(read_step.tool_result)
-            # If initial excerpt is truncated, check if specific topical keywords are missing.
-            # If missing, dispatch expand_document_context as an agentic subplan before answering.
+            # A truncated first read is only the document's opening (often its table of
+            # contents). Re-read from the page the question's terms point to before answering.
             if data.get('truncated') and not expand_step:
-                q_words = [w.lower() for w in re.findall(r"[^\W_]+", goal) if len(w) >= 4]
-                stopwords = {"tóm", "tắt", "cho", "mình", "trong", "bài", "báo", "này", "được", "không", "như", "thế", "nào", "dung", "content", "summary", "summarize", "about", "what", "where", "which"}
-                key_terms = [t for t in q_words if t not in stopwords]
-                content_lower = (data.get('content') or '').lower()
-                missing = [t for t in key_terms if t not in content_lower]
-                if len(missing) >= 2:
-                    search_query = " ".join(missing[:3])
+                terms = query_terms(goal)
+                if terms:
+                    search_query = " ".join(terms[:6])
                     return ModelDecision(
-                        f"Đoạn trích ban đầu thiếu thông tin về '{search_query}'. Đang mở rộng ngữ cảnh qua expand_document_context…",
+                        f"Đang tìm trang nói về '{search_query}'…",
                         tool_name="expand_document_context",
                         tool_args={"file_path": path_text, "query": search_query, "max_chars": MAX_READ_CHARS},
                     )
@@ -215,6 +211,10 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
                                       tool_args={'file_path': path_text, 'max_chars': MAX_READ_CHARS}),
         decision_callable=answer, should_cancel=should_cancel, max_verification_repairs=0, **run_context)
     read_step = next((s for s in response.steps if s.tool_name in ('expand_document_context', 'read_document')), None)
+    # The runtime records the expansion as a raw result row; its page and excerpt are merged
+    # into the document source below, so the raw row would only show as an unnamed source.
+    response.sources = [s for s in response.sources
+                        if not (isinstance(s, dict) and s.get('type') == 'expand_document_context')]
     for source in response.sources:
         if source.get('path') == path_text:
             exp = next((s for s in response.steps if s.tool_name == 'expand_document_context'
@@ -229,10 +229,8 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
                 if active_step.tool_result.get('page'):
                     source['page'] = active_step.tool_result.get('page')
                 content = active_step.tool_result.get('content', '')
-                if not source.get('excerpt'):
-                    source['excerpt'] = content[:600]
-                source['full_excerpt'] = content[:2000]
-                if not source.get('excerpt'):
+                # The answer came from the expanded window, so its excerpt wins over the opening read.
+                if exp or not source.get('excerpt'):
                     source['excerpt'] = content[:600]
                 source['full_excerpt'] = content[:2000]
 

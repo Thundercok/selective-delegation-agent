@@ -218,28 +218,6 @@ def test_calculator_evaluates_arithmetic_without_unbounded_powers_or_code(runtim
             runtime.tool_calculate(expression)
 
 
-def test_birth_place_lookup_keeps_candidates_and_calculated_chart_source(runtime):
-    pytest.importorskip('swisseph')
-    from rat.astrology.places import Place
-    places = (Place('HCM', 10.8231, 106.6297, 'Asia/Ho_Chi_Minh'), Place('Other', 21, 105, 'Asia/Ho_Chi_Minh'))
-    with patch('rat.astrology.places.search_places', return_value=places) as lookup:
-        result = runtime.execute_tool('search_birth_places', {'query': 'Ho Chi Minh City'})
-    lookup.assert_called_once_with('Ho Chi Minh City')
-    assert len(result) == 2 and result[0]['timezone'] == places[0].timezone
-    calculated = runtime.execute_tool('create_natal_chart', {
-        'date': '2000-06-15', 'time': '09:30', 'place': result[0]['name'],
-        'latitude': result[0]['latitude'], 'longitude': result[0]['longitude'], 'timezone': result[0]['timezone']})
-    step = AgentStep(1, '', tool_name='create_natal_chart', tool_result=calculated)
-    sources = observed_sources(step)
-    messages = runtime._native_messages('Explain these observations', [step], previous_sources=sources)
-    observation = json.loads(messages[-1]['content'])['observation']['chart']
-    points = [dict(zip(observation['points']['columns'], row)) for row in observation['points']['rows']]
-    assert points[0]['longitude'] == calculated['chart']['positions'][0]['longitude']
-    assert len(points) == 14 and len(observation['house_cusps']) == 12
-    assert 'distance_au' in sources[0]['chart']['positions'][0]
-    assert 'distance_au' not in points[0]  # Export-only fields stay out of the inference context.
-
-
 def test_note_and_discovery_observations_are_not_document_citations():
     for name in ('synthesize_smart_note', 'update_note_action_item', 'expand_note_section', 'request_operation_tools'):
         assert observed_sources(AgentStep(1, '', tool_name=name, tool_result={'artifact_id': 'fixture'})) == []
