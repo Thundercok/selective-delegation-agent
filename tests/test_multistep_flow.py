@@ -106,14 +106,13 @@ def test_submit_multistep_bypasses_instant_loads_packs_and_streams_steps(app):
     try:
         assert not runtime.is_tool_pack_loaded("timetable")
         with patch("rat.ui.quick_pdf_controller.create_execution_worker", return_value=fake_worker) as mock_factory:
-            ok = ctrl.submit("xem lịch học hôm nay rồi rút 3 lá bài kết hợp bản đồ sao")
+            ok = ctrl.submit("xem lịch học hôm nay rồi rút 3 lá bài")
 
         assert ok is True
         assert fake_worker.started is True
         assert mock_factory.call_count == 1
         assert runtime.is_tool_pack_loaded("timetable")
         assert runtime.is_tool_pack_loaded("divination")
-        assert runtime.is_tool_pack_loaded("astrology")
         assert ctrl.snapshot["busy"] is True
         assert ctrl.snapshot["artifactCard"] is None
 

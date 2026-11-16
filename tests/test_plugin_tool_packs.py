@@ -43,19 +43,7 @@ def test_dynamic_pack_loading_and_unloading():
     manager = get_plugin_manager()
     registry = build_core_registry()
 
-    # 1. Astrology Tool Pack
-    assert not manager.is_pack_loaded("astrology", registry)
-    loaded = manager.load_pack("astrology", registry)
-    assert loaded
-    assert manager.is_pack_loaded("astrology", registry)
-    assert "create_natal_chart" in [op.name for op in registry.list_operations()]
-
-    unloaded = manager.unload_pack("astrology", registry)
-    assert unloaded
-    assert not manager.is_pack_loaded("astrology", registry)
-    assert "create_natal_chart" not in [op.name for op in registry.list_operations()]
-
-    # 2. Divination / Tarot Tool Pack
+    # 1. Divination / Tarot Tool Pack
     assert not manager.is_pack_loaded("divination", registry)
     loaded = manager.load_pack("divination", registry)
     assert loaded
@@ -68,7 +56,7 @@ def test_dynamic_pack_loading_and_unloading():
     assert not manager.is_pack_loaded("divination", registry)
     assert "prepare_reading_spread" not in [op.name for op in registry.list_operations()]
 
-    # 3. Timetable Tool Pack
+    # 2. Timetable Tool Pack
     assert not manager.is_pack_loaded("timetable", registry)
     loaded = manager.load_pack("timetable", registry)
     assert loaded

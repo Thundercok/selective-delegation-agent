@@ -79,17 +79,17 @@ def test_early_final_continues_missing_work_and_uses_fresh_frozen_contract(runti
 def test_pending_input_is_a_model_question_then_survives_into_followup(runtime):
     runtime.model_client = Mock()
     runtime.model_client.chat_with_meta.side_effect = [reply(calls=[{'function': {
-        'name': 'create_natal_chart', 'arguments': {}}}]), reply('Bạn sinh ngày nào, lúc mấy giờ và ở đâu?')]
-    result = runtime.run('Lập lá số', max_steps=3)
-    assert result.answer == 'Bạn sinh ngày nào, lúc mấy giờ và ở đâu?'
+        'name': 'translate_text', 'arguments': {}}}]), reply('Bạn muốn dịch đoạn văn nào?')]
+    result = runtime.run('Dịch giúp mình', max_steps=3)
+    assert result.answer == 'Bạn muốn dịch đoạn văn nào?'
     assert result.pending_input_request is not None
     assert result.completion_status == 'needs_input'
     assert result.turn_reference['status'] == 'needs_input'
     pending = projection(runtime.model_client.chat_with_meta.call_args_list[-1].args[0])
     assert pending['view'] == 'finish'
-    assert pending['observed_state']['lifecycle']['pending_input']['operation_name'] == 'create_natal_chart'
-    runtime.model_client.chat_with_meta.side_effect = [reply('Mình còn cần ngày sinh và nơi sinh.')]
-    next_result = runtime.run('9:30', history=[{'role': 'user', 'content': 'Lập lá số'},
+    assert pending['observed_state']['lifecycle']['pending_input']['operation_name'] == 'translate_text'
+    runtime.model_client.chat_with_meta.side_effect = [reply('Mình còn cần đoạn văn cần dịch.')]
+    next_result = runtime.run('sang tiếng Anh', history=[{'role': 'user', 'content': 'Dịch giúp mình'},
         {'role': 'assistant', 'content': result.answer}])
     assert next_result.pending_input_request.id == result.pending_input_request.id
     snapshot = projection(runtime.model_client.chat_with_meta.call_args_list[-1].args[0])

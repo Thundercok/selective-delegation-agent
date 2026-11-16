@@ -76,7 +76,7 @@ def test_accepted_answer_repair_reopens_tools_for_the_unfinished_source_bound_no
 
 def seed_pending(runtime):
     result = runtime.dispatcher.execute_operation(
-        "create_natal_chart", {}, context={"execution_id": "fixture-seed", "turn_id": "fixture-seed-turn"})
+        "translate_text", {}, context={"execution_id": "fixture-seed", "turn_id": "fixture-seed-turn"})
     assert result.status == "needs_input"
     request = runtime.dispatcher.state.pending_input_request
     assert request is not None and runtime.artifact_store.get(request.id) is not None
@@ -93,7 +93,7 @@ def test_explicit_model_dismissal_uses_observed_id_and_retains_unrelated_results
         reply(operation="calculate", args={"expression": "18 * 7"}),
         reply("126"),
     ]
-    result = runtime.run("Bỏ việc lập lá số đi. Tính 18 * 7.", max_steps=5)
+    result = runtime.run("Bỏ việc dịch đi. Tính 18 * 7.", max_steps=5)
     first_actor = runtime.model_client.chat_with_meta.call_args_list[1]
     assert "dismiss_pending_input" in tool_names(first_actor)
     # The ID was available as canonical observed data before the scripted choice.
@@ -109,7 +109,7 @@ def test_explicit_model_dismissal_uses_observed_id_and_retains_unrelated_results
     receipt = next(r for r in result.execution_journal.receipts if r.operation_name == "dismiss_pending_input")
     assert receipt.committed and receipt.operation_args == {"request_id": pending.id}
     assert receipt.operation_result == {"dismissed": True, "request_id": pending.id,
-                                        "operation_name": "create_natal_chart"}
+                                        "operation_name": "translate_text"}
 
 
 def test_unknown_and_cancelled_dismissal_cannot_remove_the_actual_pending_request(runtime):
@@ -130,7 +130,7 @@ def test_unknown_and_cancelled_dismissal_cannot_remove_the_actual_pending_reques
     # Also exercise the dispatcher API itself, rather than only its registered wrapper.
     dismissed = runtime.dispatcher.dismiss_input(pending.id, context={"execution_id": "fixture-valid"})
     assert dismissed == {"dismissed": True, "request_id": pending.id,
-                          "operation_name": "create_natal_chart"}
+                          "operation_name": "translate_text"}
     assert runtime.dispatcher.state.pending_input_request is None
 
 
