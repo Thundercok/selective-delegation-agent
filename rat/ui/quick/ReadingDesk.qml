@@ -378,7 +378,7 @@ ColumnLayout {
             }
             Button {
                 objectName: "readingSynthesizeButton"
-                text: "Soạn bản luận · chờ Agent/model"
+                text: "Soạn bản luận · chưa có"
                 enabled: Boolean((reading.session.cards || []).length)
                 onClicked: reading.host.liveController.synthesizeReadingDraft("")
                 background: Rectangle { radius: 8; color: parent.hovered ? reading.host.selectedSurface : reading.host.utilitySurface; border.color: reading.host.edge }
@@ -386,7 +386,7 @@ ColumnLayout {
             }
         }
         Label {
-            text: "Dữ kiện bài và lá số được giữ trên bàn. Chưa nối Agent/model để diễn giải; thao tác soạn hiện báo chưa khả dụng."
+            text: "Dữ kiện bài và lá số được giữ trên bàn. Chuột chưa biết diễn giải lá số, nên nút soạn tạm thời chưa dùng được."
             color: reading.host.muted; font.pixelSize: 12; wrapMode: Text.Wrap; Layout.fillWidth: true
         }
     }

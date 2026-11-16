@@ -39,7 +39,8 @@ Image {
         "check": '<path d="m5 12.5 4.2 4.2L19 7"/>',
         "external": '<path d="M13.5 4h6.5v6.5 M20 4l-8.5 8.5 M9.5 4.5H6a2 2 0 0 0-2 2v11.5a2 2 0 0 0 2 2h11.5a2 2 0 0 0 2-2v-3.5"/>',
         "stop": '<rect x="6.5" y="6.5" width="11" height="11" rx="2.2" fill="' + color + '" stroke="none"/>',
-        "warning": '<path d="m12 3.5 9.5 16.5h-19z M12 9.5v4.5 M12 17h.01"/>'
+        "warning": '<path d="m12 3.5 9.5 16.5h-19z M12 9.5v4.5 M12 17h.01"/>',
+        "grip": '<path d="M9 6h.01 M15 6h.01 M9 12h.01 M15 12h.01 M9 18h.01 M15 18h.01" stroke-width="3.2"/>'
     })
     source: "data:image/svg+xml," + encodeURIComponent(
         '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">'

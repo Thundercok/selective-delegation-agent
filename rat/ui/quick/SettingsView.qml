@@ -231,7 +231,7 @@ ColumnLayout {
             }
 
             Label {
-                text: "RAT (Selective Delegation Agent) · Phát hành theo giấy phép GNU AGPL-3.0-or-later."
+                text: "RAT (Selective Delegation Agent) · " + (desk.uiBuildLabel || "") + " · Phát hành theo giấy phép GNU AGPL-3.0-or-later."
                 textFormat: Text.PlainText
                 font.pixelSize: 12
                 color: desk.muted

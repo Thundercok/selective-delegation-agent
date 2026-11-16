@@ -245,7 +245,7 @@ Rectangle {
                 placeholderTextColor: desk.muted
                 placeholderText: desk.liveMode ? (
                     desk.liveSnapshot.view === "apps" ? "Tìm ứng dụng…"
-                    : desk.liveSnapshot.view === "reading" ? "Bản nháp của phiên xem · chưa nối soạn luận…"
+                    : desk.liveSnapshot.view === "reading" ? "Hỏi về trải bài · phần diễn giải chưa có…"
                     : desk.liveSnapshot.fileName ? "Hỏi tiếp về tài liệu này…"
                     : (desk.liveSnapshot.activeContext ? (desk.liveSnapshot.activeContext.type === "image" ? "Hỏi hoặc dịch nội dung ảnh này…" : "Hỏi tiếp về tệp đính kèm này…") : "Tìm tệp, mở app hoặc hỏi Chuột…")
                 ) : desk.phase === "idle" ? "Chuột nghe đây. Bạn cần gì?" : "Hỏi tiếp hoặc sửa điều gì đó…"
@@ -409,33 +409,28 @@ Rectangle {
         RowLayout {
             Layout.fillWidth: true
             Label { visible: desk.phase === "idle" && !desk.liveMode; text: "↵ Gửi · ⇧↵ Xuống dòng"; color: desk.muted; font.pixelSize: 12 }
-            Label {
-                objectName: "uiBuildLabel"
+            // The window is frameless: this grip is the only way to move it while no paper is open.
+            Item {
                 visible: desk.liveMode
-                text: desk.uiBuildLabel
-                textFormat: Text.PlainText
-                color: desk.muted
-                font.pixelSize: 11
-                opacity: 0.65
-                topPadding: 4
-                bottomPadding: 4
-                leftPadding: 0
-                rightPadding: 2
-                Accessible.name: "Bản build giao diện " + desk.uiBuildLabel
+                implicitWidth: 18
+                implicitHeight: 22
+                Accessible.role: Accessible.Grip
+                Accessible.name: "Kéo để di chuyển cửa sổ"
+                DeskIcon {
+                    anchors.centerIn: parent
+                    name: "grip"
+                    width: 12
+                    height: 12
+                    opacity: dragHandle.containsMouse ? 1 : 0.6
+                }
                 ToolTip.visible: dragHandle.containsMouse
-                ToolTip.text: "Bản build giao diện · Kéo để di chuyển cửa sổ"
+                ToolTip.text: "Kéo để di chuyển cửa sổ"
                 MouseArea { id: dragHandle; objectName: "dragHandle"; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.OpenHandCursor; onPressed: desk.moveRequested() }
             }
             RowLayout {
                 visible: desk.liveMode
                 Layout.fillWidth: true
                 spacing: 5
-                Label {
-                    text: "·"
-                    color: desk.muted
-                    opacity: 0.65
-                    font.pixelSize: 12
-                }
                 Rectangle {
                     visible: !containsDrag && !desk.liveSnapshot.busy && desk.liveSnapshot.view === "none" && !desk.liveSnapshot.fileName
                     implicitWidth: 6
@@ -475,6 +470,8 @@ Rectangle {
                         : desk.liveSnapshot.view === "reading" ? "Bàn xem · đang chuẩn bị dữ liệu"
                         : desk.liveSnapshot.view === "finder" ? "↑↓ chọn · ↵ mở · Tab đưa vào bàn & hỏi Chuột · Esc đóng"
                         : desk.liveSnapshot.view === "answer" ? (desk.hasLatentFinderHits ? "↵ hỏi tiếp Chuột · Bấm ngăn trên mở tệp" : "↵ hỏi tiếp Chuột")
+                        : (desk.liveSnapshot.view === "none" && !desk.liveSnapshot.fileName)
+                            ? (desk.liveSnapshot.shortcutLabel || "⌥⇧Space") + " gọi Chuột · thả PDF, ảnh vào đây"
                         : "Chuột sẵn sàng"
                     elide: Text.ElideRight
                     color: containsDrag ? desk.accent : desk.muted

@@ -285,7 +285,8 @@ def test_answer_copy_and_source_page_journey(app, tmp_path, width, dark):
         source_title = root.findChild(__import__('PyQt6.QtQuick', fromlist=['QQuickItem']).QQuickItem, 'evidenceSourceTitle')
         assert source_title is not None and 'Source.pdf' in source_title.property('text')
         source_snippet = root.findChild(__import__('PyQt6.QtQuick', fromlist=['QQuickItem']).QQuickItem, 'evidenceSourceSnippet')
-        assert source_snippet is not None and source_snippet.isVisible()
+        # These sources carry no snippet: show no "no snippet" placeholder under a source title.
+        assert source_snippet is not None and not source_snippet.isVisible()
         copy_btn = root.findChild(__import__('PyQt6.QtQuick', fromlist=['QQuickItem']).QQuickItem, 'copyCitationButton')
         assert copy_btn is not None and copy_btn.isVisible()
         open_ext_btn = root.findChild(__import__('PyQt6.QtQuick', fromlist=['QQuickItem']).QQuickItem, 'openExternalPdfButton')
@@ -297,6 +298,7 @@ def test_answer_copy_and_source_page_journey(app, tmp_path, width, dark):
         assert not root.property('contextExpanded')
         click(view, root, 'expandContextButton')
         assert root.property('contextExpanded')
+        assert source_snippet.isVisible()  # the expanded page context still opens
         click(view, root, 'expandContextButton')
         assert not root.property('contextExpanded')
 

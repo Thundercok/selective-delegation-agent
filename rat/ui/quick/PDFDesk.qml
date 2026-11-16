@@ -35,7 +35,6 @@ Rectangle {
     property bool answerQuestionOpen: false
     property bool copied: false
     property bool readyForMotion: false
-    property bool showOnboardingGuide: true
 
     // Mascot poke streak micro-interaction (Step 4.2)
     property int pokeStreak: 0
@@ -583,83 +582,6 @@ Rectangle {
             border.width: 1
             border.color: desk.edge
             z: 0
-        }
-        Rectangle {
-            id: firstLaunchGuide
-            objectName: "firstLaunchGuide"
-            visible: desk.liveMode && !desk.expanded && !desk.hasWorkbench && !desk.liveSnapshot.fileName && desk.liveSnapshot.view === "none" && (desk.editor ? desk.editor.text.length === 0 : true) && desk.showOnboardingGuide
-            anchors.bottom: composer.top
-            anchors.bottomMargin: 14
-            anchors.horizontalCenter: composer.horizontalCenter
-            width: composer.width
-            implicitHeight: guideCol.implicitHeight + 20
-            radius: desk.cardRadius
-            color: desk.utilitySurface
-            border.width: 1
-            border.color: desk.edge
-            z: 2
-            ColumnLayout {
-                id: guideCol
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: 10
-                spacing: 8
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-                    DeskIcon { name: "sparkle"; color: desk.accent; width: 13; height: 13; Layout.preferredWidth: 13; Layout.preferredHeight: 13 }
-                    Label {
-                        text: "3 bước bắt đầu cùng RAT"
-                        font.pixelSize: 12
-                        font.weight: Font.DemiBold
-                        color: desk.accent
-                        Layout.fillWidth: true
-                    }
-                    IconButton {
-                        glyph: "close"
-                        iconSize: 10
-                        implicitWidth: 18
-                        implicitHeight: 18
-                        padding: 3
-                        Accessible.name: "Đóng hướng dẫn"
-                        onClicked: desk.showOnboardingGuide = false
-                    }
-                }
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 8
-
-                    RowLayout {
-                        spacing: 4
-                        Rectangle {
-                            implicitWidth: 16; implicitHeight: 16; radius: 8; color: desk.selectedSurface
-                            Label { anchors.centerIn: parent; text: "1"; font.pixelSize: 10; font.weight: Font.Bold; color: desk.accent }
-                        }
-                        Label { text: (desk.liveSnapshot.shortcutLabel || "⌥⇧Space") + " mở bàn"; font.pixelSize: 11; color: desk.ink }
-                    }
-
-                    RowLayout {
-                        spacing: 4
-                        Rectangle {
-                            implicitWidth: 16; implicitHeight: 16; radius: 8; color: desk.selectedSurface
-                            Label { anchors.centerIn: parent; text: "2"; font.pixelSize: 10; font.weight: Font.Bold; color: desk.accent }
-                        }
-                        Label { text: "Thả PDF vào đây"; font.pixelSize: 11; color: desk.ink }
-                    }
-
-                    RowLayout {
-                        spacing: 4
-                        Rectangle {
-                            implicitWidth: 16; implicitHeight: 16; radius: 8; color: desk.selectedSurface
-                            Label { anchors.centerIn: parent; text: "3"; font.pixelSize: 10; font.weight: Font.Bold; color: desk.accent }
-                        }
-                        Label { text: "Gõ câu hỏi tiếng Việt"; font.pixelSize: 11; color: desk.ink }
-                    }
-                }
-            }
         }
         FoldedNote { id: note; composerX: composer.x; composerY: composer.y; composerWidth: composer.width }
         MascotArea { id: mascotItem; composerX: composer.x; composerY: composer.y }

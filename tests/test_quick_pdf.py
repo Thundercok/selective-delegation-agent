@@ -929,7 +929,7 @@ def test_desk_shortcut_label_follows_the_configured_chord(app, controller, monke
             item = pending.pop()
             texts.append(str(item.property("text") or ""))
             pending.extend(item.childItems())
-        hints = [t for t in texts if t.endswith("mở bàn")]
-        assert hints == ["⌃⇧Space mở bàn"], hints
+        hints = [t for t in texts if "gọi Chuột" in t]
+        assert hints == ["⌃⇧Space gọi Chuột · thả PDF, ảnh vào đây"], hints
     finally:
         view.deleteLater()
