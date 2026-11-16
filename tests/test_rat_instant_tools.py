@@ -50,11 +50,13 @@ def test_fetch_web_summary_mocked():
     </body>
     </html>
     """
-    with patch("urllib.request.urlopen") as mock_urlopen:
-        mock_resp = MagicMock()
-        mock_resp.read.return_value = sample_html.encode("utf-8")
-        mock_urlopen.return_value.__enter__.return_value = mock_resp
-
+    with patch(
+        "socket.getaddrinfo",
+        return_value=[(2, 1, 6, "", ("93.184.216.34", 443))],
+    ), patch(
+        "rat.engine.web_reader._single_hop_httpx",
+        return_value=(200, {"content-type": "text/html"}, sample_html),
+    ):
         res = fetch_web_summary("https://tech-news.vn/article/123")
         assert res["visual_type"] == "web"
         assert res["title"] == "Tin Tức Công Nghệ 2026"

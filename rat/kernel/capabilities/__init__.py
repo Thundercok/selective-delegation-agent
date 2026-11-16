@@ -12,7 +12,7 @@ from rat.kernel.registry import Capability, CapabilityRegistry, OperationDefinit
 
 def build_core_registry(
     db: Optional[Database] = None,
-    enable_web: bool = False,
+    enable_web: bool = True,
 ) -> CapabilityRegistry:
     """
     Build and populate a CapabilityRegistry for the General Reasoning Desktop Shell.
@@ -145,7 +145,7 @@ def build_core_registry(
 def build_default_registry(
     db: Optional[Database] = None,
     compositor: Optional[TimetableCompositor] = None,
-    enable_web: bool = False,
+    enable_web: bool = True,
     active_tool_packs: Optional[Sequence[str]] = None,
 ) -> CapabilityRegistry:
     """

@@ -14,8 +14,8 @@ Các mục ghi `[CẦN ĐIỀN]` chưa có dữ liệu. Không điền bằng s�
 - [x] Giấy phép: toàn bộ RAT theo **AGPL-3.0-or-later** (quyết định 15/11/2026), file `LICENSE` ở gốc repo. Đây là lựa chọn (a) trong `rat/astrology/ephemeris/LICENSE` của Swiss Ephemeris.
   - Hệ quả: không bán được `.app` đóng. Vẫn được thu tiền (bản build sẵn, cài đặt, hỗ trợ), nhưng ai nhận `.app` cũng phải lấy được mã nguồn đúng bản đó, kể cả phần sửa đổi.
   - PyQt6 theo GPL-3.0-only, nên dù không có Swiss Ephemeris, bán `.app` đóng vẫn cần mua giấy phép thương mại PyQt. AGPL-3.0 kết hợp được với GPL-3.0 (điều 13).
-  - Các phụ thuộc còn lại (MIT, BSD, Apache-2.0, LGPL-3.0, MPL-2.0) tương thích. Binary trong `rat/bin/`: `rat-hotkey` và `apple_translate` build từ `tools/rat_hotkey.c` và `tools/apple_translate.swift` của repo nên theo AGPL; `spider` là `spider_cli` 2.51.208 của [spider-rs/spider](https://github.com/spider-rs/spider), MIT.
-- [ ] MIT bắt buộc kèm thông báo bản quyền khi phân phối binary: thêm nguyên văn `LICENSE` của spider-rs vào bundle (chưa có bản local, lấy từ repo gốc).
+  - Các phụ thuộc còn lại (MIT, BSD, Apache-2.0, LGPL-3.0, MPL-2.0) tương thích. Binary trong `rat/bin/` chỉ còn `rat-hotkey` và `apple_translate`, build từ `tools/rat_hotkey.c` và `tools/apple_translate.swift` của repo nên toàn bộ thuộc AGPL; binary `spider` ngoài (`spider_cli`, MIT) và `spider_adapter.py` đã được gỡ bỏ và hợp nhất vào bộ đọc web Python thuần `rat/engine/web_reader.py`.
+- [x] Không còn binary bên thứ ba trong `rat/bin/` (đã gỡ `spider`), không cần kèm thông báo bản quyền MIT riêng cho binary crawler ngoài.
 - [x] Ghi công mô hình dịch (OPUS-MT và Argos, CC-BY-4.0): đã có trong README, `ATTRIBUTION.txt` đi kèm bundle, và thẻ "Giới thiệu & Bản quyền" trong Cài đặt (`SettingsView.qml`).
 - [ ] Kiểm tra giấy phép của model SLM và sprite linh vật.
 

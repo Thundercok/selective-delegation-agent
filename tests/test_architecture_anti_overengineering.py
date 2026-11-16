@@ -39,6 +39,8 @@ FORBIDDEN_PATHS = (
     "docs/design/rat-app-icon-20261028",
     "rat/assets/app_icons",
     "tools/export_rat_app_icons.py",
+    "rat/bin/spider",
+    "rat/crawler/spider_adapter.py",
 )
 
 

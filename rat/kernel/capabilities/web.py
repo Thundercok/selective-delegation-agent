@@ -1,27 +1,24 @@
 """
-rat.kernel.capabilities.web — Public web reading capability via Spider.
+rat.kernel.capabilities.web — Public web reading capability via RAT native web_reader.
 
 Registers:
-- read_web_page: Scrapes a public HTTP(S) URL via the out-of-process Spider adapter
-  and produces a verified, provenance-backed web_page_snapshot artifact.
+- read_web_page: Fetches a public HTTP(S) URL with per-hop SSRF validation via
+  rat.engine.web_reader and produces a verified, provenance-backed web_page_snapshot artifact.
 """
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import urlparse
 
-from rat.crawler.spider_adapter import (
-    SpiderAdapter,
-    SpiderAdapterError,
-    SpiderBinaryNotFoundError,
-    SpiderEmptyContentError,
-    SpiderHTTPError,
-    SpiderParseError,
-    SpiderSecurityGateError,
-    SpiderSSRFBlockedError,
-    SpiderTimeoutError,
-    SpiderVersionMismatchError,
+from rat.engine.web_reader import (
+    WebEmptyContentError,
+    WebHTTPError,
+    WebPageResult,
+    WebReaderError,
+    WebSSRFBlockedError,
+    WebTimeoutError,
+    scrape_web_page,
 )
 from rat.kernel.contracts import Artifact, ArtifactAction
 from rat.kernel.registry import Capability, OperationDefinition
@@ -30,21 +27,16 @@ logger = logging.getLogger("rat.capabilities.web")
 
 
 def create_web_capability(
-    adapter: Optional[SpiderAdapter] = None,
-    enabled: bool = False,
+    reader: Optional[Callable[..., WebPageResult]] = None,
+    enabled: bool = True,
 ) -> Capability:
-    """Create and configure the web capability bundle for RAT.
-
-    NOTE on Network Gate: enabled defaults to False (fail-closed) because
-    the underlying Spider CLI backend lacks per-hop destination IP and redirect
-    enforcement. When False, invoking read_web_page returns an unavailable/security_gated error.
-    """
-    spider_adapter = adapter or SpiderAdapter()
+    """Create and configure the web capability bundle for RAT using rat.engine.web_reader."""
+    page_reader = reader or scrape_web_page
 
     capability = Capability(
         name="web",
         title="Web & Nguồn trực tuyến",
-        description="Đọc nội dung trang web công khai qua Spider crawler và trích xuất bản chụp có nguồn.",
+        description="Đọc nội dung trang web công khai qua bộ đọc web nội bộ và trích xuất bản chụp có nguồn.",
     )
 
     def handle_read_web_page(args: Dict[str, Any], **context) -> Dict[str, Any]:
@@ -54,11 +46,7 @@ def create_web_capability(
             return {
                 "found": False,
                 "read": False,
-                "error": (
-                    "Khả năng duyệt web chưa được kích hoạt: backend Spider CLI hiện tại "
-                    "chưa hỗ trợ kiểm soát địa chỉ IP kết nối và redirect trên từng hop mạng "
-                    "(fail-closed default gate chống SSRF)."
-                ),
+                "error": "Khả năng duyệt web đang bị tắt theo cấu hình.",
                 "url": url,
                 "security_gated": True,
                 "unavailable": True,
@@ -75,59 +63,28 @@ def create_web_capability(
         should_cancel = context.get("should_cancel")
 
         try:
-            result = spider_adapter.scrape_page(
+            result = page_reader(
                 url=url,
                 max_chars=max_chars,
                 should_cancel=should_cancel,
             )
-        except SpiderSecurityGateError as exc:
-            return {
-                "found": False,
-                "error": str(exc),
-                "url": url,
-                "security_gated": True,
-                "unavailable": True,
-            }
-        except SpiderBinaryNotFoundError as exc:
-            logger.warning(f"Spider binary not found: {exc}")
-            return {
-                "found": False,
-                "error": str(exc),
-                "url": url,
-                "dependency_missing": True,
-            }
-        except SpiderVersionMismatchError as exc:
-            logger.warning(f"Spider version mismatch: {exc}")
-            return {
-                "found": False,
-                "error": str(exc),
-                "url": url,
-                "version_mismatch": True,
-            }
-        except SpiderSSRFBlockedError as exc:
+        except WebSSRFBlockedError as exc:
             return {
                 "found": False,
                 "error": str(exc),
                 "url": url,
                 "security_blocked": True,
             }
-        except SpiderParseError as exc:
-            return {
-                "found": False,
-                "error": f"Lỗi cấu trúc dữ liệu từ crawler: {exc}",
-                "url": url,
-                "schema_error": True,
-            }
-        except (SpiderTimeoutError, SpiderHTTPError, SpiderEmptyContentError) as exc:
+        except (WebTimeoutError, WebHTTPError, WebEmptyContentError) as exc:
             return {
                 "found": False,
                 "error": str(exc),
                 "url": url,
             }
-        except SpiderAdapterError as exc:
+        except WebReaderError as exc:
             return {
                 "found": False,
-                "error": f"Lỗi thu thập dữ liệu qua Spider: {exc}",
+                "error": f"Lỗi khi đọc trang web: {exc}",
                 "url": url,
             }
         except Exception as exc:
@@ -152,7 +109,7 @@ def create_web_capability(
             "fetched_at": result.fetched_at,
             "engine": result.engine,
             "engine_version": result.engine_version,
-            "title": f"Trang web · {domain}",
+            "title": result.title or f"Trang web · {domain}",
             "read": True,
             "found": True,
         }
@@ -178,9 +135,9 @@ def create_web_capability(
     read_op = OperationDefinition(
         name="read_web_page",
         description=(
-            "Fetch and read the content of a public web page using the Spider engine. "
-            "Returns text/markdown content and saves a verified snapshot artifact with source hash and URL. "
-            "Only supports public HTTP and HTTPS URLs; local/private addresses are blocked."
+            "Fetch and read the content of a public web page using RAT's native web reader. "
+            "Returns extracted text and saves a verified snapshot artifact with source hash and URL. "
+            "Only supports public HTTP and HTTPS URLs; local/private addresses and unsafe redirects are blocked."
         ),
         parameters={
             "type": "object",

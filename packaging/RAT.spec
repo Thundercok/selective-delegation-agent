@@ -21,7 +21,7 @@ datas = [
 datas += collect_data_files("mlx")          # mlx.metallib: Metal kernels, loaded at runtime
 datas += collect_data_files("mlx_lm")
 
-# Native helpers (hotkey, Apple translate, spider crawler) stay executables in rat/bin.
+# Native helpers (hotkey, Apple translate) stay executables in rat/bin.
 binaries = [(str(p), "rat/bin") for p in sorted((ROOT / "rat/bin").iterdir()) if p.is_file()]
 binaries += collect_dynamic_libs("mlx")
 

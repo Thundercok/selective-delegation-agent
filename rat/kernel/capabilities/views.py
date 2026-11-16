@@ -152,7 +152,7 @@ def view_web_page_snapshot(artifact, context) -> ViewSpec:
     blocks = [
         ViewBlock('summary', {'title': title, 'text': text}),
         ViewBlock('details', {'title': 'Nội dung trích xuất', 'content': content}),
-        ViewBlock('details', {'title': 'Nguồn & Bản chụp', 'content': f"URL: {url}\nBản chụp SHA256: {data.get('content_hash', '')}\nEngine: {data.get('engine', 'spider')} {data.get('engine_version', '')}"}),
+        ViewBlock('details', {'title': 'Nguồn & Bản chụp', 'content': f"URL: {url}\nBản chụp SHA256: {data.get('content_hash', '')}\nEngine: {data.get('engine', 'rat.web_reader')} {data.get('engine_version', '')}"}),
     ]
     return ViewSpec(1, artifact.id, artifact.revision, title=title, blocks=blocks)
 
