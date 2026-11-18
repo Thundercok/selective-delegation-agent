@@ -201,6 +201,7 @@ def cmd_ask_file(file_path, model_path, *, db_path=None, questions=None,
         database = Database(db_path or config.db_path, read_only=True)
         validate_path(current_path)
         with AssistantRuntime(db=database, compositor=TimetableCompositor([]),
+                active_tool_packs=[],
                 document_model_path=model_path,
                 document_max_context_tokens=max_context_tokens) as runtime:
             with console.status('Đang nạp model local…'):

@@ -200,6 +200,7 @@ def main(
         assistant_runtime = AssistantRuntime(
             model_client=SLMEngine(model=args.local_assistant_model) if args.local_assistant_model else None,
             discover_tools=args.discover_tools,
+            active_tool_packs=[],
         )
     doc_target = args.document or args.document_pos
 

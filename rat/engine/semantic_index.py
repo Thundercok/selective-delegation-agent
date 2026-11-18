@@ -39,9 +39,25 @@ STOPWORDS = {'tim', 'file', 've', 'cai', 'cua', 'cho', 'toi', 'minh', 'mot', 'nh
              'o', 'trong', 'bai', 'the', 'a', 'an', 'of', 'about', 'find'}
 
 
+def _split_identifiers(text):
+    """Split underscores, camelCase, and letter-digit boundaries while preserving words."""
+    out = []
+    prev = ''
+    for ch in text.replace('_', ' '):
+        if prev and (
+            (prev.islower() and ch.isupper())
+            or (prev.isalpha() and ch.isdigit())
+            or (prev.isdigit() and ch.isalpha())
+        ):
+            out.append(' ')
+        out.append(ch)
+        prev = ch
+    return ' '.join(''.join(out).split())
+
+
 def word_set(text):
     from rat.engine.finder_intent import _fold_ascii
-    return set(re.findall(r'\w+', _fold_ascii(text)))
+    return set(re.findall(r'[a-z0-9]+', _fold_ascii(_split_identifiers(text)).lower()))
 
 
 def find_embedding_directory():
@@ -93,7 +109,7 @@ def office_text(path, ext, limit):
 def document_chunks(path, text):
     p = Path(path)
     # The name chunk lets "báo cáo nhóm 4" match a file whose body is empty or scanned.
-    chunks = [f'{p.stem.replace("_", " ")} · {p.parent.name}']
+    chunks = [f'{_split_identifiers(p.stem)} · {_split_identifiers(p.parent.name)}']
     body = ' '.join(re.sub(r'---\s*Page \d+[^-\n]*---', ' ', text).split())
     for start in range(0, min(len(body), CHUNK_CHARS * CHUNKS_PER_FILE), CHUNK_CHARS):
         piece = body[start:start + CHUNK_CHARS].strip()
@@ -229,7 +245,7 @@ class SemanticIndex:
             else:
                 scores = raw_sim
 
-            order = np.argsort(-scores)[:limit]
+            order = np.argsort(-scores)
             best_score = float(scores[order[0]])
             raw_best = float(np.max(raw_sim))
             # Keep a band near the best match, but ensure high semantic matches are not
@@ -241,13 +257,16 @@ class SemanticIndex:
                 if scores[i] < score_cutoff and raw_sim[i] < raw_cutoff:
                     continue
                 row = rows[i]
-                # One best chunk per file: rank fusion would otherwise reward long files.
+                # One best chunk per file: rank fusion would otherwise reward long files,
+                # and deduplicating before stopping at `limit` avoids starving file diversity.
                 if row['file_path'] in seen:
                     continue
                 seen.add(row['file_path'])
                 results.append({**row, 'file_name': Path(row['file_path']).name,
                                 'file_ext': Path(row['file_path']).suffix.lower(),
                                 'similarity_score': float(scores[i])})
+                if len(results) >= limit:
+                    break
             return results
         finally:
             with self._lock:

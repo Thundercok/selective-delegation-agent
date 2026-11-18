@@ -97,7 +97,7 @@ class SystemTrayManager:
         menu.addSeparator()
 
         # Optional Domain Verticals (Dynamic Tool Packs)
-        action_natal = QAction("🔮 Gói mở rộng: Bàn xem Chiêm tinh & Tarot...", menu)
+        action_natal = QAction("🔮 Gói mở rộng: Bàn xem Tarot...", menu)
         if self.on_open_natal:
             action_natal.triggered.connect(self.on_open_natal)
         menu.addAction(action_natal)

@@ -28,6 +28,6 @@ class DivinationToolPack(ToolPack):
     def get_ui_cards(self) -> List[Dict[str, Any]]:
         return [{
             "id": "reading_desk",
-            "name": "Bàn xem Chiêm tinh & Tarot",
+            "name": "Bàn xem Tarot",
             "qml": "rat/ui/quick/ReadingDesk.qml",
         }]

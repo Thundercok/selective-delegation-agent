@@ -1,4 +1,6 @@
 """Chuột's document search finds files by meaning and can read what it found."""
+from pathlib import Path
+
 import numpy as np
 import pytest
 
@@ -119,3 +121,39 @@ def test_cancellation_still_cancels(tmp_path):
 def test_limit_counts_meaning_and_keyword_results_together(world):
     _, _, operations = world
     assert len(search(operations, "tiền cọc phòng trọ", limit=1)) == 1
+
+
+def test_word_set_splits_snakecase_camelcase_and_digits():
+    from rat.engine.semantic_index import word_set
+    assert {"mau", "bai", "lam", "nhom"} <= word_set("MAU_BAI_LAM_NHOM")
+    assert {"learning", "summary", "report"} <= word_set("LearningSummaryReport")
+    assert {"09", "exam", "2"} <= word_set("09_Exam2")
+    assert word_set("viết tiếng Việt có dấu") == {"viet", "tieng", "co", "dau"}
+
+
+def test_search_deduplicates_files_before_applying_limit(tmp_path):
+    class ConstantEmbedder:
+        def embed_texts(self, texts, batch_size=8):
+            vecs = np.zeros((len(texts), 384), dtype=np.float32)
+            vecs[:, 0] = 1.0
+            return vecs
+
+        def embed_query(self, query):
+            vec = np.zeros(384, dtype=np.float32)
+            vec[0] = 1.0
+            return vec
+
+        def evict(self):
+            pass
+
+    root = tmp_path / "docs"
+    root.mkdir()
+    (root / "long_doc.txt").write_text(("alpha beta " * 120).strip(), encoding="utf-8")
+    (root / "second_doc.txt").write_text("gamma delta", encoding="utf-8")
+    index = SemanticIndex(tmp_path / "semantic.sqlite", embedder=ConstantEmbedder())
+    assert index.start([root])
+    index._thread.join(timeout=10)
+
+    hits = index.search("gamma", limit=2, floor=0.0)
+    assert len(hits) == 2
+    assert {Path(h["file_path"]).name for h in hits} == {"long_doc.txt", "second_doc.txt"}

@@ -230,8 +230,8 @@ def view_labels(args) -> Result:
 # ---- registered operations (RAT's existing actions) -------------------------------
 
 def view_tool(args) -> Result:
-    from rat.kernel.capabilities import build_default_registry
-    registry = build_default_registry()
+    from rat.kernel.capabilities import build_core_registry, build_default_registry
+    registry = build_core_registry()
     if args.action == "list" or not args.operation:
         rows = [[cap.name, op.name, op.description.split(". ")[0][:120]]
                 for cap in registry.list_capabilities() for op in cap.operations.values()]
@@ -240,6 +240,8 @@ def view_tool(args) -> Result:
                                   "text": f"{len(rows)} thao tác. Chạy: rat tool run <tên> --args '{{...}}'"}),
             ViewBlock("table", {"headers": ["Nhóm", "Thao tác", "Mô tả"], "rows": rows})]), {
             "operations": [{"capability": r[0], "operation": r[1], "description": r[2]} for r in rows]}
+    if not registry.has_operation(args.operation):
+        registry = build_default_registry()
     from rat.kernel.contracts import ArtifactStore
     from rat.kernel.dispatcher import ActionDispatcher
     from rat.kernel.view_spec import StandardViewProvider
