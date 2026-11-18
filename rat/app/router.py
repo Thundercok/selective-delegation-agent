@@ -79,6 +79,9 @@ def route_request(args: Sequence[str] | None = None) -> None:
         elif cmd in ("runs", "papers", "label", "labels", "tool"):
             from rat.cli_views import main as view_main
             raise SystemExit(view_main(list(args)))
+        elif cmd == "mcp":
+            from rat.mcp_server import main as mcp_main
+            raise SystemExit(mcp_main(list(args[1:])))
         elif cmd == "ui":
             # CLI-to-UI: open the desk on a view command's ViewSpec, e.g. `rat ui runs`.
             import shlex

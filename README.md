@@ -175,6 +175,16 @@ rat labels report <run> --json    # Cohen's κ and the confusion matrix
 rat tool list --json              # RAT's registered operations
 rat tool run <operation> --args '{...}' --json
 rat ui <command>                  # open the same command as a view in the desk
+rat mcp                           # run RAT's core tools as an MCP stdio server
+```
+
+For MCP clients (Claude Code, Cursor, Native), point stdio transport to:
+
+```json
+{
+  "command": "uv",
+  "args": ["run", "--directory", "/path/to/selective-delegation-agent", "python", "main.py", "mcp"]
+}
 ```
 
 The run monitor only reads `audit/*/run.log` and the process table. The research repo does not call or import
