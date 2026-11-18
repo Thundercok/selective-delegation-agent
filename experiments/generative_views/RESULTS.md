@@ -157,3 +157,75 @@ question wording, not facts. The cheap next test is a generator prompt change: a
 that request the complete condition ("phát biểu nào mô tả đầy đủ ...") and for distractors that
 are false in every case. Then relabel 30 questions and compare 12/30. A second 4B pass is not
 the fix.
+
+# Run 5: one-correct-answer prompt (2026-11-19)
+
+`QUIZ_SYSTEM_PROMPT` in `rat/engine/quiz_generator.py` adds rules: every option is about the
+subject the question names, distractors are false by the page, and no true special case or true
+identity is used as a distractor. Otherwise the same as run 4: `run5.py`, page 4, seeds 1-3,
+10 questions each. Labels in `quiz_labels_rat5.json`, under the same strict reading (Claude only,
+who also wrote the prompt, so they are not blind).
+
+Thresholds, fixed before running, against run 4's 12/30 bad:
+- GO: at most 4/30 bad (ambiguous or wrong), wrong keys at most 1, at least 27 grounded questions,
+  and a mean of at most 250 s per quiz (run 4: about 190 s).
+- KILL for prompt-only: 9/30 or more bad. Next would be a per-distractor field that says why it is false.
+- In between: keep the prompt, say it is not enough, and test the per-distractor field.
+
+## Run 5 results
+
+| | Run 4 (old prompt) | Run 5 (new prompt) |
+|---|---|---|
+| Wrong key | 0 | 0 |
+| Bad (ambiguous or ill-posed) | 12 | 11 |
+| Grounded | 30 | 30 |
+| Seconds per quiz | about 190 | 212, 136, 135 |
+
+Verdict against the pre-set thresholds: KILL for prompt-only. The 4B model reads the rules and
+still offers "cả hai đầu vào bằng 1" against XNOR and "các đầu vào đều bằng 1" against OR. The
+bad questions are the same ones in every seed: Q1 (the table header, no gate named) 3/3, OR 3/3,
+XNOR 3/3, NAND 2/3. So the failure is the question type ("gate X outputs 1 when ..."), not chance.
+The prompt was reverted, so its rules are quoted here:
+
+> Câu hỏi nói rõ đối tượng ... Mỗi phương án nhiễu phải SAI theo tài liệu ... Không dùng một
+> trường hợp riêng vẫn đúng làm phương án nhiễu ... Không dùng đẳng thức, định luật hay tính
+> chất đúng làm phương án nhiễu.
+
+Run 3 already showed that a second 4B pass shares this reading, and a per-distractor "why it is
+false" field asks the same model for the same judgement, so it is not the next test either.
+
+# Run 6: "đầy đủ nhất" and a key-quote check, no model change (2026-11-19)
+
+Two changes in `rat/engine/quiz_generator.py`, measured on the 60 labelled questions of runs 4-5
+without calling the model again:
+
+- Each quiz carries `QUIZ_INSTRUCTION`, "Chọn phát biểu đúng và đầy đủ nhất.", shown on the card
+  and in saved notes. Under that reading a true special case is a wrong answer, and the 17
+  sufficient-condition questions become right.
+- `key_supported_by_quote` drops an item whose key shares fewer than 2 content words with its
+  quote (page_match STOPWORDS removed, digits ignored).
+
+Thresholds, fixed before applying the check: GO if it drops all 6 Q1s and keeps at least 53 of the other 54.
+
+| | Count of 60 |
+|---|---|
+| Dropped, all Q1 (table header) | 6 |
+| Kept, right under the strict reading | 37 |
+| Kept, right only under "đầy đủ nhất" | 17 |
+| Kept, wrong key | 0 |
+
+GO. Limits: one page of one course, labels by Claude only. The gap is 1 shared word for the
+dropped and 3+ for the kept, so 2 is not a tuned edge, but a key made only of numbers ("8 ô")
+is now always dropped. A student who picks a true special case still loses the point; the
+instruction says why.
+
+## Run 6, live check and one change after it
+
+A live quiz on page 4 (count 5, no seed) kept 3 of 6 items: the check also dropped two good
+questions whose key is a value ("AND khi đầu vào 1, 1 ra bao nhiêu?" -> "1", NAND -> "0"). A
+value key cannot have a second true option among other values, so it now passes when every
+number in it appears in the quote. The quiz also asks the model for one spare item.
+
+Re-measured on the 60: 5 of 6 Q1s dropped, all 54 others kept. That misses the pre-set GO
+(all 6 dropped) by one: run 4 seed 1 Q1, key "00, 01, 10, 11", now passes. The trade is
+deliberate: one ill-posed question of 60 against losing every value question.

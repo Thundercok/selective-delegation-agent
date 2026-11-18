@@ -35,6 +35,8 @@ def _cited(sources: Iterable[Any]) -> dict | None:
 
 def _quiz_lines(quiz: dict) -> list[str]:
     lines = [f"## {quiz.get('title') or 'Trắc nghiệm'}", ""]
+    if quiz.get("instruction"):
+        lines += [f"_{quiz['instruction']}_", ""]
     for n, item in enumerate(quiz.get("questions") or [], 1):
         lines.append(f"{n}. {item.get('question', '').strip()}")
         for i, option in enumerate(item.get("options") or []):

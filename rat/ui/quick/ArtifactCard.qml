@@ -614,6 +614,16 @@ Rectangle {
                 }
             }
 
+            Label {
+                objectName: "quizInstruction"
+                visible: text.length > 0
+                text: cardRoot.cardData ? (cardRoot.cardData.instruction || "") : ""
+                font.pixelSize: 12
+                color: desk.muted
+                wrapMode: Text.Wrap
+                Layout.fillWidth: true
+            }
+
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 8

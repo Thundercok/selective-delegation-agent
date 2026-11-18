@@ -13,6 +13,18 @@ import os
 import random
 import re
 from typing import Any, Dict, List
+import unicodedata
+
+from rat.engine.page_match import STOPWORDS
+
+# A special case can also be true ("XNOR ra 1 khi cả hai đầu vào bằng 1"); a 4B model cannot be
+# prompted out of offering one (experiments/generative_views/RESULTS.md, run 5), so the quiz
+# says which option counts: the one that states the whole rule.
+QUIZ_INSTRUCTION = "Chọn phát biểu đúng và đầy đủ nhất."
+
+# A key in words must share at least this many content words with its quote. Runs 4-5 (60
+# questions): the ill-posed ones, whose quote was a table header, shared 0-1; the rest shared 3+.
+MIN_KEY_QUOTE_WORDS = 2
 
 
 QUIZ_GENERATION_SCHEMA: Dict[str, Any] = {
@@ -74,6 +86,21 @@ def is_quote_grounded(quote: str, source_text: str) -> bool:
     return (hits / len(words)) >= 0.6
 
 
+def _content_words(text: str) -> set:
+    lowered = unicodedata.normalize("NFC", str(text or "")).lower()
+    return {w for w in re.findall(r"[^\W\d_]+", lowered) if len(w) >= 2 and w not in STOPWORDS}
+
+
+def key_supported_by_quote(correct: str, quote: str) -> bool:
+    """Whether the quote states the answer, not only sits on the same page."""
+    key_words = _content_words(correct)
+    if not key_words:
+        # A value such as "0" for NAND(1, 1): its options are other values, so only one can be true.
+        numbers = re.findall(r"\d+", str(correct or ""))
+        return bool(numbers) and all(re.search(rf"(?<!\d){n}(?!\d)", str(quote or "")) for n in numbers)
+    return len(key_words & _content_words(quote)) >= MIN_KEY_QUOTE_WORDS
+
+
 def compile_quiz_items(
     raw_items: List[Dict[str, Any]],
     source_text: str = "",
@@ -100,6 +127,9 @@ def compile_quiz_items(
                 distractors.append(clean_d)
         if len(distractors) < 3:
             continue
+        quote = str(item.get("a_quote") or item.get("quote") or "").strip()
+        if quote and not key_supported_by_quote(correct, quote):
+            continue
 
         choices_raw = list(distractors[:3])
         rng = random.Random(f"{idx}:{question}")
@@ -112,7 +142,6 @@ def compile_quiz_items(
         choices_raw.insert(correct_index, correct)
         options = [f"{'ABCD'[i]}. {c}" for i, c in enumerate(choices_raw)]
 
-        quote = str(item.get("a_quote") or item.get("quote") or "").strip()
         grounded = is_quote_grounded(quote or correct, source_text)
         try:
             item_page = int(item.get("source_page") or source_page or 0)
@@ -244,6 +273,9 @@ def generate_quiz_from_text(
             client = None
 
     if client is not None and clean_text:
+        # One spare: the model writes a question on the table header in every run so far, and
+        # key_supported_by_quote drops it; max_count below still caps the quiz at n_questions.
+        n_asked = n_questions + 1
         system_msg = (
             "Bạn là trợ giảng soạn câu hỏi trắc nghiệm CHỈ dựa trên đoạn tài liệu được cung cấp. "
             "Với mỗi câu, trước tiên hãy trích nguyên văn một câu/đoạn từ tài liệu vào `a_quote`, "
@@ -252,7 +284,7 @@ def generate_quiz_from_text(
         )
         user_msg = (
             f"Trang {source_page or 1}:\n{clean_text[:7000]}\n\n"
-            f"Hãy tạo đúng {n_questions} câu trắc nghiệm tiếng Việt bằng JSON đúng schema."
+            f"Hãy tạo đúng {n_asked} câu trắc nghiệm tiếng Việt bằng JSON đúng schema."
         )
         try:
             # Measured on qwen3:4b-instruct: ~490 output tokens and 64-90 s for five questions
@@ -261,7 +293,7 @@ def generate_quiz_from_text(
                 [{"role": "system", "content": system_msg}, {"role": "user", "content": user_msg}],
                 [],
                 response_format=QUIZ_GENERATION_SCHEMA,
-                max_tokens=400 * n_questions,
+                max_tokens=400 * n_asked,
                 timeout=QUIZ_MODEL_TIMEOUT_S,
             )
             model_error = (meta or {}).get("error") or ""
@@ -289,6 +321,7 @@ def generate_quiz_from_text(
     return {
         "visual_type": "quiz",
         "title": title,
+        "instruction": QUIZ_INSTRUCTION,
         "source_page": source_page,
         "questions": questions,
         "question_count": len(questions),

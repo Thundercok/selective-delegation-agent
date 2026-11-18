@@ -185,6 +185,7 @@ def _extract_artifact_card(response: AgentResponse) -> Optional[Dict[str, Any]]:
             card = {
                 "visual_type": "quiz",
                 "title": getattr(art, "title", None) or payload.get("title", "Trắc nghiệm ôn tập"),
+                "instruction": payload.get("instruction", ""),
                 "source_page": payload.get("source_page", 0),
                 "questions": list(payload.get("questions", []) or []),
             }
