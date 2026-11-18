@@ -10,10 +10,9 @@ from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, co
 ROOT = Path(SPECPATH).parent
 
 datas = [
-    (str(ROOT / "LICENSE"), "."),                # AGPL: every copy of the app carries its license
+    (str(ROOT / "LICENSE"), "."),                # every copy of the app carries its license
     (str(ROOT / "rat/ui/quick"), "rat/ui/quick"),
     (str(ROOT / "rat/assets"), "rat/assets"),
-    (str(ROOT / "rat/astrology/ephemeris"), "rat/astrology/ephemeris"),
     (str(ROOT / "rat/engine/snapshot.schema.json"), "rat/engine"),
     (str(ROOT / "tools/rat_translation_models.lock.json"), "tools"),
     (str(ROOT / "tools/rat_embedding_model.lock.json"), "tools"),
@@ -31,9 +30,6 @@ hiddenimports = (
     + collect_submodules("mlx_lm.models")   # model classes are imported by name from config.json
 )
 
-# pyswisseph (Swiss Ephemeris, AGPL or paid Professional License) stays in: the
-# natal chart ships (decided 2026-11-15). Pick the license model before giving
-# this bundle to anyone; see docs/product_plan.md section 1.
 EXCLUDES = [
     "tkinter",
     "pytest",

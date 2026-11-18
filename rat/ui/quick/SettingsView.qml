@@ -231,7 +231,7 @@ ColumnLayout {
             }
 
             Label {
-                text: "RAT (Selective Delegation Agent) · " + (desk.uiBuildLabel || "") + " · Phát hành theo giấy phép GNU AGPL-3.0-or-later."
+                text: "RAT (Selective Delegation Agent) · " + (desk.uiBuildLabel || "") + " · Mã nguồn phát hành theo giấy phép MIT."
                 textFormat: Text.PlainText
                 font.pixelSize: 12
                 color: desk.muted
@@ -240,7 +240,7 @@ ColumnLayout {
             }
 
             Label {
-                text: "Mô hình dịch ngoại tuyến: OPUS-MT của Jörg Tiedemann và Santhosh Thottingal (2020), đóng gói bởi Argos Open Technologies, giấy phép CC-BY-4.0, không chỉnh sửa. Lịch thiên văn: Swiss Ephemeris của Astrodienst AG (AGPL-3.0)."
+                text: "Mô hình dịch ngoại tuyến: OPUS-MT của Jörg Tiedemann và Santhosh Thottingal (2020), đóng gói bởi Argos Open Technologies, giấy phép CC-BY-4.0, không chỉnh sửa."
                 textFormat: Text.PlainText
                 font.pixelSize: 12
                 color: desk.muted

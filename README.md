@@ -219,6 +219,6 @@ uv run pytest tests/test_rat_verification.py
 
 Copyright (C) 2026 Thundercok.
 
-RAT is free software under the [GNU Affero General Public License v3.0 or later](LICENSE). Anyone who receives a build of RAT, or uses a modified version of it over a network, is entitled to the corresponding source code.
+The source code of RAT is released under the [MIT License](LICENSE).
 
-The natal chart uses [Swiss Ephemeris](https://www.astro.com/swisseph/) through `pyswisseph`, which is distributed under the AGPL; see `rat/astrology/ephemeris/LICENSE`. The offline translation models are OPUS-MT / Argos models under CC-BY-4.0; see `rat/assets/translation/ATTRIBUTION.txt`.
+Packaged desktop builds bundle [PyQt6](https://www.riverbankcomputing.com/software/pyqt/), which is licensed under the GPL v3; a distributed `.app` bundle is therefore subject to the GPL v3 as a whole. The offline translation models are OPUS-MT / Argos models under CC-BY-4.0; see `rat/assets/translation/ATTRIBUTION.txt`.

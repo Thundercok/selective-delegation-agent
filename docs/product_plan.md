@@ -15,6 +15,9 @@ Các mục ghi `[CẦN ĐIỀN]` chưa có dữ liệu. Không điền bằng s�
 - [x] Không còn binary bên thứ ba trong `rat/bin/` (đã gỡ `spider`), không cần kèm thông báo bản quyền MIT riêng cho binary crawler ngoài.
 - [x] Ghi công mô hình dịch (OPUS-MT và Argos, CC-BY-4.0): đã có trong README, `ATTRIBUTION.txt` đi kèm bundle, và thẻ "Giới thiệu & Bản quyền" trong Cài đặt (`SettingsView.qml`).
 - [ ] Kiểm tra giấy phép của model SLM và sprite linh vật.
+- [x] Đổi giấy phép mã nguồn từ AGPL-3.0-or-later sang MIT (18/11/2026): `LICENSE`, `pyproject.toml`, README, `SettingsView.qml`. Bản build `.app` vẫn chịu GPL-3.0 do đóng gói PyQt6.
+- [ ] (Để sau) Chuyển PyQt6 → PySide6 (LGPL). **Chỉ làm khi** muốn bán bản đóng hoặc lên Mac App Store. Khối lượng đo 18/11/2026: 56 file import PyQt6, 56 `pyqtSignal`, 112 `pyqtSlot`, 6 `pyqtProperty`; rủi ro chính ở QML (notify của property, đăng ký kiểu). Ước tính 1–2 ngày gồm test và kiểm tra giao diện.
+- [x] Dọn phần lá số còn sót: `packaging/RAT.spec` đã bỏ đường dẫn `rat/astrology/ephemeris` và chú thích Swiss Ephemeris; `SettingsView.qml` đã bỏ ghi công Swiss Ephemeris; các test bị kẹt vì gọi `astrology`/`create_natal_chart` (`test_plugin_tool_packs.py`, `test_multistep_flow.py`, `test_rat_magic_recovery.py`, `test_rat_runtime_context.py`) đã được cập nhật và chạy pass.
 
 ## 2. Định vị
 
