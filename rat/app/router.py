@@ -82,6 +82,9 @@ def route_request(args: Sequence[str] | None = None) -> None:
         elif cmd == "mcp":
             from rat.mcp_server import main as mcp_main
             raise SystemExit(mcp_main(list(args[1:])))
+        elif cmd == "native-sync":
+            from rat.native_bridge import main as native_sync_main
+            raise SystemExit(native_sync_main(list(args[1:])))
         elif cmd == "ui":
             # CLI-to-UI: open the desk on a view command's ViewSpec, e.g. `rat ui runs`.
             import shlex

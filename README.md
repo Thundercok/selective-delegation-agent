@@ -176,6 +176,7 @@ rat tool list --json              # RAT's registered operations
 rat tool run <operation> --args '{...}' --json
 rat ui <command>                  # open the same command as a view in the desk
 rat mcp                           # run RAT's core tools as an MCP stdio server
+rat native-sync "<query>"         # sync local hits & stale-revision supersedes links into Native (withnative/native)
 ```
 
 For MCP clients (Claude Code, Cursor, Native), point stdio transport to:
