@@ -11,7 +11,7 @@ from rat.kernel.registry import Capability, OperationDefinition
 from rat.engine.snippet_translation import capture_text
 from rat.engine.verification import VerificationReport, VerificationStatus
 from rat.kernel.input_context import IMAGE_ORIGINS, MAX_IMAGE_BYTES
-from rat.engine.ocr_paragraphs import POLICY, apply_line_joins
+from document_intake.ocr_paragraphs import POLICY, apply_line_joins
 
 
 class CaptureVerifier:

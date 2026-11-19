@@ -21,7 +21,7 @@ import certifi
 import httpx
 from rat.kernel.input_context import ImageInput, MAX_IMAGE_BYTES, MAX_IMAGE_PIXELS
 from rat.engine.translation_glossary import protect, restore
-from rat.engine.pdf_text import clean_copied_text
+from document_intake.pdf_text import clean_copied_text
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ def capture_text(mode, should_cancel=lambda: False, clipboard_text=None, image_b
             from document_intake.vision import recognize_tokens
             logger.info('screen_capture_completed; ocr_started')
             tokens = recognize_tokens(str(image))
-            from rat.engine.ocr_paragraphs import prepare_ocr_text
+            from document_intake.ocr_paragraphs import prepare_ocr_text
             text, raw, normalization = prepare_ocr_text(tokens)
             ocr_details = {'ocr_raw_text': raw, 'ocr_normalization': normalization}
             if not text.strip():
@@ -156,7 +156,7 @@ def capture_text(mode, should_cancel=lambda: False, clipboard_text=None, image_b
         input_provenance = image_input.provenance()
         from document_intake.vision import recognize_tokens
         logger.info('image_ocr_started input_id=%s', image_input.input_id)
-        from rat.engine.ocr_paragraphs import prepare_ocr_text
+        from document_intake.ocr_paragraphs import prepare_ocr_text
         text, raw, normalization = prepare_ocr_text(recognize_tokens(image_bytes))
         ocr_details = {'ocr_raw_text': raw, 'ocr_normalization': normalization}
         if not text.strip():
@@ -185,7 +185,7 @@ def capture_text(mode, should_cancel=lambda: False, clipboard_text=None, image_b
             text = pdf_data.get('full_text', '')[:2500]
         elif suffix in ('.png', '.jpg', '.jpeg', '.tiff', '.webp'):
             from document_intake.vision import recognize_tokens
-            from rat.engine.ocr_paragraphs import prepare_ocr_text
+            from document_intake.ocr_paragraphs import prepare_ocr_text
             text, raw, normalization = prepare_ocr_text(recognize_tokens(str(p)))
             ocr_details = {'ocr_raw_text': raw[:2500], 'ocr_normalization': normalization}
             text = text[:2500]

@@ -18,6 +18,7 @@ dependencies = [
     "numpy>=2.0.0",
     "fastembed>=0.8.0",
     "pypdf>=5.0.0",
+    "verified-document-intake @ git+https://github.com/Thundercok/verified-document-intake.git",
     "python-docx>=1.1.0",
     "python-pptx>=1.0.0",
     "openpyxl>=3.1.0",

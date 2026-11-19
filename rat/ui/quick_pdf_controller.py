@@ -183,7 +183,7 @@ def _extract_artifact_card(response: AgentResponse) -> Optional[Dict[str, Any]]:
 def extract_image_ocr(image_input: ImageInput, path: Path) -> str:
     """Extract readable text from an attached or dropped image via local OCR."""
     from document_intake.vision import recognize_tokens
-    from rat.engine.ocr_paragraphs import prepare_ocr_text
+    from document_intake.ocr_paragraphs import prepare_ocr_text
 
     tokens = recognize_tokens(image_input.content or str(path))
     text, _raw, _norm = prepare_ocr_text(tokens)
