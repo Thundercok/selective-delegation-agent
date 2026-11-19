@@ -113,7 +113,7 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
                     return ModelDecision(
                         f"Đang tìm trang nói về '{search_query}'…",
                         tool_name="expand_document_context",
-                        tool_args={"file_path": path_text, "query": search_query, "max_chars": MAX_READ_CHARS},
+                        tool_args={"file_path": path_text, "query": goal, "max_chars": MAX_READ_CHARS},
                     )
         else:
             data = {}

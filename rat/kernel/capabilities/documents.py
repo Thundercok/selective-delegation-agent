@@ -234,7 +234,13 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                 start_idx = max(0, match_pos - lead)
                 end_idx = min(total_chars, match_pos + len(target_excerpt.strip()) + (max_chars - lead))
                 expanded_snippet = content[start_idx:end_idx].strip()
-            elif query_term and (window := page_window(content, query_terms(query_term), max_chars)):
+            elif query_term and (window := page_window(
+                content,
+                query_terms(query_term),
+                max_chars,
+                question=query_term,
+                slm_fallback=bool(args.get("slm_fallback", True)),
+            )):
                 # Page-marked text: start on the page where the question's rarest terms are.
                 start_idx = window["start"]
                 page_num = window["page"]

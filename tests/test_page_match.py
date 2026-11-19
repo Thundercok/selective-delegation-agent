@@ -25,6 +25,46 @@ def test_rare_term_beats_table_of_contents():
     assert best_page(TEXT, query_terms("Bìa Karnaugh dùng để làm gì?"))[0] == 4
 
 
+def test_heading_intro_beats_later_page_that_repeats_terms_more_often():
+    deck = "\n".join([
+        "--- Page 9 ---\nCS2100 Combinational Circuits 9\nGATE-LEVEL DESIGN: HALF ADDER\n• Example: Build a Half Adder.",
+        "--- Page 15 ---\nCS2100 Combinational Circuits 15\nGATE-LEVEL DESIGN: FULL ADDER\n• Full Adder made from two Half Adders.\nHalf Adder 1 and Half Adder 2 and Half Adder carry.",
+    ])
+    assert best_page(deck, query_terms("Thiết kế half adder nằm ở slide nào?"))[0] == 9
+
+
+def test_hyphenated_compound_terms_and_two_digit_numbers_are_preserved():
+    assert "i-format" in query_terms("I-format chia 32 bit của lệnh thành những trường nào?")
+    assert "32" in query_terms("I-format chia 32 bit của lệnh thành những trường nào?")
+    assert "j-k" in query_terms("J-K flip-flop chuyển sang trạng thái toggle khi nào?")
+
+
+def test_slm_fallback_translates_paraphrase_only_when_lexical_match_is_absent(monkeypatch):
+    import rat.engine.page_match as pm
+
+    deck = "\n".join([
+        "--- Page 1 ---\nTitle Slide",
+        "--- Page 8 ---\nMEMORY: WORD ALIGNMENT\n• Words are aligned in memory if they begin at a byte address.",
+        "--- Page 12 ---\nInstruction Fetch",
+    ])
+    calls = []
+
+    def fake_translate(q, model_client=None):
+        calls.append(q)
+        return ["word", "alignment", "byte", "address"]
+
+    monkeypatch.setattr(pm, "translate_query_terms_slm", fake_translate)
+
+    # Strong lexical match does NOT call SLM
+    assert best_page(deck, query_terms("Word alignment nằm ở slide nào?"), question="Word alignment nằm ở slide nào?", slm_fallback=True)[0] == 8
+    assert calls == []
+
+    # Paraphrase with no shared technical terms triggers SLM keyword translation
+    q_vi = "Quy định một từ phải bắt đầu ở địa chỉ chia hết cho số cái của nó nằm ở slide nào?"
+    assert best_page(deck, query_terms(q_vi), question=q_vi, slm_fallback=True)[0] == 8
+    assert calls == [q_vi]
+
+
 def test_no_markers_or_no_hits_give_no_page():
     assert best_page("plain text without markers", ["xor"]) is None
     assert best_page(TEXT, ["flipflop"]) is None
