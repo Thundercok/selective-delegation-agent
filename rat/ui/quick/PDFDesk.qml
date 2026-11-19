@@ -190,7 +190,7 @@ Rectangle {
     readonly property bool roomyActive: (spaciousWorkbench || currentWorkspaceMode === "multi") && expanded && hasWorkbench
     readonly property real composerHeight: composer.height
     property real maxPaperHeight: 520
-    readonly property real preferredWindowHeight: 48 + composer.height + Math.max(116, expanded && hasWorkbench ? resultPaper.height - 22 : 0)
+    readonly property real preferredWindowHeight: 48 + composer.height + Math.max(116, expanded && hasWorkbench ? resultPaper.desiredHeight - 22 : 0)
     readonly property bool hasWorkbench: liveMode ? Boolean(liveSnapshot.hasWorkbench) : phase === "working" || phase === "result"
     readonly property bool hasAnswerPreview: liveMode && liveSnapshot.view === "answer"
     readonly property bool hasReadingPreview: liveMode && liveSnapshot.view === "reading"

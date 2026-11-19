@@ -13,11 +13,12 @@ import QtQuick.Layouts
             property alias finderResults: finderResults
             property alias settingsView: settingsView
             property alias appsResultsLoader: appsResultsLoader
+            readonly property real desiredHeight: desk.liveMode ? Math.min(resultContents.implicitHeight + 80, desk.maxPaperHeight) : Math.min(resultContents.implicitHeight + 38, composer.y + 22 - 70)
             visible: desk.expanded && desk.hasWorkbench
             x: (desk.isSideBySidePdfActive ? (sidePdfPane.width + 12) : (composer.x + unit.paperOffset)) + desk.paperDragX
             y: (composer.y + 22 - height) + desk.paperDragY
             width: desk.isSideBySidePdfActive ? (unit.width - (sidePdfPane.width + 12)) : ((composer.x + composer.width) - (composer.x + unit.paperOffset))
-            height: desk.liveMode ? Math.min(resultContents.implicitHeight + 80, desk.maxPaperHeight) : Math.min(resultContents.implicitHeight + 38, composer.y + 22 - 70)
+            height: desk.liveMode ? Math.min(desiredHeight, Math.max(120, composer.y + 22 - 8)) : desiredHeight
             radius: 16
             color: desk.paperColor
             border.color: desk.edge
