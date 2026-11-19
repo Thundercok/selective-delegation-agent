@@ -1,7 +1,7 @@
 # Selective Delegation Agent
 
 <p align="center">
-  <strong>Local-first macOS assistant and document intelligence desk with selective delegation, contextual reasoning, and on-device privacy (powered by the RAT execution engine).</strong>
+  <strong>A standalone local-first macOS assistant and document intelligence toolkit, with a desktop interface, headless CLI, and optional MCP integration.</strong>
 </p>
 
 <p align="center">
@@ -15,11 +15,11 @@
 
 ## 1. Overview
 
-**Selective Delegation Agent** is an on-device personal assistant and document intelligence desk designed for macOS. Instead of indiscriminately routing all interactions and documents to third-party cloud endpoints, the agent executes search indexing, document parsing, and reasoning locally on Apple Silicon, only delegating tasks when bounded verifiers and operational constraints require it.
+**Selective Delegation Agent (RAT)** is an independently runnable local-first assistant and document intelligence toolkit for macOS. Its desktop shell, CLI, indexing pipeline, retrieval engine, and capability contracts are part of this repository; it does not require another project to function. Local processing is the default for supported workflows. Optional provider-backed features must be configured and invoked explicitly.
 
 The platform operates across two complementary environments:
 - **Resident Desktop Shell (RAT)**: A background tray and hotkey-driven interface built on PyQt6 / Qt Quick for instant searching, PDF inspection, and application control.
-- **Headless CLI & Kernel**: A modular command-line suite and reasoning kernel for automated indexing, offline Q&A, and diff reviews.
+- **Headless CLI & Kernel**: A modular command-line suite and capability registry for indexing, local Q&A, diagnostics, and code review.
 
 ---
 
@@ -92,7 +92,19 @@ RAT Runtime Architecture
 
 ---
 
-## 5. Getting Started
+## 5. Standalone Use & Integration Boundary
+
+RAT is a standalone application, not a wrapper around the other repositories in this GitHub profile. It can be installed and used on its own through the desktop UI or CLI. Its capability registry and MCP server provide optional integration points for external clients.
+
+- **Standalone mode:** run the desktop application or CLI directly from this repository.
+- **Agent mode:** use the JSON CLI contract or connect an MCP-compatible client to the stdio server.
+- **Extension mode:** external projects may expose their own tools through documented contracts/adapters. They should remain independently installable and should not need to import RAT internals just to provide their core functionality.
+
+RAT does not automatically install, download, or enable every independent project. Each integration has its own dependencies, permissions, and setup.
+
+---
+
+## 6. Getting Started
 
 ### Prerequisites
 - **macOS** (Optimized for Apple Silicon: M1 / M2 / M3 / M4)
@@ -112,7 +124,7 @@ uv sync
 
 ---
 
-## 6. Usage
+## 7. Usage
 
 If using `uv`, you can prefix commands with `uv run` (or activate `.venv` with `source .venv/bin/activate`).
 
@@ -137,25 +149,25 @@ uv run python main.py index
 uv run python main.py search "báo cáo tài chính quý 3"
 
 # Query local SLM about an indexed document
-python3 main.py ask "contract_2026.pdf" "What are the payment terms?"
+uv run python main.py ask "contract_2026.pdf" "What are the payment terms?"
 
 # Offline chat with a specific file using local MLX model
-python3 main.py ask-file /path/to/doc.pdf --model-path /path/to/mlx-model
+uv run python main.py ask-file /path/to/doc.pdf --model-path /path/to/mlx-model
 
 # Detect duplicate files and document revision trees
-python3 main.py dedup
+uv run python main.py dedup
 
 # Multi-lens automated code review (local diff or GitHub PR)
-python3 main.py review
-python3 main.py review 5 --repo owner/repo
+uv run python main.py review
+uv run python main.py review 5 --repo owner/repo
 
 # Check indexing and SLM engine status
-python3 main.py status
+uv run python main.py status
 ```
 
 ### Dùng từ agent
 
-People and agents such as Claude Code call the same commands (`rat` = `python3 main.py`). With `--json`, each command prints exactly one JSON object to stdout:
+People and agents such as Claude Code can call the same CLI. In examples below, `rat` is shorthand for `uv run python main.py` from the repository root; it is not a separately installed executable by default. With `--json`, supported commands print one JSON object to stdout:
 `{"schema": "rat.cli/1", "command", "argv", "ok", "exit_code", "data", "view"}`. Agents parse
 `data`. `view` is the ViewSpec used for display; logs go to stderr. Nothing asks for input interactively.
 
@@ -188,16 +200,13 @@ For MCP clients (Claude Code, Cursor, Native), point stdio transport to:
 }
 ```
 
-The run monitor only reads `audit/*/run.log` and the process table. The research repo does not call or import
-RAT (not even in `run.sh`), so a run behaves the same whether RAT is open or not. Only `pause`/`resume` act on a
-run, and only when someone calls them. The older commands above (`search`, `ask-file`, …) are for people;
-agents should use `rat tool run`.
+The run monitor only reads `audit/*/run.log` and the process table. The monitored research workflow is intentionally decoupled from RAT: it does not import RAT, so its execution does not depend on the desktop assistant being open. Only explicit `pause`/`resume` commands act on a run. The human-oriented commands (`search`, `ask-file`, and others) remain available; agents should prefer the structured `rat tool run` interface.
 
 ---
 
-## 7. Testing & Reliability
+## 8. Testing & Reliability
 
-The test suite covers unit logic, contract schemas, and isolated diagnostic states:
+The test suite covers unit logic, contract schemas, and isolated diagnostic states. Run from the repository root:
 
 ```bash
 # Run task memory and capability tests
@@ -209,15 +218,16 @@ uv run pytest tests/test_rat_verification.py
 
 ---
 
-## 8. Current Scope & Known Limitations
+## 9. Current Scope & Known Limitations
 
 - **Platform Specifics**: Resident background integration and hotkeys currently target macOS. Linux and Windows run primarily in headless / CLI mode.
-- **Model Hardware Bounds**: Local MLX inference speed depends on unified memory bandwidth; 16GB+ RAM is recommended for 7B+ parameter models.
+- **Model Hardware Bounds**: MLX inference is available on supported Apple Silicon systems. Performance and feasible model size depend on unified memory; 16GB+ is a practical starting point for smaller quantized models, not a guarantee for every 7B+ workload.
+- **Optional Cloud Features**: Any configured external provider has its own data handling terms. Review the provider and the specific command before sending document excerpts or other content.
 - **Active Refactoring**: Work is underway to further decouple `rat/main.py` bootstrap routing from the `ResidentApplication` lifecycle.
 
 ---
 
-## 9. Roadmap
+## 10. Roadmap
 
 - [ ] Complete profile configuration to eliminate hardcoded user preferences in CLI.
 - [ ] Decouple resident background watcher lifecycle from UI presentation.
@@ -226,7 +236,7 @@ uv run pytest tests/test_rat_verification.py
 
 ---
 
-## 10. License
+## 11. License
 
 Copyright (C) 2026 Thundercok.
 
