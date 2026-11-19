@@ -21,6 +21,10 @@ def bind_desk_window(view):
 
     def fit_content():
         screen = view.screen().availableGeometry()
+        if not root.property('roomyActive'):
+            safe_paper_max = min(520, max(220, screen.height() - root.property('composerHeight') - 82))
+            if root.property('maxPaperHeight') != safe_paper_max:
+                root.setProperty('maxPaperHeight', safe_paper_max)
         wanted = min(round(root.property("preferredWindowHeight")), screen.height() - 32)
         bottom = view.y() + view.height()
         y = max(screen.top() + 16, min(bottom - wanted, screen.bottom() - wanted - 16))
