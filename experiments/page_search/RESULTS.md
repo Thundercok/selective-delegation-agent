@@ -322,3 +322,39 @@ Ba điểm làm giảm độ tin của bản này:
 3. `holdout2_sua3` đã dùng cho bản của họ, nên **không còn bộ thẩm định sạch nào**. Mọi thay đổi tiếp theo cần bộ mới, và nên do một người chưa thấy slide viết, ví dụ sinh viên trong buổi quan sát.
 
 Chi phí trên đường hỏi thật chưa đo. Mỗi câu hỏi không khớp chữ cụ thể sẽ thêm một lần gọi model trước khi trả lời. Như vậy `answer_selected_document` không còn là "đúng một lần gọi".
+
+## Thời gian chờ thêm của `slm_fallback` trên đường hỏi (ghi trước khi đo, 19/11/2026)
+
+Mã đo: `page_window(content, query_terms(q), 3000, question=q, slm_fallback=…)`. Đây đúng là lời gọi mà `expand_document_context` thực hiện khi `answer_selected_document` đọc lại một tài liệu bị cắt. Lần gọi model để trả lời giống nhau ở cả hai cách, nên không tính.
+
+Cách đo:
+- **Thời gian thêm** = thời gian khi bật trừ thời gian khi tắt, tính riêng từng câu.
+- Bộ nhớ đệm từ khoá được xoá trước mỗi câu.
+- Model đã nạp sẵn, vì ngay sau đó lần gọi trả lời cũng dùng `qwen3:4b-instruct`.
+- Chữ của file được trích trước, không tính vào thời gian.
+- Dùng 20 câu của bộ chỉnh. Phép đo này không chấm độ đúng, nên không cần bộ thẩm định.
+
+| Kết quả | Quyết định |
+|---|---|
+| Trung vị thời gian thêm không quá 3 s **và** p90 không quá 6 s | GO: giữ `slm_fallback` bật mặc định |
+| Trung vị trên 6 s | KILL: tắt mặc định |
+| Ở giữa | Giữ bật, nhưng hiện "Đang tìm trang…" trong lúc chờ |
+
+Dự đoán (GIẢ THUYẾT): trung vị dưới 1 s, vì một lần gọi ở Sửa 3 lần 2 mất 0,45 s. Các câu `term` gần như không tốn thêm, vì `has_specific_lexical_match` không gọi model cho chúng.
+
+### Kết quả (`out_time_fallback.txt`, `time_fallback.py`)
+
+Phiên bản đo: `page_match.py` `088dfc714d95…`, `page_keywords.py` `fa2b01c64563…`.
+
+| | Trung vị | p90 | Lâu nhất |
+|---|---|---|---|
+| Thời gian thêm, cả 20 câu | **0,78 s** | **3,23 s** | 3,64 s |
+| Chỉ 10 câu có gọi model | 2,29 s | 3,27 s | 3,64 s |
+
+**So với ngưỡng: GO.** Giữ `slm_fallback` bật mặc định.
+
+Đọc kỹ hơn:
+- **Trung vị cả 20 câu thấp là nhờ 10 câu `term` không gọi model**, chỉ tốn thêm dưới 0,02 s. Người hỏi bằng lời của mình sẽ chờ thêm khoảng 1,5-3,6 s.
+- **Mỗi lần gọi ở đây chậm hơn nhiều so với 0,45 s đo ở Sửa 3 lần 2**, dù cùng prompt và cùng model. Chưa rõ vì sao. Có thể máy đang sạc ở 20% pin nên chạy chậm lại, hoặc Ollama đang tải thêm việc khác (GIẢ THUYẾT).
+- **Ở p05 và p09, model được gọi nhưng vẫn không ra trang nào.** Người dùng chờ thêm khoảng 3,5 s mà không được gì. Hai câu này rơi về cách tìm chuỗi cũ trong `documents.py`.
+- **Không có câu `term` nào đổi trang khi bật.**
