@@ -167,7 +167,8 @@ def build_default_registry(
         if env_packs is not None:
             packs_to_load = [p.strip() for p in env_packs.split(",") if p.strip() and p.strip() not in ("none", "core")]
         else:
-            packs_to_load = ["divination", "timetable"]
+            from rat.plugins import get_plugin_manager
+            packs_to_load = [m.id for m in get_plugin_manager().list_manifests()]
 
     if packs_to_load:
         from rat.plugins import get_plugin_manager

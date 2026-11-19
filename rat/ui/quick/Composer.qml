@@ -355,7 +355,7 @@ Rectangle {
             QuietButton {
                 id: sendControl
                 objectName: "sendButton"
-                enabled: !desk.hasReadingPreview
+                enabled: !desk.hasPluginPreview
                 text: ""
                 iconName: desk.phase === "receiving" || (desk.liveMode && desk.liveSnapshot.busy) ? "stop" : (desk.liveMode && desk.liveSnapshot.view === "apps" ? "enter" : "arrow-up")
                 iconSize: 16
@@ -467,7 +467,7 @@ Rectangle {
                         : desk.liveSnapshot.indexStatus ? desk.liveSnapshot.indexStatus
                         : (desk.composerKeyHints && desk.composerKeyHints.length > 0) ? ""
                         : (desk.liveSnapshot.busy && !desk.expanded) ? desk.liveSnapshot.status
-                        : desk.liveSnapshot.view === "reading" ? "Bàn xem · đang chuẩn bị dữ liệu"
+                        : desk.liveSnapshot.view === "plugin" ? ((desk.liveSnapshot.activePluginView || {}).name || "Gói mở rộng đang hoạt động")
                         : desk.liveSnapshot.view === "finder" ? "↑↓ chọn · ↵ mở · Tab đưa vào bàn & hỏi Chuột · Esc đóng"
                         : desk.liveSnapshot.view === "answer" ? (desk.hasLatentFinderHits ? "↵ hỏi tiếp Chuột · Bấm ngăn trên mở tệp" : "↵ hỏi tiếp Chuột")
                         : (desk.liveSnapshot.view === "none" && !desk.liveSnapshot.fileName)
@@ -491,10 +491,10 @@ Rectangle {
                 bottomPadding: 0
                 implicitWidth: 30
                 implicitHeight: 30
-                Accessible.name: desk.liveSnapshot.view === "reading" ? "Mở hồ sơ lá số JSON" : ((desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi PDF hoặc ảnh" : "Chọn PDF hoặc ảnh")
+                Accessible.name: (desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi PDF hoặc ảnh" : "Chọn PDF hoặc ảnh"
                 ToolTip.visible: hovered
-                ToolTip.text: desk.liveSnapshot.view === "reading" ? "Mở hoặc thả hồ sơ lá số JSON" : ((desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi hoặc kéo thả PDF / ảnh khác" : "Chọn hoặc kéo thả PDF / ảnh")
-                onClicked: { if (desk.liveSnapshot.view === "reading") desk.openReadingProfileDialog(); else desk.openPdfDialog() }
+                ToolTip.text: (desk.liveSnapshot.fileName || desk.liveSnapshot.activeContext) ? "Đổi hoặc kéo thả PDF / ảnh khác" : "Chọn hoặc kéo thả PDF / ảnh"
+                onClicked: desk.openPdfDialog()
             }
             QuietButton {
                 objectName: "closeDesk"
@@ -566,8 +566,10 @@ Rectangle {
                         return
                     }
                 }
-                if (editor.text.trim().toLowerCase() === "/reading") {
-                    desk.liveController.openReadingDesk()
+                var slashCmd = editor.text.trim().toLowerCase()
+                var pluginCmds = desk.liveSnapshot.pluginSlashCommands || ({})
+                if (pluginCmds[slashCmd] && pluginCmds[slashCmd].view_id) {
+                    desk.liveController.openPluginView(pluginCmds[slashCmd].view_id)
                     editor.text = ""
                     editor.forceActiveFocus()
                     return

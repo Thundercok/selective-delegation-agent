@@ -6,7 +6,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 
 class ToolPackState(str, Enum):
@@ -31,7 +31,7 @@ class ToolPackManifest:
 
 
 class ToolPack(ABC):
-    """Abstract base class for dynamic domain plugins / tool packs."""
+    """Abstract base class for built-in and external domain plugins / tool packs."""
 
     manifest: ToolPackManifest
 
@@ -45,8 +45,34 @@ class ToolPack(ABC):
         return {}
 
     def get_ui_cards(self) -> List[Dict[str, Any]]:
-        """Return optional QtQuick desk card specifications contributed by this pack."""
+        """Return optional QtQuick desk view or artifact card specs contributed by this pack.
+
+        Each dict may declare:
+            - ``id``: stable identifier (e.g. ``"reading_desk"``)
+            - ``name``: display label for menus
+            - ``qml``: absolute filesystem path or ``file://`` URL to a QML component
+            - ``kind``: ``"view"`` (full desk view, default) or ``"artifact_card"``
+            - ``visual_types``: list of ``visual_type`` strings handled (for ``"artifact_card"``)
+        """
         return []
+
+    def get_routing_keywords(self) -> Tuple[str, ...]:
+        """Return lowercase trigger keywords used for lazy pack auto-loading."""
+        return ()
+
+    def get_slash_commands(self) -> Dict[str, str]:
+        """Return mapping of slash command (e.g. ``'/reading'``) -> view ``id``."""
+        return {}
+
+    def get_instant_handlers(
+        self,
+    ) -> List[Callable[[str], Optional[Tuple[Dict[str, Any], str]]]]:
+        """Return instant query handlers returning ``(artifact_card_dict, answer_text)`` or ``None``."""
+        return []
+
+    def create_ui_coordinator(self, controller: Any) -> Optional[Any]:
+        """Return an optional UI coordinator instance bound to ``controller`` for this pack."""
+        return None
 
     def on_loaded(self, registry: Any) -> None:
         """Lifecycle hook invoked immediately after capabilities are registered."""

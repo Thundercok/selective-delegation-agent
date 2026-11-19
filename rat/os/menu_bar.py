@@ -48,7 +48,7 @@ class SystemTrayManager:
         on_open_settings: Optional[Callable[[], None]] = None,
         on_open_schedule: Optional[Callable[[], None]] = None,
         on_open_widget: Optional[Callable[[], None]] = None,
-        on_open_natal: Optional[Callable[[], None]] = None,
+        on_open_plugin_view: Optional[Callable[[str], None]] = None,
         on_quit: Optional[Callable[[], None]] = None,
     ) -> None:
         self.on_open_spotlight = on_open_spotlight
@@ -56,7 +56,7 @@ class SystemTrayManager:
         self.on_open_settings = on_open_settings
         self.on_open_schedule = on_open_schedule
         self.on_open_widget = on_open_widget
-        self.on_open_natal = on_open_natal
+        self.on_open_plugin_view = on_open_plugin_view
         self.on_quit = on_quit
         self.tray_icon = NativeStatusItem()
         self.db = Database(config.db_path)
@@ -96,11 +96,15 @@ class SystemTrayManager:
 
         menu.addSeparator()
 
-        # Optional Domain Verticals (Dynamic Tool Packs)
-        action_natal = QAction("🔮 Gói mở rộng: Bàn xem Tarot...", menu)
-        if self.on_open_natal:
-            action_natal.triggered.connect(self.on_open_natal)
-        menu.addAction(action_natal)
+        # Optional Domain Verticals (Dynamically discovered external & built-in Tool Packs)
+        from rat.plugins import get_plugin_manager
+        for view_spec in get_plugin_manager().get_ui_views():
+            view_id = view_spec.get("id", "")
+            view_name = view_spec.get("name") or f"Gói mở rộng: {view_id}"
+            action_plugin = QAction(view_name, menu)
+            if self.on_open_plugin_view and view_id:
+                action_plugin.triggered.connect(lambda _checked=False, vid=view_id: self.on_open_plugin_view(vid))
+            menu.addAction(action_plugin)
 
         if self.on_open_schedule:
             action_schedule = QAction("🍵 Gói mở rộng: Ghép Lịch & Khung Giờ...", menu)

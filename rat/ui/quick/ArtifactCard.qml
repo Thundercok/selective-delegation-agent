@@ -9,8 +9,6 @@ Rectangle {
 
     Accessible.role: Accessible.Grouping
     Accessible.name: {
-        if (visualType === "iching") return "Quẻ Kinh Dịch: " + (cardData ? (cardData.hexagram_name || "") : "")
-        if (visualType === "natal") return "Lá số Chiêm tinh: " + (cardData ? (cardData.chart_title || "") : "")
         if (visualType === "timetable") return "Lịch học và thời khóa biểu"
         if (visualType === "web_preview") return "Xem trước trang web: " + (cardData ? (cardData.title || "") : "")
         return "Thẻ thông tin trực quan"
@@ -30,223 +28,20 @@ Rectangle {
         anchors.margins: 14
         spacing: 12
 
-        // --- 1. KINH DỊCH (I CHING) ---
-        ColumnLayout {
-            visible: cardRoot.visualType === "iching"
+        // --- EXTERNAL PLUGIN ARTIFACT CARDS (loaded dynamically by visual_type) ---
+        Loader {
+            id: pluginArtifactCardLoader
+            readonly property string pluginQmlUrl: (desk && desk.liveSnapshot && desk.liveSnapshot.pluginArtifactCards)
+                ? (desk.liveSnapshot.pluginArtifactCards[cardRoot.visualType] || "")
+                : ""
+            active: pluginQmlUrl !== ""
+            visible: active
+            source: pluginQmlUrl
             Layout.fillWidth: true
-            spacing: 10
-
-            // Header Tag
-            RowLayout {
-                spacing: 8
-                Badge {
-                    text: "🔮 QUẺ KINH DỊCH"
-                    textColor: desk.accent
-                    fontWeight: Font.DemiBold
-                    color: Qt.rgba(desk.accent.r, desk.accent.g, desk.accent.b, 0.15)
-                }
-                Label {
-                    text: cardRoot.cardData ? (cardRoot.cardData.question || "") : ""
-                    font.pixelSize: 12
-                    color: desk.muted
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                }
-            }
-
-            // Hexagram Visual + Description Row
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 16
-
-                // 6 Yin/Yang Lines (Drawn from Line 6 down to Line 1)
-                Rectangle {
-                    implicitWidth: 120
-                    implicitHeight: 88
-                    radius: 8
-                    color: desk.inputColor
-                    border.width: 1
-                    border.color: desk.edge
-
-                    ColumnLayout {
-                        anchors.centerIn: parent
-                        spacing: 5
-                        Repeater {
-                            // lines array is 0..5 (line 1 is index 0, line 6 is index 5).
-                            // Display top to bottom: index 5 down to 0.
-                            model: 6
-                            Item {
-                                readonly property int lineNum: 6 - index // 6, 5, 4, 3, 2, 1
-                                readonly property int lineIdx: lineNum - 1
-                                readonly property var rawLines: cardRoot.cardData && cardRoot.cardData.lines ? cardRoot.cardData.lines : [1,1,1,1,1,1]
-                                readonly property int isYang: lineIdx < rawLines.length ? rawLines[lineIdx] : 1
-                                readonly property var changingList: cardRoot.cardData && cardRoot.cardData.changing_lines ? cardRoot.cardData.changing_lines : []
-                                readonly property bool isChanging: changingList.indexOf(lineNum) !== -1
-
-                                implicitWidth: 92
-                                implicitHeight: 7
-
-                                RowLayout {
-                                    anchors.centerIn: parent
-                                    spacing: 8
-                                    visible: isYang === 0 // Yin (2 broken bars)
-                                    Rectangle {
-                                        width: 40; height: 6; radius: 3
-                                        color: isChanging ? desk.warningInk : desk.accent
-                                    }
-                                    Rectangle {
-                                        width: 40; height: 6; radius: 3
-                                        color: isChanging ? desk.warningInk : desk.accent
-                                    }
-                                }
-                                Rectangle {
-                                    anchors.centerIn: parent
-                                    visible: isYang === 1 // Yang (1 solid bar)
-                                    width: 88; height: 6; radius: 3
-                                    color: isChanging ? desk.warningInk : desk.accent
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Hexagram Details
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 4
-
-                    Label {
-                        text: cardRoot.cardData ? (cardRoot.cardData.hexagram_name || "") : ""
-                        font.pixelSize: 18
-                        font.weight: Font.DemiBold
-                        color: desk.ink
-                    }
-                    Label {
-                        text: cardRoot.cardData ? ("Thượng: " + (cardRoot.cardData.upper_trigram || "") + " · Hạ: " + (cardRoot.cardData.lower_trigram || "")) : ""
-                        font.pixelSize: 12
-                        color: desk.muted
-                    }
-                    Label {
-                        text: cardRoot.cardData ? (cardRoot.cardData.meaning || "") : ""
-                        font.pixelSize: 12
-                        color: desk.ink
-                        wrapMode: Text.Wrap
-                        Layout.fillWidth: true
-                    }
-                }
-            }
-
-            // Chuột's Advice Pill
-            Rectangle {
-                visible: Boolean(cardRoot.cardData && cardRoot.cardData.advice)
-                Layout.fillWidth: true
-                radius: 8
-                color: desk.inputColor
-                border.width: 1
-                border.color: desk.edge
-                implicitHeight: adviceText.implicitHeight + 14
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.margins: 8
-                    spacing: 8
-                    Label { text: "💡"; font.pixelSize: 14 }
-                    Label {
-                        id: adviceText
-                        text: cardRoot.cardData ? (cardRoot.cardData.advice || "") : ""
-                        font.pixelSize: 12
-                        color: desk.ink
-                        wrapMode: Text.Wrap
-                        Layout.fillWidth: true
-                    }
-                }
-            }
-        }
-
-        // --- 2. LENORMAND ORACLE (3 CARDS) ---
-        ColumnLayout {
-            visible: cardRoot.visualType === "lenormand"
-            Layout.fillWidth: true
-            spacing: 10
-
-            // Header Tag
-            RowLayout {
-                spacing: 8
-                Badge {
-                    text: "🃏 BÀI LENORMAND"
-                    textColor: desk.accent
-                    fontWeight: Font.DemiBold
-                    color: Qt.rgba(desk.accent.r, desk.accent.g, desk.accent.b, 0.15)
-                }
-                Label {
-                    text: cardRoot.cardData ? (cardRoot.cardData.question || "Trải bài 3 lá") : ""
-                    font.pixelSize: 12
-                    color: desk.muted
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                }
-            }
-
-            // 3 Card Spread Row
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
-
-                Repeater {
-                    model: cardRoot.cardData && cardRoot.cardData.cards ? cardRoot.cardData.cards : []
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredWidth: 1
-                        implicitHeight: 124
-                        radius: 8
-                        color: desk.inputColor
-                        border.width: 1
-                        border.color: desk.edge
-
-                        ColumnLayout {
-                            anchors.fill: parent
-                            anchors.margins: 8
-                            spacing: 3
-
-                            // Slot Label (Past/Present/Future)
-                            Label {
-                                text: (modelData.slot || "").toUpperCase()
-                                font.pixelSize: 11
-                                font.weight: Font.DemiBold
-                                color: desk.muted
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-
-                            // Card Emoji Icon
-                            Label {
-                                text: modelData.icon || "🎴"
-                                font.pixelSize: 24
-                                Layout.alignment: Qt.AlignHCenter
-                            }
-
-                            // Card Name
-                            Label {
-                                text: modelData.name || ""
-                                font.pixelSize: 12
-                                font.weight: Font.DemiBold
-                                color: desk.ink
-                                elide: Text.ElideRight
-                                Layout.alignment: Qt.AlignHCenter
-                            }
-
-                            // Meaning
-                            Label {
-                                text: modelData.meaning || ""
-                                font.pixelSize: 11
-                                color: desk.muted
-                                wrapMode: Text.Wrap
-                                elide: Text.ElideRight
-                                maximumLineCount: 2
-                                Layout.fillWidth: true
-                            }
-                        }
-                    }
+            onLoaded: {
+                if (item) {
+                    if (item.hasOwnProperty("host")) item.host = desk
+                    if (item.hasOwnProperty("cardData")) item.cardData = Qt.binding(function() { return cardRoot.cardData })
                 }
             }
         }

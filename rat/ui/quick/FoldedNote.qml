@@ -45,7 +45,7 @@ Button {
                 Layout.fillWidth: true
                 text: desk.hasFinderPreview
                     ? ("Gợi ý: " + (desk.allFinderHits[0].title || "Tìm kiếm"))
-                    : desk.hasReadingPreview ? "Bàn xem · " + ((desk.liveSnapshot.readingSession || {}).cards || []).length + " lá"
+                    : desk.hasPluginPreview ? ((desk.liveSnapshot.activePluginView || {}).name || "Gói mở rộng")
                     : desk.hasAnswerPreview ? desk.previewBody : desk.liveMode && desk.liveSnapshot.busy ? desk.liveSnapshot.status : desk.liveMode && desk.liveSnapshot.errorCode ? "Xem thông báo" : desk.hasPagePreview ? desk.pagePreviewTitle : desk.phase === "working" ? "Xem tiến trình" : "Xem kết quả"
                 textFormat: Text.PlainText
                 color: desk.hasAnswerPreview || desk.hasFinderPreview ? desk.ink : desk.accent
@@ -58,7 +58,7 @@ Button {
             DeskIcon { name: "chevron-up"; color: desk.accent; Layout.preferredWidth: 14; Layout.preferredHeight: 14; Layout.alignment: Qt.AlignTop }
         }
         RowLayout {
-            visible: desk.hasAnswerPreview || desk.hasPagePreview || desk.hasFinderPreview || desk.hasReadingPreview || desk.noticeVisible
+            visible: desk.hasAnswerPreview || desk.hasPagePreview || desk.hasFinderPreview || desk.hasPluginPreview || desk.noticeVisible
             Layout.fillWidth: true
             spacing: 5
             Rectangle { visible: desk.noticeVisible; implicitWidth: 5; implicitHeight: 5; radius: 3; color: desk.accent }
@@ -67,7 +67,7 @@ Button {
                 Layout.fillWidth: true
                 text: desk.hasFinderPreview
                     ? ((desk.allFinderHits[0].kind === "application" ? "Ứng dụng" : "Tệp") + " · " + (desk.allFinderHits[0].display_path || desk.allFinderHits[0].path || "") + " (" + desk.allFinderHits.length + " kết quả)")
-                    : desk.hasReadingPreview ? (((desk.liveSnapshot.readingSession || {}).chart || {}).name || "Chưa mở hồ sơ lá số")
+                    : desk.hasPluginPreview ? ((desk.liveSnapshot.activePluginView || {}).pack_id || "Plugin đang mở")
                     : desk.hasAnswerPreview ? desk.previewMeta : desk.hasPagePreview ? desk.liveSnapshot.fileName : "Kết quả mới"
                 textFormat: Text.PlainText
                 font.pixelSize: 11

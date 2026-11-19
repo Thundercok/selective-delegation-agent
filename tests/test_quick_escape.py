@@ -59,16 +59,32 @@ def test_page_goes_back_to_search_results(quick_env):
     assert control.snapshot["expanded"]
 
 
-def test_expanded_reading_desk_closes_instead_of_folding(quick_env):
-    control = quick_env.controller
-    control.setExpanded(True)
-    control.openReadingDesk()
-    QTest.qWait(30)
-    assert control.snapshot["view"] == "reading"
+def test_expanded_plugin_view_closes_instead_of_folding(quick_env):
+    from rat.plugins import ToolPack, ToolPackManifest, get_plugin_manager
 
-    press_escape(quick_env)
-    assert control.snapshot["view"] != "reading"
-    assert control.snapshot["expanded"]
+    class _EscPlugin(ToolPack):
+        manifest = ToolPackManifest(id="esc_plugin", name="Esc Plugin", description="Test")
+
+        def create_capabilities(self, context=None):
+            return []
+
+        def get_ui_cards(self):
+            return [{"id": "esc_test_view", "name": "Esc View", "kind": "view", "qml": ""}]
+
+    manager = get_plugin_manager()
+    manager.register_pack(_EscPlugin())
+    try:
+        control = quick_env.controller
+        control.setExpanded(True)
+        assert control.openPluginView("esc_test_view") is True
+        QTest.qWait(30)
+        assert control.snapshot["view"] == "plugin"
+
+        press_escape(quick_env)
+        assert control.snapshot["view"] != "plugin"
+        assert control.snapshot["expanded"]
+    finally:
+        manager.unregister_pack("esc_plugin")
 
 
 def test_apps_view_restores_the_draft(quick_env):

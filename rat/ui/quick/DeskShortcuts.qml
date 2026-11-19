@@ -10,8 +10,15 @@ Item {
     }
     Shortcut {
         sequences: ["Ctrl+Shift+R", "Meta+Shift+R"]
-        enabled: desk.liveMode && !desk.liveSnapshot.busy
-        onActivated: { desk.liveController.openReadingDesk(); if (desk.editor) desk.editor.forceActiveFocus() }
+        enabled: desk.liveMode && !desk.liveSnapshot.busy && Object.keys(desk.liveSnapshot.pluginViews || ({})).length > 0
+        onActivated: {
+            var views = desk.liveSnapshot.pluginViews || ({})
+            var ids = Object.keys(views)
+            if (ids.length > 0) {
+                desk.liveController.openPluginView(ids[0])
+                if (desk.editor) desk.editor.forceActiveFocus()
+            }
+        }
     }
     Shortcut {
         sequence: "Ctrl+F"

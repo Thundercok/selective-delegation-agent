@@ -177,7 +177,7 @@ import QtQuick.Layouts
                     }
                 }
                 Label {
-                    visible: desk.liveMode && (desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "page" && desk.liveSnapshot.view !== "reading")
+                    visible: desk.liveMode && (desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "page" && desk.liveSnapshot.view !== "plugin")
                     Layout.fillWidth: true
                     text: desk.liveSnapshot.view === "finder" ? (desk.liveSnapshot.title || "Gợi ý tìm kiếm")
                         : (desk.liveSnapshot.view === "apps" ? ("Ứng dụng (" + desk.filteredApps.length + ")")
@@ -188,11 +188,18 @@ import QtQuick.Layouts
                     font.weight: Font.Medium
                     wrapMode: Text.Wrap
                 }
-                ReadingDesk {
-                    objectName: "readingWorkbench"
-                    host: desk
-                    visible: desk.liveMode && desk.liveSnapshot.view === "reading"
+                Loader {
+                    id: pluginViewLoader
+                    objectName: "pluginWorkbench"
+                    active: desk.liveMode && desk.liveSnapshot.view === "plugin" && Boolean((desk.liveSnapshot.activePluginView || {}).qml_url)
+                    visible: active
+                    source: active ? ((desk.liveSnapshot.activePluginView || {}).qml_url || "") : ""
                     Layout.fillWidth: true
+                    onLoaded: {
+                        if (item && item.hasOwnProperty("host")) {
+                            item.host = desk
+                        }
+                    }
                 }
                 ColumnLayout {
                     visible: desk.liveMode
@@ -200,7 +207,7 @@ import QtQuick.Layouts
                     spacing: desk.emptyCancelledAnswer ? 8 : 12
                     AnswerView { id: answerView }
                     Label {
-                        visible: desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "busy" && desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "reading" && desk.liveSnapshot.view !== "settings" && desk.liveSnapshot.view !== "cli" && (desk.liveSnapshot.view !== "page" || desk.readerDisplayMode === "text" || desk.liveSnapshot.pageTruncated)
+                        visible: desk.liveSnapshot.view !== "answer" && desk.liveSnapshot.view !== "busy" && desk.liveSnapshot.view !== "finder" && desk.liveSnapshot.view !== "apps" && desk.liveSnapshot.view !== "plugin" && desk.liveSnapshot.view !== "settings" && desk.liveSnapshot.view !== "cli" && (desk.liveSnapshot.view !== "page" || desk.readerDisplayMode === "text" || desk.liveSnapshot.pageTruncated)
                         Layout.fillWidth: true
                         text: desk.liveSnapshot.view === "page" ? ((desk.liveSnapshot.pageTruncated ? "Đã cắt ở 8.000 ký tự. " : "") + (desk.readerDisplayMode === "text" ? "Bôi chọn đoạn cần lấy, rồi chép trích dẫn." : "")) : (desk.liveSnapshot.view === "error" ? desk.liveSnapshot.errorText : desk.liveSnapshot.status) || ""
                         textFormat: Text.PlainText

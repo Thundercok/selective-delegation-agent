@@ -45,7 +45,7 @@ from rat.ui.answer_presentation import (
 )
 from rat.ui.assistant_worker import create_execution_worker
 from rat.ui.pdf_snapshot_provider import PdfSnapshotRenderer
-from rat.ui.reading_coordinator import ReadingDeskCoordinator
+from rat.ui.smart_note_coordinator import SmartNoteCoordinator
 from rat.ui.quick_navigation_stack import QuickNavigationStack
 from rat.ui.image_input import IMAGE_SUFFIXES, image_from_url
 from rat.kernel.contracts import Artifact, SourceEvidence
@@ -87,9 +87,13 @@ def is_multistep_query(query: str) -> bool:
     if _MULTISTEP_CONNECTOR_RE.search(q_low):
         return True
 
+    from rat.plugins import get_plugin_manager
+    plugin_buckets = [
+        any(k in q_low for k in kws)
+        for _pack_id, kws in get_plugin_manager().get_routing_keywords_map()
+    ]
     buckets = (
-        any(k in q_low for k in ("kinh dịch", "kinh dich", "gieo quẻ", "gieo que", "bói quẻ", "boi que", "quẻ dịch", "que dich")),
-        any(k in q_low for k in ("lenormand", "rút bài", "rut bai", "bói bài", "boi bai", "rút 3 lá", "rut 3 la", "tarot")),
+        *plugin_buckets,
         bool(re.search(r"https?://", q_low)),
         any(k in q_low for k in ("thời khóa biểu", "thoi khoa bieu", "lịch học", "lich hoc", "tkb", "xem lịch", "xem lich", "hôm nay học gì", "mai học gì")),
         any(k in q_low for k in (
@@ -164,22 +168,6 @@ def _extract_artifact_card(response: AgentResponse) -> Optional[Dict[str, Any]]:
                 "headers": list(payload.get("columns", payload.get("headers", [])) or []),
                 "rows": list(payload.get("rows", []) or []),
                 "summary": payload.get("summary", ""),
-            }
-        elif kind == "reading_spread":
-            mapped_cards = [
-                {
-                    "slot": c.get("position", f"Lá {i + 1}"),
-                    "icon": "🃏",
-                    "name": c.get("name", ""),
-                    "meaning": c.get("meaning", c.get("keywords", "")),
-                }
-                for i, c in enumerate(payload.get("cards", []) or [])
-                if isinstance(c, dict)
-            ]
-            card = {
-                "visual_type": "lenormand",
-                "question": inputs.get("question", "Trải bài"),
-                "cards": mapped_cards,
             }
         elif kind == "quiz":
             card = {
@@ -450,7 +438,11 @@ class QuickPDFController(QObject):
         self._finder_hits: List[Dict[str, Any]] = []
         self._finder_query: str = ""
         self._finder_feedback = ""
-        self._reading_coordinator = ReadingDeskCoordinator(self)
+        self._smart_note_coordinator = SmartNoteCoordinator(self)
+        self._plugin_coordinators: Dict[str, Any] = {}
+        self._active_plugin_view: Optional[Dict[str, str]] = None
+        self._plugin_return_view: str = "none"
+        self._plugin_return_expanded: bool = False
         self._db_path = db_path or str(config.db_path)
         self._semantic_db_path = Path(os.environ.get("RAT_STATE_DIR") or Path.home() / ".rat") / "semantic-index.sqlite"
         self._finder_semantic = shared_index(self._semantic_db_path)
@@ -741,8 +733,12 @@ class QuickPDFController(QObject):
             "finderQuery": self._finder_query,
             "finderFeedback": self._finder_feedback,
             "indexStatus": self._index_status,
-            "readingSession": self._reading_coordinator.snapshot_data,
-            "activeNote": self._reading_coordinator.active_note,
+            "pluginViews": self._build_plugin_views_snapshot(),
+            "pluginArtifactCards": self._build_plugin_artifact_cards_snapshot(),
+            "pluginSlashCommands": self._build_plugin_slash_commands_snapshot(),
+            "pluginSessions": self._build_plugin_sessions_snapshot(),
+            "activePluginView": dict(self._active_plugin_view) if self._active_plugin_view else None,
+            "activeNote": self._smart_note_coordinator.active_note,
             "installedApps": list(self._cached_apps_list),
             "isAppsView": (view == "apps"),
             "savedDraft": self._saved_draft,
@@ -1069,7 +1065,7 @@ class QuickPDFController(QObject):
 
     @pyqtSlot(int)
     def selectPreviewCard(self, index: int) -> None:
-        """Select a tarot or reading card for interactive inspection."""
+        """Select a preview card item for interactive inspection."""
         self._preview_card_index = index
         self.changed.emit()
 
@@ -1443,51 +1439,27 @@ class QuickPDFController(QObject):
         return committed
 
     def _dispatch_instant_tool(self, q: str, origin: str = "chat") -> bool:
-        """Handle standalone instant tools: Kinh Dịch, Lenormand, Web crawl, and Timetable."""
+        """Handle standalone instant tools: registered plugin handlers, Web crawl, and Timetable."""
         if origin != "ui_action" and is_multistep_query(q):
             return False
         q_low = q.lower()
         res_card: Optional[Dict[str, Any]] = None
         ans_text: str = ""
 
-        # 1. Kinh Dịch
-        iching_keywords = (
-            "kinh dịch", "kinh dich", "gieo quẻ", "gieo que",
-            "bói quẻ", "boi que", "bói dịch", "boi dich",
-            "quẻ dịch", "que dich", "lên quẻ", "len que"
-        )
-        if any(k in q_low for k in iching_keywords):
-            from rat.engine.divination import cast_iching
-            res_card = cast_iching(q)
-            ch_str = f" (Hào {', '.join(str(l) for l in res_card['changing_lines'])} động)" if res_card['changing_lines'] else ""
-            ans_text = (
-                f"🔮 Quẻ Kinh Dịch: {res_card['hexagram_name']}{ch_str}\n"
-                f"• Thượng: {res_card['upper_trigram']} · Hạ: {res_card['lower_trigram']}\n"
-                f"• Ý nghĩa: {res_card['meaning']}\n"
-                f"• Lời khuyên của Chuột: {res_card['advice']}"
-            )
-            if res_card.get("transformed"):
-                t = res_card["transformed"]
-                ans_text += f"\n\n🔄 Quẻ Biến: {t['name']} ({t['upper']} trên {t['lower']})\n• {t['meaning']}"
+        # 1. Dynamic External / Registered Plugin Instant Handlers
+        from rat.plugins import get_plugin_manager
+        for _pack_id, handler in get_plugin_manager().get_instant_handlers():
+            try:
+                handled_res = handler(q)
+            except Exception as exc:
+                logger.debug("Plugin instant handler (%s) failed: %s", _pack_id, exc)
+                handled_res = None
+            if handled_res is not None:
+                res_card, ans_text = handled_res
+                break
 
-        # 2. Lenormand
-        elif any(k in q_low for k in (
-            "lenormand", "rút bài", "rut bai", "bói bài", "boi bai",
-            "bói lenormand", "boi lenormand", "rút 3 lá", "rut 3 la"
-        )):
-            from rat.engine.divination import draw_lenormand
-            res_card = draw_lenormand(q, count=3)
-            cards_lines = []
-            for i, c in enumerate(res_card["cards"]):
-                cards_lines.append(f"{i+1}. {c['slot']}: [{c['number']}] {c['icon']} {c['name']} — {c['meaning']}")
-            ans_text = (
-                f"🃏 Rút 3 lá bài Lenormand:\n\n"
-                + "\n".join(cards_lines) + "\n\n"
-                f"✨ Thông điệp: {res_card['summary']}"
-            )
-
-        # 3. Web Crawl / Reader
-        elif re.search(r"https?://", q, re.I):
+        # 2. Web Crawl / Reader
+        if res_card is None and re.search(r"https?://", q, re.I):
             from rat.engine.web_reader import fetch_web_summary, extract_url
             url = extract_url(q) or q
             res_card = fetch_web_summary(url)
@@ -1753,10 +1725,11 @@ class QuickPDFController(QObject):
         if not getattr(profile, "enable_tool_packs", False):
             return
         q_low = (q or "").lower()
-        pack_keywords = (
+        from rat.plugins import get_plugin_manager
+        pack_keywords = [
             ("timetable", ("lịch", "lich", "tkb", "thời khóa biểu", "thoi khoa bieu", "phòng", "tiết")),
-            ("divination", ("tarot", "lenormand", "rút bài", "rut bai", "rút 3 lá", "rut 3 la", "trải bài", "kinh dịch", "kinh dich", "gieo quẻ", "gieo que", "lá bài")),
-        )
+            *get_plugin_manager().get_routing_keywords_map(),
+        ]
         for pack_id, keywords in pack_keywords:
             if any(k in q_low for k in keywords):
                 try:
@@ -1777,8 +1750,11 @@ class QuickPDFController(QObject):
         q = query.strip()
         if not q or self.snapshot["busy"] or self._closed:
             return False
-        if self._view == 'reading':
-            return self.synthesizeReadingDraft(query=q)
+        if self._view == "plugin" and self._active_plugin_view:
+            pack_id = self._active_plugin_view.get("pack_id", "")
+            coord = self._get_plugin_coordinator(pack_id)
+            if coord is not None and hasattr(coord, "synthesize_draft"):
+                return bool(coord.synthesize_draft(query=q))
         if self._selection is not None:
             try:
                 check_current(self._selection)
@@ -2607,63 +2583,122 @@ class QuickPDFController(QObject):
             return False
         return self.openHit(path)
 
+    def _get_plugin_coordinator(self, pack_id: str) -> Any:
+        if not pack_id:
+            return None
+        if pack_id in self._plugin_coordinators:
+            return self._plugin_coordinators[pack_id]
+        from rat.plugins import get_plugin_manager
+        pack = get_plugin_manager().get_pack(pack_id)
+        if pack is None:
+            return None
+        coord = pack.create_ui_coordinator(self)
+        if coord is not None:
+            self._plugin_coordinators[pack_id] = coord
+        return coord
+
+    def _build_plugin_views_snapshot(self) -> Dict[str, Dict[str, Any]]:
+        from rat.plugins import get_plugin_manager
+        return {v["id"]: v for v in get_plugin_manager().get_ui_views() if v.get("id")}
+
+    def _build_plugin_artifact_cards_snapshot(self) -> Dict[str, str]:
+        from rat.plugins import get_plugin_manager
+        return get_plugin_manager().get_artifact_card_qml_map()
+
+    def _build_plugin_slash_commands_snapshot(self) -> Dict[str, Dict[str, str]]:
+        from rat.plugins import get_plugin_manager
+        return get_plugin_manager().get_slash_command_map()
+
+    def _build_plugin_sessions_snapshot(self) -> Dict[str, Any]:
+        return {
+            pack_id: coord.snapshot_data
+            for pack_id, coord in self._plugin_coordinators.items()
+            if hasattr(coord, "snapshot_data")
+        }
+
+    @pyqtSlot(str, result=bool)
+    def openPluginView(self, view_id: str) -> bool:
+        if self._closed or self.snapshot["busy"]:
+            return False
+        views = self._build_plugin_views_snapshot()
+        spec = views.get(view_id)
+        if not spec:
+            return False
+        pack_id = spec.get("pack_id", "")
+        if hasattr(self, "assistant_runtime") and self.assistant_runtime and pack_id:
+            try:
+                self.assistant_runtime.load_tool_pack(pack_id)
+            except Exception as exc:
+                logger.debug("Plugin pack '%s' load note: %s", pack_id, exc)
+        coord = self._get_plugin_coordinator(pack_id)
+        if self._view != "plugin":
+            self._plugin_return_view = self._view
+            self._plugin_return_expanded = self._expanded
+        if self._finder_coordinator:
+            self._finder_coordinator.cancel()
+        self._active_plugin_view = dict(spec)
+        self._view = "plugin"
+        self._expanded = True
+        if coord is not None and hasattr(coord, "on_view_opened"):
+            coord.on_view_opened()
+        else:
+            self._status = spec.get("name") or f"Plugin · {view_id}"
+        self.changed.emit()
+        return True
+
     @pyqtSlot()
-    def openReadingDesk(self):
-        self._reading_coordinator.open_desk()
+    def closePluginView(self):
+        if self._view == "plugin":
+            self._active_plugin_view = None
+            self._view = self._plugin_return_view
+            self._expanded = self._plugin_return_expanded
+            self._status = "Chuột sẵn sàng. Bạn cần gì?"
+            self.changed.emit()
 
-    @pyqtSlot()
-    def closeReadingDesk(self):
-        self._reading_coordinator.close_desk()
-
-    @pyqtSlot(str, result=bool)
-    def setReadingCards(self, text: str) -> bool:
-        return self._reading_coordinator.set_cards(text)
-
-    @pyqtSlot(str, result=bool)
-    def importReadingProfile(self, path: str) -> bool:
-        return self._reading_coordinator.import_profile(path)
-
-    @pyqtSlot(result=bool)
-    @pyqtSlot(str, result=bool)
-    def synthesizeReadingDraft(self, query: str = "") -> bool:
-        return self._reading_coordinator.synthesize_draft(query)
-
-    @pyqtSlot(str, result=bool)
-    def saveReadingDraft(self, text: str) -> bool:
-        return self._reading_coordinator.save_draft(text)
+    @pyqtSlot(str, str, str, result=bool)
+    @pyqtSlot(str, str, result=bool)
+    def invokePluginAction(self, pack_id: str, action: str, payload_json: str = "{}") -> bool:
+        if self._closed:
+            return False
+        coord = self._get_plugin_coordinator(pack_id)
+        if coord is None or not hasattr(coord, "invoke_action"):
+            return False
+        try:
+            import json
+            payload = json.loads(payload_json) if payload_json else {}
+            res = coord.invoke_action(action, payload if isinstance(payload, dict) else {})
+            return bool(res)
+        except Exception as exc:
+            logger.warning("Plugin action %s.%s failed: %s", pack_id, action, exc)
+            return False
 
     @pyqtSlot(str, str, str, result=str)
     @pyqtSlot(str, str, result=str)
     @pyqtSlot(str, result=str)
     def synthesizeSmartNote(self, raw_content: str, domain: str = "auto", title: str = "") -> str:
-        return self._reading_coordinator.synthesize_smart_note(raw_content, domain, title)
-
-    @pyqtSlot(result=str)
-    @pyqtSlot(str, result=str)
-    def synthesizeNoteFromReadingDraft(self, domain: str = "decision") -> str:
-        return self._reading_coordinator.synthesize_from_current_draft(domain=domain)
+        return self._smart_note_coordinator.synthesize_smart_note(raw_content, domain, title)
 
     @pyqtSlot(str, str, bool, result=bool)
     @pyqtSlot(str, bool, result=bool)
     def updateNoteActionItem(self, artifact_id_or_match: str, task_match_or_done: Any = True, done: bool = True) -> bool:
         if isinstance(task_match_or_done, bool):
-            return self._reading_coordinator.update_note_action_item(task_match=artifact_id_or_match, done=task_match_or_done)
-        return self._reading_coordinator.update_note_action_item(artifact_id=artifact_id_or_match, task_match=str(task_match_or_done), done=done)
+            return self._smart_note_coordinator.update_note_action_item(task_match=artifact_id_or_match, done=task_match_or_done)
+        return self._smart_note_coordinator.update_note_action_item(artifact_id=artifact_id_or_match, task_match=str(task_match_or_done), done=done)
 
     @pyqtSlot(int, bool, result=bool)
     @pyqtSlot(str, int, bool, result=bool)
     def updateNoteActionItemByIndex(self, artifact_id_or_index: Any, item_index_or_done: Any = True, done: bool = True) -> bool:
         if isinstance(artifact_id_or_index, int):
-            return self._reading_coordinator.update_note_action_item(item_index=artifact_id_or_index, done=bool(item_index_or_done))
-        return self._reading_coordinator.update_note_action_item(artifact_id=str(artifact_id_or_index), item_index=int(item_index_or_done), done=done)
+            return self._smart_note_coordinator.update_note_action_item(item_index=artifact_id_or_index, done=bool(item_index_or_done))
+        return self._smart_note_coordinator.update_note_action_item(artifact_id=str(artifact_id_or_index), item_index=int(item_index_or_done), done=done)
 
     @pyqtSlot(str, str, str, str, result=bool)
     @pyqtSlot(str, str, str, result=bool)
     @pyqtSlot(str, str, result=bool)
     def expandNoteSection(self, section_or_art: str, heading_or_content: str, query_or_art: str = "", content: str = "") -> bool:
         if content:
-            return self._reading_coordinator.expand_note_section(section_heading=heading_or_content, expansion_content=content, expansion_query=query_or_art, artifact_id=section_or_art)
-        return self._reading_coordinator.expand_note_section(section_heading=section_or_art, expansion_content=heading_or_content, expansion_query=query_or_art)
+            return self._smart_note_coordinator.expand_note_section(section_heading=heading_or_content, expansion_content=content, expansion_query=query_or_art, artifact_id=section_or_art)
+        return self._smart_note_coordinator.expand_note_section(section_heading=section_or_art, expansion_content=heading_or_content, expansion_query=query_or_art)
 
     @pyqtSlot(str, str, result=str)
     @pyqtSlot(str, result=str)

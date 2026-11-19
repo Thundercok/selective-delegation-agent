@@ -193,7 +193,7 @@ Rectangle {
     readonly property real preferredWindowHeight: 48 + composer.height + Math.max(116, expanded && hasWorkbench ? resultPaper.height - 22 : 0)
     readonly property bool hasWorkbench: liveMode ? Boolean(liveSnapshot.hasWorkbench) : phase === "working" || phase === "result"
     readonly property bool hasAnswerPreview: liveMode && liveSnapshot.view === "answer"
-    readonly property bool hasReadingPreview: liveMode && liveSnapshot.view === "reading"
+    readonly property bool hasPluginPreview: liveMode && liveSnapshot.view === "plugin"
     readonly property bool cancelledAnswer: hasAnswerPreview && liveSnapshot.answerOutcome === "cancelled"
     readonly property bool emptyCancelledAnswer: cancelledAnswer && !(liveSnapshot.answerText || "").trim().length
     readonly property bool hasPagePreview: liveMode && liveSnapshot.view === "page" && !liveSnapshot.busy && !liveSnapshot.errorCode
@@ -357,8 +357,8 @@ Rectangle {
             }
             return false;
         }
-        if (desk.liveSnapshot.view === "reading") {
-            desk.liveController.closeReadingDesk();
+        if (desk.liveSnapshot.view === "plugin") {
+            desk.liveController.closePluginView();
             if (desk.editor) desk.editor.forceActiveFocus();
             return true;
         }
@@ -491,14 +491,6 @@ Rectangle {
         }
     }
     function openPdfDialog() { pdfDialog.open() }
-    function openReadingProfileDialog() { readingProfileDialog.open() }
-    FileDialog {
-        id: readingProfileDialog
-        objectName: "readingProfileDialog"
-        title: "Mở hồ sơ lá số đã lưu từ Natal Atlas"
-        nameFilters: ["Hồ sơ lá số JSON (*.json *.JSON)"]
-        onAccepted: { if (desk.liveMode) desk.liveController.importReadingProfile(String(selectedFile)) }
-    }
     DropArea {
         id: pdfDropArea
         anchors.fill: parent
@@ -509,10 +501,6 @@ Rectangle {
                 drop.accepted = true
             } else if (drop.hasUrls && drop.urls.length === 1) {
                 var urlStr = String(drop.urls[0])
-                if (desk.liveSnapshot.view === "reading" && /\.json$/i.test(urlStr)) {
-                    drop.accepted = desk.liveController.importReadingProfile(urlStr)
-                    return
-                }
                 var hadDraft = composer.editor.text.trim().length > 0
                 desk.liveController.openPdfDocument(urlStr, composer.editor.text)
                 if (hadDraft && /\.(png|jpe?g|webp|bmp|tiff?)$/i.test(urlStr) && desk.liveController.snapshot.busy) {

@@ -77,7 +77,7 @@ class ResidentApplication(QObject):
     open_settings_signal = pyqtSignal()
     open_schedule_signal = pyqtSignal()
     open_widget_signal = pyqtSignal()
-    open_natal_signal = pyqtSignal()
+    open_plugin_view_signal = pyqtSignal(str)
 
     def __init__(self, mode: str = "all", *, reasoning_engine=None, allow_synthetic_policy=False) -> None:
         install_crash_shield()
@@ -118,7 +118,7 @@ class ResidentApplication(QObject):
         self.open_settings_signal.connect(self._do_open_settings, Qt.ConnectionType.QueuedConnection)
         self.open_schedule_signal.connect(self._do_open_schedule, Qt.ConnectionType.QueuedConnection)
         self.open_widget_signal.connect(self._do_open_widget, Qt.ConnectionType.QueuedConnection)
-        self.open_natal_signal.connect(self._do_open_natal, Qt.ConnectionType.QueuedConnection)
+        self.open_plugin_view_signal.connect(self._do_open_plugin_view, Qt.ConnectionType.QueuedConnection)
         self.app.aboutToQuit.connect(self._on_app_quit)
         self.app.installEventFilter(self)
         # Python signal handlers (SIGTERM/SIGINT from CrashShield) only run while the interpreter runs. An
@@ -454,8 +454,8 @@ class ResidentApplication(QObject):
         """Thread-safe trigger for compact desk."""
         self.open_widget_signal.emit()
 
-    def open_natal(self) -> None:
-        self.open_natal_signal.emit()
+    def open_plugin_view(self, view_id: str) -> None:
+        self.open_plugin_view_signal.emit(view_id)
 
     def trigger_quicklook(self) -> None:
         """Thread-safe trigger for quickLookSelection."""
@@ -479,9 +479,9 @@ class ResidentApplication(QObject):
         except Exception as e:
             logger.error(f"Error triggering quickLookSelection on RAT Desk: {e}", exc_info=True)
 
-    @pyqtSlot()
-    def _do_open_natal(self) -> None:
-        """Open Tarot / Reading view on the unified QtQuick Desk."""
+    @pyqtSlot(str)
+    def _do_open_plugin_view(self, view_id: str) -> None:
+        """Open a dynamically registered plugin desk view on the unified QtQuick Desk."""
         if self.is_quitting:
             return
         try:
@@ -492,10 +492,10 @@ class ResidentApplication(QObject):
             view.raise_()
             view.requestActivate()
             activate_macos_app()
-            if controller is not None and hasattr(controller, "openReadingDesk"):
-                controller.openReadingDesk()
+            if controller is not None and hasattr(controller, "openPluginView"):
+                controller.openPluginView(view_id)
         except Exception as e:
-            logger.error(f"Error opening reading on RAT Desk: {e}", exc_info=True)
+            logger.error(f"Error opening plugin view '{view_id}' on RAT Desk: {e}", exc_info=True)
 
     @pyqtSlot()
     def _do_toggle_spotlight(self) -> None:
@@ -678,8 +678,8 @@ class ResidentApplication(QObject):
             self.open_schedule()
         elif cmd in ("widget", "mini", "claude"):
             self.open_widget()
-        elif cmd in ("astrology", "natal", "la-so", "reading"):
-            self.open_natal()
+        elif cmd.startswith("plugin:"):
+            self.open_plugin_view(cmd.split(":", 1)[1])
         elif cmd in ("quicklook", "selection"):
             self.trigger_quicklook()
         else:
@@ -708,7 +708,7 @@ class ResidentApplication(QObject):
             on_open_settings=self.open_settings,
             on_open_schedule=self.open_schedule,
             on_open_widget=self.open_widget,
-            on_open_natal=self.open_natal,
+            on_open_plugin_view=self.open_plugin_view,
             on_quit=self.request_quit,
         )
         self.tray_manager.tray_icon.show()

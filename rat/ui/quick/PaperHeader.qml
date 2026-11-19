@@ -113,11 +113,11 @@ Item {
             onClicked: desk.liveController.backToSearch()
         }
         QuietButton {
-            objectName: "backFromReading"
-            visible: desk.liveSnapshot.view === "reading"
+            objectName: "backFromPlugin"
+            visible: desk.liveSnapshot.view === "plugin"
             text: "Bàn làm việc"
             iconName: "arrow-left"
-            onClicked: { desk.liveController.closeReadingDesk(); if (desk.editor) desk.editor.forceActiveFocus() }
+            onClicked: { desk.liveController.closePluginView(); if (desk.editor) desk.editor.forceActiveFocus() }
         }
         QuietButton {
             objectName: "backFromApps"
