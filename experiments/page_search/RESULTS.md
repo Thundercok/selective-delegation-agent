@@ -119,3 +119,27 @@ Vẫn dưới ngưỡng "sửa trước" (7/20 < 10/20; `paraphrase` 0/10 < 4/10
 - **Bản sửa đến ngay ở đường hỏi tài liệu.** `expand_context` và `handle_read` đọc lại file mỗi lần, nên nhận bản sửa ngay.
 - **Chỉ mục từ khoá không tự cập nhật.** Indexer bỏ qua file có `modified_at` và kích thước không đổi (`rat/crawler/indexer.py:148`), nên PDF đã đánh chỉ mục vẫn giữ nội dung 25 trang cho đến khi đánh lại với `force`.
 - **File scan có thể chậm hơn.** OCR trên luồng chính (`read_pdf_native`, chỉ khi gọi từ luồng chính) giờ có thể chạy quá 25 trang, chỉ dừng ở giới hạn ký tự. Chưa đo.
+
+## Sửa 2: chọn trang theo nghĩa (ghi trước khi đo, 19/11/2026)
+
+Lúc ghi mục này, đã có một thay đổi **chưa commit, không phải của người viết mục này** trong `rat/engine/page_match.py`. Nó làm ba việc:
+
+1. Nếu khớp chữ yếu, nhúng từng trang bằng `paraphrase-multilingual-MiniLM-L12-v2` rồi chọn trang gần câu hỏi nhất (`semantic_fallback`). Trang 1 và trang mục lục bị trừ 0,15.
+2. Khi tổng IDF bằng nhau, ưu tiên trang có từ khoá ở tiêu đề, rồi đến trang sớm hơn.
+3. Thêm "slide", "nằm", "nói", "chương"… vào `STOPWORDS` và đếm cả dạng số nhiều ("adders").
+
+`tools/measure_search_quality.py` cũng đã được sửa để gọi `semantic_fallback=True`. **Chưa ai chạy phép đo trên thay đổi này**: chưa có file `out_*` mới.
+
+Có hai rủi ro khiến kết quả trên bộ 20 câu dễ đẹp hơn thực tế. Những từ mới thêm vào `STOPWORDS` lấy đúng từ cách đặt câu của bộ này. Luật tiêu đề cũng nhắm vào đúng t03, t04, t10. Vì vậy bộ 20 câu giờ là bộ **chỉnh**, không còn là bộ **thẩm định**. Kết quả thẩm định phải đến từ 4 câu V1/V2 (buổi quan sát), hoặc từ một bộ câu mới viết sau khi thay đổi này đã chốt.
+
+Ngưỡng:
+
+| Kết quả trên bộ 20 câu | Quyết định |
+|---|---|
+| `paraphrase` từ 4/10, `term` không dưới 7/10, chọn trang cho Pipelining (99 trang) dưới 2 giây sau khi mô hình đã nạp | GO cho cách chọn theo nghĩa |
+| `paraphrase` dưới 2/10, hoặc trên 5 giây mỗi câu | KILL cách này, chuyển sang để LLM dịch câu hỏi thành từ khoá |
+| Ở giữa | ITERATE |
+
+Thêm một điều kiện, vì 20 câu này đã thành bộ chỉnh: trước khi gọi là GO cho buổi quan sát, viết **10 câu mới** (5 `term`, 5 `paraphrase`) trên những slide chưa dùng, kiểm tra đáp án bằng chữ trên trang, rồi chạy **một lần**. Nếu bộ mới thấp hơn bộ chỉnh từ 3 câu trở lên (tính theo tỉ lệ), thì cách chọn trang đang khớp theo bộ chỉnh chứ không phải theo nghĩa.
+
+Dự đoán (GIẢ THUYẾT): `paraphrase` lên 4-7/10. Mô hình đa ngôn ngữ nối được câu tiếng Việt với slide tiếng Anh, nhưng nhiều slide chỉ có hình nên chữ trích ra rất ít. Chi phí là chỗ chưa chắc nhất: mỗi câu hỏi nhúng lại toàn bộ trang của file, không có bộ nhớ đệm.
