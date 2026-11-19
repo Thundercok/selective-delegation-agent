@@ -1288,6 +1288,16 @@ class QuickPDFController(QObject):
         cb.setText(text)
         return cb.text() == text
 
+    def _log_delivered_quiz(self, card: Optional[Dict[str, Any]]) -> None:
+        """The denominator for quiz_flags: every quiz the desk shows."""
+        if not card or card.get("visual_type") != "quiz" or not card.get("questions"):
+            return
+        from rat.engine.quiz_flags import record_delivered_quiz
+        try:
+            record_delivered_quiz(card, doc_path=str(self._selection.path) if self._selection else None)
+        except OSError as exc:
+            self._events.append(f"Chưa ghi được bộ trắc nghiệm vào nhật ký: {exc}")
+
     @pyqtSlot(int, result=bool)
     def flagQuizQuestion(self, index: int) -> bool:
         """The user says a quiz question on screen is wrong: log it and leave it out of notes."""
@@ -1297,7 +1307,7 @@ class QuickPDFController(QObject):
             return False
         if questions[index].get("flagged"):
             return True
-        from rat.engine.quiz_generator import record_flagged_question
+        from rat.engine.quiz_flags import record_flagged_question
         try:
             path = record_flagged_question(card, index, doc_path=str(self._selection.path) if self._selection else None)
         except OSError as exc:
@@ -1726,6 +1736,7 @@ class QuickPDFController(QObject):
         }.get(page_basis, "")
         lines = [f"Đã tạo {len(questions)} câu trắc nghiệm từ{where or ' ' + doc_title}."]
         lines.append("Bấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.")
+        self._log_delivered_quiz(res_card)
         self._complete_instant_card(
             q,
             "\n\n".join(lines),
@@ -2037,6 +2048,7 @@ class QuickPDFController(QObject):
 
         self._last_assistant_answer = response.answer
         self._artifact_card = _extract_artifact_card(response)
+        self._log_delivered_quiz(self._artifact_card)
         self._view = "answer"
         refs = [s for s in (response.sources or []) if hasattr(s, "page") or (isinstance(s, dict) and "page" in s)]
         if refs:

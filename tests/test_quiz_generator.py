@@ -26,6 +26,7 @@ from rat.engine.quiz_generator import (
     quiz_failure_message,
     strip_choice_prefix,
 )
+from rat.engine.quiz_flags import flag_rates, main as flag_report
 from rat.kernel.capabilities import build_default_registry
 from rat.kernel.capabilities.views import view_quiz
 from rat.kernel.contracts import ArtifactStore
@@ -234,11 +235,13 @@ def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path, quiz_m
         QTest.qWait(40)
         assert find_item(root, "quizFlagged_0").isVisible() is True and flag.isVisible() is False
         assert quote_lbl.isVisible() is True
-        [line] = (tmp_path / "state" / "quiz_flags.jsonl").read_text(encoding="utf-8").splitlines()
-        logged = json.loads(line)
+        delivered, logged = map(json.loads, (tmp_path / "state" / "quiz_flags.jsonl").read_text(encoding="utf-8").splitlines())
         first = snap["artifactCard"]["questions"][0]
-        assert logged["question"] == first["question"] and logged["page"] == 1
+        assert delivered["kind"] == "delivered" and delivered["count"] == 3 and delivered["doc"] == str(pdf_path)
+        assert logged["kind"] == "flagged" and logged["question"] == first["question"] and logged["page"] == 1
         assert logged["doc"] == str(pdf_path) and logged["generator"] == "model"
+        assert flag_rates(tmp_path / "state" / "quiz_flags.jsonl") == [
+            {"doc": str(pdf_path), "delivered": 3, "flagged": 1, "rate": 1 / 3}]
 
         click(view, root, "resetQuizButton")
         QTest.qWait(30)
@@ -366,3 +369,23 @@ def test_quiz_says_how_its_questions_are_answered():
     quiz = generate_quiz_from_text(COMPUTER_ORG_SAMPLE, count=1, model_client=model)
     assert quiz["generator"] == "model" and quiz["instruction"] == QUIZ_INSTRUCTION
     assert "đầy đủ nhất" in QUIZ_INSTRUCTION
+
+
+def test_flag_rate_is_flagged_questions_over_delivered_ones(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("RAT_STATE_DIR", str(tmp_path))
+    log = tmp_path / "quiz_flags.jsonl"
+    lines = [
+        {"kind": "delivered", "doc": "/x/a.pdf", "count": 5},
+        {"kind": "delivered", "doc": "/x/a.pdf", "count": 5},
+        {"kind": "flagged", "doc": "/x/a.pdf", "page": 4, "question": "Q1"},
+        {"kind": "flagged", "doc": "/x/a.pdf", "page": 4, "question": "Q1"},  # same question twice
+        {"doc": "/x/a.pdf", "page": 4, "question": "Q2"},  # written before "kind" existed
+        {"kind": "delivered", "doc": "/x/b.pdf", "count": 3},
+    ]
+    log.write_text("\n".join(json.dumps(r) for r in lines) + "\n{cut sho", encoding="utf-8")
+    assert flag_rates(log) == [{"doc": "/x/a.pdf", "delivered": 10, "flagged": 2, "rate": 0.2},
+                               {"doc": "/x/b.pdf", "delivered": 3, "flagged": 0, "rate": 0.0}]
+    assert flag_report() == 0
+    out = capsys.readouterr().out
+    assert "a.pdf" in out and "20%" in out and "Tổng: 2/13" in out
+

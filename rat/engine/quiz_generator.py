@@ -8,10 +8,8 @@ deterministically, and rotates `correct_index` through A-D across the set.
 """
 from __future__ import annotations
 
-from datetime import datetime
 import json
 import os
-from pathlib import Path
 import random
 import re
 from typing import Any, Dict, List
@@ -173,36 +171,6 @@ def compile_quiz_items(
 
 
 QUIZ_MODEL_TIMEOUT_S = 240.0
-
-def quiz_flags_path() -> Path:
-    return Path(os.environ.get("RAT_STATE_DIR") or Path.home() / ".rat").expanduser() / "quiz_flags.jsonl"
-
-
-def record_flagged_question(card: Dict[str, Any], index: int, *, doc_path: str | None = None,
-                            now: datetime | None = None) -> Path:
-    """Append the question the user marked wrong to quiz_flags.jsonl.
-
-    These are labels from real use: no check found the bad questions (runs 7-8 in
-    experiments/generative_views/RESULTS.md), so the user's own mark is the measurement.
-    Raises OSError when the line cannot be written.
-    """
-    q = card["questions"][index]
-    record = {
-        "at": (now or datetime.now()).isoformat(timespec="seconds"),
-        "doc": doc_path,
-        "page": q.get("source_page") or card.get("source_page"),
-        "generator": card.get("generator"),
-        "question": q.get("question"),
-        "options": q.get("options"),
-        "correct_index": q.get("correct_index"),
-        "quote": q.get("quote"),
-    }
-    path = quiz_flags_path()
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(record, ensure_ascii=False) + "\n")
-    return path
-
 
 def _default_quiz_client() -> Any:
     """The local model if its service is up. Tests replace this; under pytest it is None."""
