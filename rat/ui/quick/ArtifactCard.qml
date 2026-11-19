@@ -562,13 +562,23 @@ Rectangle {
             Layout.fillWidth: true
             spacing: 10
             property var selectedAnswers: ({})
-            readonly property int answeredCount: Object.keys(quizSection.selectedAnswers || ({})).length
+            // Marked wrong in this view; questionData.flagged keeps it once the card is rebuilt.
+            property var flaggedQuestions: ({})
+            function isFlagged(i) {
+                const qs = (cardRoot.cardData && cardRoot.cardData.questions) ? cardRoot.cardData.questions : []
+                return Boolean(quizSection.flaggedQuestions[i] || (qs[i] && qs[i].flagged))
+            }
+            // A question the user marked wrong does not count toward the score.
+            readonly property int answeredCount: {
+                const ans = quizSection.selectedAnswers || ({})
+                return Object.keys(ans).filter(k => !quizSection.isFlagged(Number(k))).length
+            }
             readonly property int correctCount: {
                 const qs = (cardRoot.cardData && cardRoot.cardData.questions) ? cardRoot.cardData.questions : []
                 const ans = quizSection.selectedAnswers || ({})
                 let hits = 0
                 for (let i = 0; i < qs.length; i++) {
-                    if (typeof ans[i] === "number" && qs[i] && ans[i] === qs[i].correct_index) {
+                    if (typeof ans[i] === "number" && qs[i] && ans[i] === qs[i].correct_index && !quizSection.isFlagged(i)) {
                         hits++
                     }
                 }
@@ -579,6 +589,7 @@ Rectangle {
                 target: cardRoot
                 function onCardDataChanged() {
                     quizSection.selectedAnswers = ({})
+                    quizSection.flaggedQuestions = ({})
                 }
             }
 
@@ -606,7 +617,8 @@ Rectangle {
                 }
                 QuietButton {
                     objectName: "resetQuizButton"
-                    visible: quizSection.answeredCount > 0
+                    // Any chosen answer, flagged or not: the score leaves flagged ones out, "Làm lại" does not.
+                    visible: Object.keys(quizSection.selectedAnswers || ({})).length > 0
                     text: "Làm lại"
                     plain: true
                     font.pixelSize: 12
@@ -639,9 +651,11 @@ Rectangle {
                             ? quizSection.selectedAnswers[quizQuestionCard.index]
                             : -1
                         readonly property int correctIndex: typeof questionData.correct_index === "number" ? questionData.correct_index : -1
+                        readonly property bool flagged: quizSection.flaggedQuestions[index] === true || questionData.flagged === true
 
                         Layout.fillWidth: true
                         implicitHeight: quizQuestionCol.implicitHeight + 18
+                        opacity: flagged ? 0.6 : 1.0
                         radius: 8
                         color: desk.inputColor
                         border.width: 1
@@ -738,6 +752,33 @@ Rectangle {
                                     const pgText = (pg && pg > 0) ? (" (Trang " + pg + ")") : ""
                                     return verdict + " Trích nguồn" + pgText + ": " + (quizQuestionCard.questionData.quote || "")
                                 }
+                            }
+
+                            // Shown once answered: with the key and the quote in view, the user can tell a bad question.
+                            QuietButton {
+                                objectName: "quizFlag_" + quizQuestionCard.index
+                                visible: quizQuestionCard.selectedIndex >= 0 && !quizQuestionCard.flagged
+                                text: "Câu này sai"
+                                plain: true
+                                font.pixelSize: 11
+                                Accessible.description: "Đánh dấu câu hỏi này sai; Chuột sẽ bỏ nó khỏi ghi chú"
+                                onClicked: {
+                                    if (desk.liveController && desk.liveController.flagQuizQuestion(quizQuestionCard.index)) {
+                                        var next = Object.assign({}, quizSection.flaggedQuestions)
+                                        next[quizQuestionCard.index] = true
+                                        quizSection.flaggedQuestions = next
+                                    }
+                                }
+                            }
+
+                            Label {
+                                objectName: "quizFlagged_" + quizQuestionCard.index
+                                visible: quizQuestionCard.flagged
+                                text: "Đã đánh dấu câu này sai. Chuột không tính nó vào điểm và sẽ bỏ nó khỏi ghi chú."
+                                font.pixelSize: 11
+                                color: desk.muted
+                                wrapMode: Text.Wrap
+                                Layout.fillWidth: true
                             }
                         }
                     }

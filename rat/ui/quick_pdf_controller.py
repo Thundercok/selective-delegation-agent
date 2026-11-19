@@ -1288,6 +1288,26 @@ class QuickPDFController(QObject):
         cb.setText(text)
         return cb.text() == text
 
+    @pyqtSlot(int, result=bool)
+    def flagQuizQuestion(self, index: int) -> bool:
+        """The user says a quiz question on screen is wrong: log it and leave it out of notes."""
+        card = self._turn_cards.get(self._displayed_turn_id or "") or self._artifact_card
+        questions = (card or {}).get("questions") or []
+        if not card or card.get("visual_type") != "quiz" or not 0 <= index < len(questions):
+            return False
+        if questions[index].get("flagged"):
+            return True
+        from rat.engine.quiz_generator import record_flagged_question
+        try:
+            path = record_flagged_question(card, index, doc_path=str(self._selection.path) if self._selection else None)
+        except OSError as exc:
+            self._events.append(f"Chưa ghi được câu bị đánh dấu sai: {exc}")
+            return False
+        # Changed in place and without emitting: a new card would clear the answers already chosen.
+        questions[index]["flagged"] = True
+        self._events.append(f"Đã ghi câu {index + 1} bị đánh dấu sai vào {path}")
+        return True
+
     @pyqtSlot(str, result=bool)
     def copyCitation(self, selected_text=""):
         if self.snapshot["busy"]:

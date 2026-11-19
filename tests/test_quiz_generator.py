@@ -167,7 +167,9 @@ def test_generate_quiz_capability_and_view_spec(tmp_path, quiz_model):
     assert len(spec.blocks) == 2
 
 
-def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path, quiz_model):
+def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path, quiz_model, monkeypatch):
+    monkeypatch.setenv("RAT_STATE_DIR", str(tmp_path / "state"))
+    monkeypatch.setenv("RAT_NOTES_DIR", str(tmp_path / "notes"))
     _app = QGuiApplication.instance() or QGuiApplication([])
     pdf_path = write_pdf(tmp_path / "ToChucMayTinh.pdf", [PDF_ASCII_SAMPLE])
     ctrl = QuickPDFController(auto_init_finder=False)
@@ -224,10 +226,32 @@ def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path, quiz_m
         assert "Trang 1" in quote_lbl.property("text")
         assert quiz_reset.isVisible() is True
 
+        # The user marks question 1 wrong: it is logged, greyed, and the chosen answer stays.
+        flag = find_item(root, "quizFlag_0")
+        assert flag is not None and flag.isVisible() is True
+        assert find_item(root, "quizFlag_1").isVisible() is False  # not answered yet
+        click(view, root, "quizFlag_0")
+        QTest.qWait(40)
+        assert find_item(root, "quizFlagged_0").isVisible() is True and flag.isVisible() is False
+        assert quote_lbl.isVisible() is True
+        [line] = (tmp_path / "state" / "quiz_flags.jsonl").read_text(encoding="utf-8").splitlines()
+        logged = json.loads(line)
+        first = snap["artifactCard"]["questions"][0]
+        assert logged["question"] == first["question"] and logged["page"] == 1
+        assert logged["doc"] == str(pdf_path) and logged["generator"] == "model"
+
         click(view, root, "resetQuizButton")
         QTest.qWait(30)
         assert quote_lbl.isVisible() is False
+        assert find_item(root, "quizFlagged_0").isVisible() is True  # "Làm lại" does not undo a flag
         assert warnings == []
+
+        assert ctrl.submit("Lưu thành ghi chú") is True
+        wait_for(lambda: not ctrl.snapshot["busy"])
+        [note] = (tmp_path / "notes").glob("*.md")
+        text = note.read_text(encoding="utf-8")
+        assert first["question"] not in text and "Đã bỏ 1 câu bạn đánh dấu sai" in text
+        assert text.count("\n1. ") == 1 and "\n2. " in text and "\n3. " not in text
     finally:
         timer.stop()
         ctrl.close()

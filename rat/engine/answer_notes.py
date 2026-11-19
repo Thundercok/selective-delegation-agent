@@ -37,7 +37,9 @@ def _quiz_lines(quiz: dict) -> list[str]:
     lines = [f"## {quiz.get('title') or 'Trắc nghiệm'}", ""]
     if quiz.get("instruction"):
         lines += [f"_{quiz['instruction']}_", ""]
-    for n, item in enumerate(quiz.get("questions") or [], 1):
+    questions = quiz.get("questions") or []
+    kept = [item for item in questions if not item.get("flagged")]
+    for n, item in enumerate(kept, 1):
         lines.append(f"{n}. {item.get('question', '').strip()}")
         for i, option in enumerate(item.get("options") or []):
             mark = " ✓" if i == item.get("correct_index") else ""
@@ -45,6 +47,8 @@ def _quiz_lines(quiz: dict) -> list[str]:
         if item.get("quote"):
             lines.append(f"   > {str(item['quote']).strip()}")
         lines.append("")
+    if len(kept) < len(questions):
+        lines += [f"_Đã bỏ {len(questions) - len(kept)} câu bạn đánh dấu sai._", ""]
     return lines
 
 
