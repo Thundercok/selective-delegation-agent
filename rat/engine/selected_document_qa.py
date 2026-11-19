@@ -64,6 +64,25 @@ def selected_document_messages(question, data, fallback_filename, history=None):
     return [*prefix, *retained, current]
 
 
+def unlocated_reply(located, filename, page_marked=True):
+    """What RAT says, without a model call, when the expanded window may not hold the topic.
+
+    ``located`` is how expand_document_context chose its window: "page" (page_match picked a
+    page), "excerpt", "phrase" (the whole question appears verbatim), "word" (one >=4-char
+    word of the question, often a function word like "được"), "offset", or "opening" (the
+    file's start, nothing matched). Return None to let the model answer from the window.
+
+    Text without page markers (txt, docx) has no page to cite wrongly, and the word match is
+    its only way to find a passage, so it always goes to the model.
+    """
+    # Only a picked page, a given excerpt or the verbatim question count as finding the topic.
+    # Unknown values refuse too: saying "not found" is safer than citing a page as if it were right.
+    if not page_marked or located in ('page', 'excerpt', 'phrase'):
+        return None
+    return (f'Mình không tìm thấy phần nói về câu hỏi này trong {filename}. '
+            'Bạn thử hỏi lại bằng thuật ngữ ghi trên slide (thường là tiếng Anh).')
+
+
 def answer_selected_document(runtime, question, file_path, *, model_client=None,
                              on_model_call=None, should_cancel=None, on_text=None, **context):
     """Read only the exact selected indexed path, then make at most one call."""
@@ -102,6 +121,9 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
         if expand_step and isinstance(expand_step.tool_result, dict) and expand_step.tool_result.get('found'):
             data = dict(expand_step.tool_result)
             data['path'] = path_text
+            reply = unlocated_reply(data.get('located'), path.name, data.get('page_marked', True))
+            if reply:
+                return ModelDecision('', final_answer=reply)
         elif read_step and isinstance(read_step.tool_result, dict) and read_step.tool_result.get('found'):
             data = dict(read_step.tool_result)
             # A truncated first read is only the document's opening (often its table of

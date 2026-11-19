@@ -90,3 +90,59 @@ def test_truncated_read_answers_from_the_matching_page(env):  # noqa: F811
     assert text.startswith('--- Page 3 ---') and 'XOR ra 1 khi' in text
     assert len(response.sources) == 1
     assert response.sources[0]['page'] == 3 and 'XOR' in response.sources[0]['excerpt']
+
+
+def _index_pages(runtime, path):
+    path.write_text(TEXT)
+    runtime.db.upsert_document({'file_path': str(path), 'file_name': path.name, 'file_ext': '.txt',
+        'file_size': path.stat().st_size, 'created_at': 1, 'modified_at': 2, 'indexed_at': 2,
+        'content_text': TEXT})
+
+
+def _expand_result(response):
+    return next(s.tool_result for s in response.steps if s.tool_name == 'expand_document_context')
+
+
+def test_expansion_reports_how_its_window_was_located(env, monkeypatch):  # noqa: F811
+    import rat.engine.page_match as pm
+    monkeypatch.setattr(pm, 'translate_query_terms_slm', lambda q, model_client=None: [])
+    runtime, path, client = env
+    _index_pages(runtime, path)
+    ask = lambda q: _expand_result(answer_selected_document(runtime, q, str(path), model_client=client))
+    assert ask('Cổng XOR cho ra 1 khi nào?')['located'] == 'page'
+    # "được" is the only word the question shares with the file (page 4): a hit, but not the topic.
+    weak = ask('Flipflop được dùng để làm gì?')
+    assert weak['located'] == 'word' and weak['page'] is None
+    assert ask('Flipflop JK?')['located'] == 'opening'
+
+
+def test_unlocated_window_can_be_answered_without_the_model(env, monkeypatch):  # noqa: F811
+    import rat.engine.page_match as pm
+    import rat.engine.selected_document_qa as sdq
+    monkeypatch.setattr(pm, 'translate_query_terms_slm', lambda q, model_client=None: [])
+    monkeypatch.setattr(sdq, 'unlocated_reply',
+                        lambda located, filename, page_marked: 'KHÔNG THẤY' if located != 'page' else None)
+    runtime, path, client = env
+    _index_pages(runtime, path)
+    response = answer_selected_document(runtime, 'Flipflop JK?', str(path), model_client=client)
+    assert response.error is None and response.answer == 'KHÔNG THẤY'
+    assert client.chat_with_meta.call_count == 0
+
+
+def test_unlocated_reply_refuses_unless_the_topic_was_found():
+    from rat.engine.selected_document_qa import unlocated_reply
+    for located in ('page', 'excerpt', 'phrase'):
+        assert unlocated_reply(located, 'deck.pdf') is None
+    for located in ('word', 'opening', 'offset', None):
+        assert 'deck.pdf' in unlocated_reply(located, 'deck.pdf')
+        assert unlocated_reply(located, 'notes.txt', page_marked=False) is None
+
+
+def test_question_that_only_shares_a_function_word_is_refused(env, monkeypatch):  # noqa: F811
+    import rat.engine.page_match as pm
+    monkeypatch.setattr(pm, 'translate_query_terms_slm', lambda q, model_client=None: [])
+    runtime, path, client = env
+    _index_pages(runtime, path)
+    response = answer_selected_document(runtime, 'Flipflop được dùng để làm gì?', str(path), model_client=client)
+    assert response.error is None and 'không tìm thấy' in response.answer
+    assert client.chat_with_meta.call_count == 0

@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional
 
 from rat.crawler.db import Database, remove_vietnamese_accents
 from rat.crawler.extractors import extract_document_content
-from rat.engine.page_match import page_window, query_terms
+from rat.engine.page_match import page_window, query_terms, split_pages
 from rat.kernel.contracts import Artifact, ArtifactAction
 from rat.kernel.registry import Capability, OperationDefinition
 
@@ -228,12 +228,16 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                     content = ""
             total_chars = len(content)
             start_idx = 0
+            # How the window was chosen. "word" is one >=4-char word of the question, which in
+            # Vietnamese is often a function word ("được"), so it is not evidence of the topic.
+            located = "opening"
             if target_excerpt and target_excerpt.strip() in content:
                 match_pos = content.find(target_excerpt.strip())
                 lead = max_chars // 3
                 start_idx = max(0, match_pos - lead)
                 end_idx = min(total_chars, match_pos + len(target_excerpt.strip()) + (max_chars - lead))
                 expanded_snippet = content[start_idx:end_idx].strip()
+                located = "excerpt"
             elif query_term and (window := page_window(
                 content,
                 query_terms(query_term),
@@ -245,12 +249,15 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                 start_idx = window["start"]
                 page_num = window["page"]
                 expanded_snippet = window["content"]
+                located = "page"
             elif query_term:
                 # Case-insensitive term location across document
                 c_lower = content.lower()
                 q_lower = query_term.lower()
                 match_pos = c_lower.find(q_lower)
+                located = "phrase"
                 if match_pos == -1:
+                    located = "word"
                     # Try individual meaningful words (>= 4 chars)
                     words = [w for w in re.findall(r"[^\W_]+", q_lower) if len(w) >= 4]
                     for w in words:
@@ -266,11 +273,14 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                 elif offset is not None and 0 <= offset < total_chars:
                     start_idx = offset
                     expanded_snippet = content[start_idx:min(total_chars, start_idx + max_chars)].strip()
+                    located = "offset"
                 else:
                     expanded_snippet = content[:max_chars].strip()
+                    located = "opening"
             elif offset is not None and 0 <= offset < total_chars:
                 start_idx = offset
                 expanded_snippet = content[start_idx:min(total_chars, start_idx + max_chars)].strip()
+                located = "offset"
             else:
                 expanded_snippet = content[:max_chars].strip()
             return {
@@ -282,6 +292,8 @@ def create_documents_capability(db: Optional[Database] = None, semantic=None) ->
                 "start_offset": start_idx,
                 "expanded_chars": len(expanded_snippet),
                 "page": page_num,
+                "located": located,
+                "page_marked": bool(split_pages(content)),
                 "expanded": True,
                 "truncated": bool(total_chars > len(expanded_snippet)),
             }
