@@ -229,3 +229,67 @@ number in it appears in the quote. The quiz also asks the model for one spare it
 Re-measured on the 60: 5 of 6 Q1s dropped, all 54 others kept. That misses the pre-set GO
 (all 6 dropped) by one: run 4 seed 1 Q1, key "00, 01, 10, 11", now passes. The trade is
 deliberate: one ill-posed question of 60 against losing every value question.
+
+## Run 7: a distractor the quote also states (offline, 2026-11-19)
+
+Most bad questions so far have a distractor that is also true and is on the page ("ra 0 khi …"
+for XOR, an organisation the page lists). Rule under test, in code, no model: drop a question if
+any distractor passes `key_supported_by_quote(distractor, quote)`, the same test the key must pass.
+
+Data: every labelled question that the current pipeline keeps (key supported by its quote):
+out4 and out5 with `quiz_labels_rat.json` / `quiz_labels_rat5.json`, plus the study-flow quizzes
+in `experiments/study_flow/out/` with `experiments/study_flow/labels.json`. Labels are Claude's,
+written before this rule existed.
+
+Thresholds, fixed before running:
+- GO: drops at least half of the ambiguous questions and at most 2 right ones.
+- KILL: drops under a third of the ambiguous questions, or 5 right ones or more.
+- Otherwise: iterate on the rule once, then decide.
+
+### Result: KILL
+
+`uv run python experiments/generative_views/run7_distractor_check.py`. Of the 67 labelled questions
+the pipeline keeps, the rule drops 13/20 ambiguous ones and 33/47 right ones. Five right ones was
+the KILL line.
+
+Why: a good distractor is meant to sound like the page, so it reuses the quote's words whether it
+is true or false. "Cả hai đầu vào bằng 1" has the same words as a false option for XOR and as a
+true one for OR; only the meaning of the gate decides. Exploratory, after the verdict: dropping
+on the share of a distractor's words found in the quote does not separate the labels at any cut
+(50%: 12/20 ambiguous, 20/47 right; 75%: 6/20 and 9/47; 90%: 1/20 and 4/47).
+
+Code that looks at words cannot tell a true distractor from a plausible one. What is left is a
+reader that understands the statement: a larger model checking each option against the quote.
+The 67 labelled questions are the offline test set for it.
+
+## Run 8: qwen3:4b with thinking checks each option (offline, 2026-11-19)
+
+Same 67 labelled questions as run 7. For each, qwen3:4b (thinking on, local Ollama) gets the
+quote, the question and the four options in their delivered order, and is not told the key. It
+returns the letters of every option that is a true answer to the question, by the quote and by
+correct subject knowledge. Rule under test: drop the question if the checker marks any
+distractor true. Keys were never wrong in this data, so a checker that leaves the key unmarked
+is noted, not counted.
+
+Earlier this idea was set aside on reasoning alone ("same family, same reading"). It was never
+measured, so it is a hypothesis.
+
+Thresholds, the same as run 7, fixed before running:
+- GO: drops at least half of the ambiguous questions and at most 2 right ones.
+- KILL: drops under a third of the ambiguous questions, or 5 right ones or more.
+- Otherwise: iterate on the prompt once, then decide.
+Also recorded: seconds per question; a checker that adds more than about a minute to a
+five-question quiz would need its own decision even on GO.
+
+### Result: stopped on cost after one question; accuracy not measured
+
+The first question (out4/1/Q1, ambiguous) took 550.6 s, and the checker marked only the key, so
+it missed that one. A 90 s streamed probe on the second question showed why: about 9 tokens/s on
+this Mac, and the thinking keeps re-checking the options ("Wait, … let me check the options
+again"), about 2,900 characters in 90 s with no answer yet. At roughly nine minutes a question, a
+five-question quiz would wait about 45 minutes. That is far past the one-minute bound set above,
+so no accuracy result could make this checker usable here. The full 67-question run (about ten
+hours) was not done. `run8_out.json` holds the one result.
+
+Still untested, cheap: the same check with thinking off (qwen3:4b-instruct, the generator's own
+model in a checker role), which should take seconds a question.
