@@ -57,9 +57,20 @@ def find_item(root, name):
 def click(view, root, name):
     item = find_item(root, name)
     assert item is not None and item.isVisible(), name
-    # Native sizing is queued after a page/answer transition. Wait for a real
-    # reachable control instead of clicking before the window-fit timer runs.
-    wait_for(lambda: 0 <= item.mapToScene(QPointF(item.width() / 2, item.height() / 2)).y() <= view.height(), timeout=3)
+
+    def _settled_and_reachable():
+        QCoreApplication.processEvents()
+        pref = root.property("preferredWindowHeight")
+        if pref is not None and view.screen() is not None:
+            screen_cap = view.screen().availableGeometry().height() - 32
+            if abs(view.height() - min(round(pref), screen_cap)) > 2:
+                return False
+        pt = item.mapToScene(QPointF(item.width() / 2, item.height() / 2))
+        return 0 <= pt.x() <= view.width() and 0 <= pt.y() <= view.height()
+
+    # Native sizing is queued after a page/answer transition. Wait for both layout
+    # polish and the window-fit timer so the control is genuinely reachable.
+    wait_for(_settled_and_reachable, timeout=3)
     point = item.mapToScene(QPointF(item.width() / 2, item.height() / 2))
     assert 0 <= point.x() <= view.width() and 0 <= point.y() <= view.height(), (name, point)
     QTest.mouseClick(view, Qt.MouseButton.LeftButton, pos=QPoint(round(point.x()), round(point.y())))
