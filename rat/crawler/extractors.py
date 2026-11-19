@@ -18,7 +18,10 @@ logging.getLogger("pypdf").setLevel(logging.ERROR)
 MAX_CHARS_PER_DOC = 100_000  # Cap content length to keep search snappy
 
 
-def extract_text_from_pdf_native(file_path: str, max_pages: int = 25) -> Optional[str]:
+# No page cap, like the read_pdf fallback: MAX_CHARS_PER_DOC bounds the cost. A 25-page cap here
+# made pages 26+ of every PDF unreachable when picking the page that answers a question
+# (experiments/page_search/RESULTS.md: 7 of 20 answers sat past page 25).
+def extract_text_from_pdf_native(file_path: str, max_pages: Optional[int] = None) -> Optional[str]:
     from document_intake.pdf import read_pdf_native
     return read_pdf_native(file_path, max_pages=max_pages, max_chars=MAX_CHARS_PER_DOC)
 
