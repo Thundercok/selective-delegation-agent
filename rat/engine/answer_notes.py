@@ -45,8 +45,6 @@ def _quiz_lines(quiz: dict) -> list[str]:
         if item.get("quote"):
             lines.append(f"   > {str(item['quote']).strip()}")
         lines.append("")
-    if quiz.get("generator") == "extract":
-        lines += ["_Các câu này được rút thẳng từ câu chữ trong tài liệu, không do mô hình soạn._", ""]
     return lines
 
 

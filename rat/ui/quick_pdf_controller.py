@@ -1689,8 +1689,8 @@ class QuickPDFController(QObject):
         target_page, page_basis, res_card = result["target_page"], result["page_basis"], result["card"]
         questions = res_card.get("questions") or []
         if not questions:
-            self._last_assistant_answer = ("Chuột chưa tạo được câu trắc nghiệm nào từ đoạn này. "
-                                           "Thử chỉ rõ trang, ví dụ \"trắc nghiệm trang 4\".")
+            from rat.engine.quiz_generator import quiz_failure_message
+            self._last_assistant_answer = quiz_failure_message(res_card.get("model_error"))
             self._displayed_turn_id = None
             self._artifact_card = None
             self._view = "answer"
@@ -1705,10 +1705,6 @@ class QuickPDFController(QObject):
             "default": f" trang {target_page}, vì chưa rõ bạn muốn phần nào (gõ \"trang N\" để chọn trang khác)",
         }.get(page_basis, "")
         lines = [f"Đã tạo {len(questions)} câu trắc nghiệm từ{where or ' ' + doc_title}."]
-        if res_card.get("generator") == "extract":
-            # Honest about the weaker path: these are sentences lifted from the page, not written questions.
-            lines.append("Chuột chưa soạn được câu hỏi bằng mô hình lúc này, nên các câu dưới đây "
-                         "được rút thẳng từ câu chữ trong trang và có thể còn vụng.")
         lines.append("Bấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.")
         self._complete_instant_card(
             q,

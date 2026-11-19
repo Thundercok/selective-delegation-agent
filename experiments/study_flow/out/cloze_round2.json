@@ -1,0 +1,270 @@
+{
+  "orgnotes": [
+    {
+      "question": "Điền vào chỗ trống: “Example: algebraic ____”",
+      "options": [
+        "A. theorem",
+        "B. Canonical",
+        "C. consensus",
+        "D. simplification"
+      ],
+      "correct_index": 3,
+      "quote": "Example: algebraic simplification",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “F = xy + x'z + yz = xy + x'z + yz(x + x') = xy + x'z + xyz + x'yz = xy(____ + z) + x'z(1 + y) = xy + x'z.”",
+      "options": [
+        "A. 1",
+        "B. 3",
+        "C. 2",
+        "D. 0"
+      ],
+      "correct_index": 0,
+      "quote": "F = xy + x'z + yz = xy + x'z + yz(x + x') = xy + x'z + xyz + x'yz = xy(1 + z) + x'z(1 + y) = xy + x'z.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “This is the ____ theorem.”",
+      "options": [
+        "A. simplification",
+        "B. consensus",
+        "C. algebraic",
+        "D. Example"
+      ],
+      "correct_index": 1,
+      "quote": "This is the consensus theorem.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “2.2 Canonical ____: minterms and maxterms”",
+      "options": [
+        "A. algebraic",
+        "B. simplification",
+        "C. forms",
+        "D. Example"
+      ],
+      "correct_index": 2,
+      "quote": "2.2 Canonical forms: minterms and maxterms",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Minterm mi: a product ____ every variable.”",
+      "options": [
+        "A. algebraic",
+        "B. Example",
+        "C. simplification",
+        "D. containing"
+      ],
+      "correct_index": 3,
+      "quote": "Minterm mi: a product containing every variable.",
+      "source_page": 3,
+      "grounded": true
+    }
+  ],
+  "toeic8": [
+    {
+      "question": "Điền vào chỗ trống: “Tuần ____ – Part 3 hội thoại”",
+      "options": [
+        "A. 4",
+        "B. 6",
+        "C. 3",
+        "D. 5"
+      ],
+      "correct_index": 0,
+      "quote": "Tuần 4 – Part 3 hội thoại",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Ngày Bài học chính (____–60 phút) Thêm (15–30 phút)”",
+      "options": [
+        "A. 20",
+        "B. 45",
+        "C. 46",
+        "D. 12"
+      ],
+      "correct_index": 1,
+      "quote": "Ngày Bài học chính (45–60 phút) Thêm (15–30 phút)",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Part ____: kỹ năng đọc trước 3 câu hỏi trong lúc chờ.”",
+      "options": [
+        "A. 6",
+        "B. 4",
+        "C. 3",
+        "D. 5"
+      ],
+      "correct_index": 2,
+      "quote": "Part 3: kỹ năng đọc trước 3 câu hỏi trong lúc chờ.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ từ chủ đề Du lịch và Đi”",
+      "options": [
+        "A. 20",
+        "B. 30",
+        "C. 12",
+        "D. 15"
+      ],
+      "correct_index": 3,
+      "quote": "15 từ chủ đề Du lịch và Đi",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Nghe lại, đọc ____.”",
+      "options": [
+        "A. transcript",
+        "B. Part",
+        "C. because",
+        "D. although"
+      ],
+      "correct_index": 0,
+      "quote": "Nghe lại, đọc transcript.",
+      "source_page": 3,
+      "grounded": true
+    }
+  ],
+  "proposal": [
+    {
+      "question": "Điền vào chỗ trống: “____ 2: THE 11 PILLARS”",
+      "options": [
+        "A. TITLE",
+        "B. JECT",
+        "C. CHAPTER",
+        "D. ID"
+      ],
+      "correct_index": 2,
+      "quote": "CHAPTER 2: THE 11 PILLARS",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “JECT ____ (TIÊU ĐỀ ĐỀ TÀI)”",
+      "options": [
+        "A. ID",
+        "B. PILLARS",
+        "C. CHAPTER",
+        "D. TITLE"
+      ],
+      "correct_index": 3,
+      "quote": "JECT TITLE (TIÊU ĐỀ ĐỀ TÀI)",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Go lden Rule: Must be concise, u nambig u o us, and t ____ precise.”",
+      "options": [
+        "A. echnically",
+        "B. ical",
+        "C. great",
+        "D. conveys"
+      ],
+      "correct_index": 0,
+      "quote": "Go lden Rule: Must be concise, u nambig u o us, and t echnically precise.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “A great t t i tle conveys two cri ical elemen ts: (____) The core research problem, and (2) The primary scien t ific me t hod/t l echno ogy.”",
+      "options": [
+        "A. 4",
+        "B. 1",
+        "C. 5",
+        "D. 2"
+      ],
+      "correct_index": 1,
+      "quote": "A great t t i tle conveys two cri ical elemen ts: (1) The core research problem, and (2) The primary scien t ific me t hod/t l echno ogy.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ e standard keywords (Art ificial In t elligence, Machine Learning, Deep Learning, Ne ural Ne tworks…”",
+      "options": [
+        "A. lden",
+        "B. Rule",
+        "C. Incorporat",
+        "D. Must"
+      ],
+      "correct_index": 2,
+      "quote": "Incorporat e standard keywords (Art ificial In t elligence, Machine Learning, Deep Learning, Ne ural Ne tworks, B l ockchain, IoT, Comput er Vision).",
+      "source_page": 3,
+      "grounded": true
+    }
+  ],
+  "imlbook": [
+    {
+      "question": "Điền vào chỗ trống: “____.1 Don’t use linear regression for classification .”",
+      "options": [
+        "A. 9",
+        "B. 8",
+        "C. 7",
+        "D. 6"
+      ],
+      "correct_index": 2,
+      "quote": "7.1 Don’t use linear regression for classification .",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “8 GLM, GAM and more 8.1 Non-____ outcomes - GLMs .”",
+      "options": [
+        "A. classification",
+        "B. regression",
+        "C. linear",
+        "D. Gaussian"
+      ],
+      "correct_index": 3,
+      "quote": "8 GLM, GAM and more 8.1 Non-Gaussian outcomes - GLMs .",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “8.3 ____ eﬀects - GAMs .”",
+      "options": [
+        "A. Nonlinear",
+        "B. linear",
+        "C. classification",
+        "D. regression"
+      ],
+      "correct_index": 0,
+      "quote": "8.3 Nonlinear eﬀects - GAMs .",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “9.1 9.2 9.3 9.4 9.5 ____ .”",
+      "options": [
+        "A. regression",
+        "B. Interpretation",
+        "C. classification",
+        "D. linear"
+      ],
+      "correct_index": 1,
+      "quote": "9.1 9.2 9.3 9.4 9.5 Interpretation .",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “10.1 Learn rules from a single ____ (OneR) .”",
+      "options": [
+        "A. regression",
+        "B. classification",
+        "C. feature",
+        "D. linear"
+      ],
+      "correct_index": 2,
+      "quote": "10.1 Learn rules from a single feature (OneR) .",
+      "source_page": 3,
+      "grounded": true
+    }
+  ]
+}

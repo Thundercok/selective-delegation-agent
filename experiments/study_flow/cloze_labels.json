@@ -1,0 +1,16 @@
+{
+  "_by": "Claude, not blind; I built the generator. bad = a distractor that also makes a true statement, a blank that cannot be told from the sentence, or an unreadable stem.",
+  "gates": {"1": ["bad", "table header row: 'Cổng Biểu thức Ra 1 khi ____ 01 10 11'"],
+            "2": ["ok", "flattened table row, still only AND is xy"], "3": ["ok", ""], "4": ["ok", ""], "5": ["ok", ""]},
+  "wiki":  {"1": ["ok", ""], "2": ["ok", ""], "3": ["ok", ""],
+            "4": ["bad", "blank is a citation number [11]"],
+            "5": ["ok", "last item of a list, but no distractor is a list member"]},
+  "dsa":   {"1": ["ok", "exam year 2026: answerable, but trivia from the header"],
+            "2": ["bad", "'KHÔNG đổi tên Node' is also true: Node is one of the given files"],
+            "3": ["bad", "Question3 is in the same file list"],
+            "4": ["bad", "line-wrap fragment; Question2, ListInterface, CharLinkedList are also .java files zipped"],
+            "5": ["ok", "distractor 'tham' is a word fragment of 'tham số'"]},
+  "toeic": {"1": ["ok", ""],
+            "2": ["bad", "line-wrap fragment 'copier mà đáp án nói coffee.' lost 'Ví dụ tranh có'"],
+            "3": ["ok", ""], "4": ["ok", ""], "5": ["ok", ""]}
+}

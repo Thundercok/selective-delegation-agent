@@ -20,10 +20,10 @@ from rat.engine.quiz_generator import (
     QUIZ_GENERATION_SCHEMA,
     QUIZ_INSTRUCTION,
     compile_quiz_items,
-    extract_fallback_quiz,
     generate_quiz_from_text,
     is_quote_grounded,
     key_supported_by_quote,
+    quiz_failure_message,
     strip_choice_prefix,
 )
 from rat.kernel.capabilities import build_default_registry
@@ -50,6 +50,30 @@ PDF_ASCII_SAMPLE = (
     "The XOR gate outputs 1 when its two input values are different from each other. "
     "Every Boolean logic function can be constructed using universal NAND gates alone."
 )
+
+ASCII_ITEMS = [
+    {"a_quote": "The AND gate outputs 1 only when all input signals are equal to 1.",
+     "b_question": "When does the AND gate output 1?", "c_correct": "When all input signals are equal to 1",
+     "d_distractors": ["When the two inputs differ", "When no input is 1", "Never"]},
+    {"a_quote": "The OR gate outputs 1 whenever at least one input signal is equal to 1.",
+     "b_question": "When does the OR gate output 1?", "c_correct": "When at least one input signal is equal to 1",
+     "d_distractors": ["Only when all inputs are 0", "When the two inputs differ", "Never"]},
+    {"a_quote": "The XOR gate outputs 1 when its two input values are different from each other.",
+     "b_question": "When does the XOR gate output 1?", "c_correct": "When its two input values are different",
+     "d_distractors": ["When both inputs are 0", "When no input is 1", "Never"]},
+    {"a_quote": "Every Boolean logic function can be constructed using universal NAND gates alone.",
+     "b_question": "Which gate alone can build every Boolean function?", "c_correct": "Universal NAND gates",
+     "d_distractors": ["Inverters", "Flip-flops", "Multiplexers"]},
+]
+
+
+@pytest.fixture
+def quiz_model(monkeypatch):
+    """The local model, faked: it writes the four ASCII_ITEMS questions."""
+    model = MagicMock()
+    model.chat_with_meta.return_value = {"message": {"content": json.dumps({"items": ASCII_ITEMS})}}
+    monkeypatch.setattr("rat.engine.quiz_generator._default_quiz_client", lambda: model)
+    return model
 
 
 def test_causal_schema_order_and_compile_invariants():
@@ -86,15 +110,7 @@ def test_causal_schema_order_and_compile_invariants():
     assert is_quote_grounded("Một câu hoàn toàn bịa đặt không có trong sách về tàu vũ trụ.", COMPUTER_ORG_SAMPLE) is False
 
 
-def test_fallback_and_model_quiz_generation():
-    fallback_items = extract_fallback_quiz(COMPUTER_ORG_SAMPLE, count=4, source_page=4)
-    assert len(fallback_items) == 4
-    for q in fallback_items:
-        assert len(q["options"]) == 4
-        assert 0 <= q["correct_index"] < 4
-        assert q["grounded"] is True
-        assert q["source_page"] == 4
-
+def test_model_quiz_generation():
     mock_model = MagicMock()
     mock_model.chat_with_meta.return_value = {
         "message": {
@@ -128,7 +144,7 @@ def test_fallback_and_model_quiz_generation():
     assert q["options"][q["correct_index"]].endswith("Cổng NAND")
 
 
-def test_generate_quiz_capability_and_view_spec(tmp_path):
+def test_generate_quiz_capability_and_view_spec(tmp_path, quiz_model):
     pdf_path = write_pdf(tmp_path / "ComputerOrg.pdf", [PDF_ASCII_SAMPLE])
     reg = build_default_registry()
     assert reg.has_operation("generate_quiz")
@@ -151,7 +167,7 @@ def test_generate_quiz_capability_and_view_spec(tmp_path):
     assert len(spec.blocks) == 2
 
 
-def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path):
+def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path, quiz_model):
     _app = QGuiApplication.instance() or QGuiApplication([])
     pdf_path = write_pdf(tmp_path / "ToChucMayTinh.pdf", [PDF_ASCII_SAMPLE])
     ctrl = QuickPDFController(auto_init_finder=False)
@@ -222,14 +238,38 @@ def test_quick_pdf_controller_quiz_shortcut_and_qml_interaction(tmp_path):
         QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
-def test_fallback_quiz_says_it_was_extracted_and_why():
+def test_without_a_working_model_there_is_no_quiz_and_it_says_why(tmp_path):
+    # Page-built questions were removed: 6/20 and 10/20 bad (experiments/study_flow/RESULTS.md).
     broken = MagicMock()
     broken.chat_with_meta.return_value = {"message": {}, "error": "timeout"}
     res = generate_quiz_from_text(COMPUTER_ORG_SAMPLE, count=2, source_page=4, model_client=broken)
-    assert res["questions"] and res["generator"] == "extract" and res["model_error"] == "timeout"
+    assert res["questions"] == [] and res["generator"] == "none" and res["model_error"] == "timeout"
+
+    res = generate_quiz_from_text(COMPUTER_ORG_SAMPLE, count=2)  # no model under pytest
+    assert res["questions"] == [] and res["model_error"] == "model_unavailable"
+    assert "Ollama" in quiz_failure_message("model_unavailable")
+    assert "Ollama" not in quiz_failure_message("no_grounded_items")
+
+    pdf_path = write_pdf(tmp_path / "ToChucMayTinh.pdf", [PDF_ASCII_SAMPLE])
+    dispatcher = ActionDispatcher(build_default_registry(), ArtifactStore())
+    res = dispatcher.execute_operation("generate_quiz", {"file_path": str(pdf_path), "page": 1})
+    assert "Ollama" in str(res.error or res.data)
+
+    _app = QGuiApplication.instance() or QGuiApplication([])
+    ctrl = QuickPDFController(auto_init_finder=False)
+    ctrl.ready()
+    try:
+        ctrl.selectFile(str(pdf_path))
+        wait_for(lambda: not ctrl.snapshot["busy"])
+        assert ctrl.submit("tạo 3 câu trắc nghiệm trang 1") is True
+        wait_for(lambda: not ctrl.snapshot["busy"])
+        assert ctrl.snapshot["artifactCard"] is None
+        assert "Ollama" in ctrl.snapshot["answerText"]
+    finally:
+        ctrl.close()
 
 
-def test_quiz_on_this_part_uses_the_page_the_last_answer_cited(tmp_path):
+def test_quiz_on_this_part_uses_the_page_the_last_answer_cited(tmp_path, quiz_model):
     _app = QGuiApplication.instance() or QGuiApplication([])
     pdf_path = write_pdf(tmp_path / "ToChucMayTinh.pdf", [PDF_ASCII_SAMPLE, PDF_ASCII_SAMPLE])
     ctrl = QuickPDFController(auto_init_finder=False)
@@ -247,9 +287,7 @@ def test_quiz_on_this_part_uses_the_page_the_last_answer_cited(tmp_path):
         snap = ctrl.snapshot
         assert snap["artifactCard"]["source_page"] == 2
         assert "trang 2, trang câu trả lời vừa rồi dẫn" in snap["answerText"]
-        # Under pytest no model runs, so the card must admit the questions were lifted from the page.
-        assert snap["artifactCard"]["generator"] == "extract"
-        assert "rút thẳng từ câu chữ" in snap["answerText"]
+        assert snap["artifactCard"]["generator"] == "model"
     finally:
         ctrl.close()
 
@@ -295,7 +333,12 @@ def test_a_value_key_passes_when_the_quote_holds_it():
     assert not key_supported_by_quote("n²", "Merge nlogn nlogn nlogn n ✓")
 
 
-def test_quiz_says_the_fullest_statement_counts():
-    quiz = generate_quiz_from_text("Cổng XOR cho đầu ra bằng 1 khi hai đầu vào có giá trị khác nhau.", count=1)
-    assert quiz["instruction"] == QUIZ_INSTRUCTION
+def test_quiz_says_how_its_questions_are_answered():
+    model = MagicMock()
+    model.chat_with_meta.return_value = {"message": {"content": json.dumps({"items": [{
+        "a_quote": "Cổng XOR cho đầu ra bằng 1 khi hai đầu vào có giá trị khác nhau.",
+        "b_question": "Cổng XOR ra 1 khi nào?", "c_correct": "Hai đầu vào có giá trị khác nhau",
+        "d_distractors": ["Hai đầu vào bằng 0", "Hai đầu vào bằng 1", "Không bao giờ"]}]})}}
+    quiz = generate_quiz_from_text(COMPUTER_ORG_SAMPLE, count=1, model_client=model)
+    assert quiz["generator"] == "model" and quiz["instruction"] == QUIZ_INSTRUCTION
     assert "đầy đủ nhất" in QUIZ_INSTRUCTION

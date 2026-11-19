@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from rat.engine.quiz_generator import generate_quiz_from_text
+from rat.engine.quiz_generator import generate_quiz_from_text, quiz_failure_message
 from rat.kernel.registry import Capability, OperationDefinition
 
 
@@ -84,7 +84,7 @@ def create_quiz_capability(db: Any = None) -> Capability:
         if not result.get("questions"):
             return {
                 "found": False,
-                "error": "Đoạn nội dung quá ngắn hoặc chưa đủ dữ kiện để tạo câu hỏi trắc nghiệm.",
+                "error": quiz_failure_message(result.get("model_error")),
             }
         return {**result, "found": True}
 

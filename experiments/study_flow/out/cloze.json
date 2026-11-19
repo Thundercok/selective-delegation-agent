@@ -1,0 +1,270 @@
+{
+  "gates": [
+    {
+      "question": "Điền vào chỗ trống: “____ xy tất cả bằng 1 0 0 0 1”",
+      "options": [
+        "A. NAND",
+        "B. AND",
+        "C. OR",
+        "D. NOR"
+      ],
+      "correct_index": 1,
+      "quote": "AND xy tất cả bằng 1 0 0 0 1",
+      "source_page": 4,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ x + y ít nhất một bằng 1 0 1 1 1”",
+      "options": [
+        "A. NOR",
+        "B. NAND",
+        "C. OR",
+        "D. AND"
+      ],
+      "correct_index": 2,
+      "quote": "OR x + y ít nhất một bằng 1 0 1 1 1",
+      "source_page": 4,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ (xy)' không phải tất cả bằng 1 1 1 1 0”",
+      "options": [
+        "A. OR",
+        "B. XOR",
+        "C. NOR",
+        "D. NAND"
+      ],
+      "correct_index": 3,
+      "quote": "NAND (xy)' không phải tất cả bằng 1 1 1 1 0",
+      "source_page": 4,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ (x + y)' tất cả bằng 0 1 0 0 0”",
+      "options": [
+        "A. NOR",
+        "B. XOR",
+        "C. NAND",
+        "D. AND"
+      ],
+      "correct_index": 0,
+      "quote": "NOR (x + y)' tất cả bằng 0 1 0 0 0",
+      "source_page": 4,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “____ x ⊕ y = x'y + xy' hai đầu vào khác nhau 0 1 1 0”",
+      "options": [
+        "A. NOR",
+        "B. XOR",
+        "C. AND",
+        "D. NAND"
+      ],
+      "correct_index": 1,
+      "quote": "XOR x ⊕ y = x'y + xy' hai đầu vào khác nhau 0 1 1 0",
+      "source_page": 4,
+      "grounded": true
+    }
+  ],
+  "wiki": [
+    {
+      "question": "Điền vào chỗ trống: “nền kinh tế thị trường đầy đủ, đến năm 2013, đã có ____ quốc gia công nhận Việt Nam đạt kinh tế thị trường (VCCI) trong đó có Nhật Bản, Đức và”",
+      "options": [
+        "A. 36",
+        "B. 37",
+        "C. 39",
+        "D. 40"
+      ],
+      "correct_index": 1,
+      "quote": "nền kinh tế thị trường đầy đủ, đến năm 2013, đã có 37 quốc gia công nhận Việt Nam đạt kinh tế thị trường (VCCI) trong đó có Nhật Bản, Đức và",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Hàn Quốc.[9] Đến năm 2017, sau những nỗ lực đàm phán các Hiệp định thương mại tự do (____) song phương với quốc tế, Phó Thủ tướng Phạm”",
+      "options": [
+        "A. VCCI",
+        "B. GDP",
+        "C. FTA",
+        "D. ASEAN"
+      ],
+      "correct_index": 2,
+      "quote": "Hàn Quốc.[9] Đến năm 2017, sau những nỗ lực đàm phán các Hiệp định thương mại tự do (FTA) song phương với quốc tế, Phó Thủ tướng Phạm",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Bình Minh đã thông báo đã có ____ nước công nhận Việt Nam là một nền kinh tế thị trường tại phiên họp thường trực chính phủ,[10] tuy…”",
+      "options": [
+        "A. 97",
+        "B. 40",
+        "C. 53",
+        "D. 69"
+      ],
+      "correct_index": 3,
+      "quote": "Bình Minh đã thông báo đã có 69 nước công nhận Việt Nam là một nền kinh tế thị trường tại phiên họp thường trực chính phủ,[10] tuy nhiên Hoa Kỳ",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “(đối tác thương mại lớn thứ ____) thì vẫn chưa công nhận kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh.[11] Xét về mặt k…”",
+      "options": [
+        "A. 2",
+        "B. 0",
+        "C. 3",
+        "D. 1"
+      ],
+      "correct_index": 0,
+      "quote": "(đối tác thương mại lớn thứ 2) thì vẫn chưa công nhận kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh.[11] Xét về mặt kinh tế, Việt Nam là quốc gia thành viên của Liên Hợp Quốc, Tổ chức Thương mại Thế giới, Quỹ Tiền tệ Quốc tế, Nhóm Ngân hàng Thế giới, Ngân hàng Phát triển châu Á, Diễn đàn Hợp tác Kinh tế châu Á – Thái Bình Dương, Hiệp định Đối tác Toàn diện và Tiến bộ xuyên Thái Bình Dương, ASEAN.",
+      "source_page": 3,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Bảng 1: Các chỉ số kinh tế chủ yếu của Việt Nam (____ – 2024)”",
+      "options": [
+        "A. 2000",
+        "B. 1990",
+        "C. 2011",
+        "D. 2010"
+      ],
+      "correct_index": 1,
+      "quote": "Bảng 1: Các chỉ số kinh tế chủ yếu của Việt Nam (1990 – 2024)",
+      "source_page": 3,
+      "grounded": true
+    }
+  ],
+  "dsa": [
+    {
+      "question": "Điền vào chỗ trống: “Thầy Nguyễn Thành An ⚠ Luật thi (đề ____)”",
+      "options": [
+        "A. 2025",
+        "B. 2027",
+        "C. 2028",
+        "D. 2026"
+      ],
+      "correct_index": 3,
+      "quote": "Thầy Nguyễn Thành An ⚠ Luật thi (đề 2026)",
+      "source_page": 1,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “CharLinkedList, ListInterface, Node, Test, Question2, Question3 .____ → nén zip.”",
+      "options": [
+        "A. java",
+        "B. list",
+        "C. file",
+        "D. Task"
+      ],
+      "correct_index": 0,
+      "quote": "CharLinkedList, ListInterface, Node, Test, Question2, Question3 .java → nén zip.",
+      "source_page": 1,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Tự viết hàm in list + main ____.”",
+      "options": [
+        "A. Node",
+        "B. test",
+        "C. java",
+        "D. file"
+      ],
+      "correct_index": 1,
+      "quote": "Tự viết hàm in list + main test.",
+      "source_page": 1,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Task ____ được dùng java.util.Stack (nhớ import).”",
+      "options": [
+        "A. 1",
+        "B. 2",
+        "C. 3",
+        "D. 0"
+      ],
+      "correct_index": 2,
+      "quote": "Task 3 được dùng java.util.Stack (nhớ import).",
+      "source_page": 1,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Hàm phải return đủ mọi nhánh (hàm int/____ không return = lỗi biên dịch).”",
+      "options": [
+        "A. Test",
+        "B. Node",
+        "C. file",
+        "D. boolean"
+      ],
+      "correct_index": 3,
+      "quote": "Hàm phải return đủ mọi nhánh (hàm int/boolean không return = lỗi biên dịch).",
+      "source_page": 1,
+      "grounded": true
+    }
+  ],
+  "toeic": [
+    {
+      "question": "Điền vào chỗ trống: “Ví dụ tranh có ____ mà đáp án nói coffee.”",
+      "options": [
+        "A. placed",
+        "B. arranged",
+        "C. copier",
+        "D. located"
+      ],
+      "correct_index": 2,
+      "quote": "Ví dụ tranh có copier mà đáp án nói coffee.",
+      "source_page": 2,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Tranh chỉ có đồ vật, không có người: đáp án đúng thường dùng is placed / has been ____ / is located.”",
+      "options": [
+        "A. next",
+        "B. copier",
+        "C. coffee",
+        "D. arranged"
+      ],
+      "correct_index": 3,
+      "quote": "Tranh chỉ có đồ vật, không có người: đáp án đúng thường dùng is placed / has been arranged / is located.",
+      "source_page": 2,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Luyện nghe với đề thật (____ phút)”",
+      "options": [
+        "A. 20",
+        "B. 10",
+        "C. 21",
+        "D. 30"
+      ],
+      "correct_index": 0,
+      "quote": "Luyện nghe với đề thật (20 phút)",
+      "source_page": 2,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Nguồn: đề mẫu TOEIC ____ & Reading chính thức của ETS (nhà ra đề TOEIC), miễn phí, có audio.”",
+      "options": [
+        "A. copier",
+        "B. Listening",
+        "C. placed",
+        "D. coffee"
+      ],
+      "correct_index": 1,
+      "quote": "Nguồn: đề mẫu TOEIC Listening & Reading chính thức của ETS (nhà ra đề TOEIC), miễn phí, có audio.",
+      "source_page": 2,
+      "grounded": true
+    },
+    {
+      "question": "Điền vào chỗ trống: “Vào ets.org/toeic → Listening and Reading → tìm mục Sample Test / Sample ____.”",
+      "options": [
+        "A. placed",
+        "B. coffee",
+        "C. Questions",
+        "D. copier"
+      ],
+      "correct_index": 2,
+      "quote": "Vào ets.org/toeic → Listening and Reading → tìm mục Sample Test / Sample Questions.",
+      "source_page": 2,
+      "grounded": true
+    }
+  ]
+}

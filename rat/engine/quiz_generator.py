@@ -86,20 +86,26 @@ def is_quote_grounded(quote: str, source_text: str) -> bool:
     return (hits / len(words)) >= 0.6
 
 
-def _content_words(text: str) -> set:
+def _content_words(text: str, keep_stopwords: bool = False) -> set:
     lowered = unicodedata.normalize("NFC", str(text or "")).lower()
-    return {w for w in re.findall(r"[^\W\d_]+", lowered) if len(w) >= 2 and w not in STOPWORDS}
+    # keep_stopwords is for a key that is only such a word, e.g. the gate "AND".
+    return {w for w in re.findall(r"[^\W\d_]+", lowered)
+            if len(w) >= 2 and (keep_stopwords or w not in STOPWORDS)}
 
 
 def key_supported_by_quote(correct: str, quote: str) -> bool:
     """Whether the quote states the answer, not only sits on the same page."""
     key_words = _content_words(correct)
-    if not key_words:
-        # A value such as "0" for NAND(1, 1): its options are other values, so only one can be true.
-        numbers = re.findall(r"\d+", str(correct or ""))
-        return bool(numbers) and all(re.search(rf"(?<!\d){n}(?!\d)", str(quote or "")) for n in numbers)
-    # A one-word key ("n²", "WTO") can only share one word.
-    return len(key_words & _content_words(quote)) >= min(MIN_KEY_QUOTE_WORDS, len(key_words))
+    if key_words:
+        # A one-word key ("n²", "WTO") can only share one word.
+        return len(key_words & _content_words(quote)) >= min(MIN_KEY_QUOTE_WORDS, len(key_words))
+    plain = _content_words(correct, keep_stopwords=True)
+    if plain:
+        # The key is only stopwords, such as the gate "AND": the quote must hold all of them.
+        return plain <= _content_words(quote, keep_stopwords=True)
+    # A value such as "0" for NAND(1, 1): its options are other values, so only one can be true.
+    numbers = re.findall(r"\d+", str(correct or ""))
+    return bool(numbers) and all(re.search(rf"(?<!\d){n}(?!\d)", str(quote or "")) for n in numbers)
 
 
 def compile_quiz_items(
@@ -164,85 +170,28 @@ def compile_quiz_items(
     return compiled
 
 
-def _split_factual_statements(source_text: str) -> List[str]:
-    """Extract clean informative statements (>= 25 chars) from source text."""
-    raw_segments = re.split(r"(?<=[.!?])\s+|\n+", str(source_text or "").strip())
-    statements: List[str] = []
-    seen = set()
-    for seg in raw_segments:
-        clean = re.sub(r"\s+", " ", seg).strip(" -•*\t\r\n")
-        if len(clean) >= 25 and clean.lower() not in seen:
-            seen.add(clean.lower())
-            statements.append(clean)
-    return statements
-
-
-def _make_stem_from_statement(stmt: str, idx: int) -> tuple[str, str]:
-    """Turn a factual statement into (question_stem, topic_label)."""
-    split_match = re.match(
-        r"^(.{3,45}?)\s+(?:là|gồm|cho|có|=|:)\s+(.+)$",
-        stmt,
-        flags=re.IGNORECASE,
-    )
-    if split_match:
-        subject = split_match.group(1).strip(" :-")
-        return f"Theo tài liệu, nhận định nào sau đây đúng về {subject}?", subject
-    words = stmt.split()[:6]
-    hint = " ".join(words).rstrip(".,;:")
-    return f"Câu {idx + 1}: Nội dung nào sau đây phù hợp với tài liệu (\"{hint}…\")?", hint
-
-
 QUIZ_MODEL_TIMEOUT_S = 240.0
 
+def _default_quiz_client() -> Any:
+    """The local model if its service is up. Tests replace this; under pytest it is None."""
+    if os.environ.get("PYTEST_CURRENT_TEST"):
+        return None
+    try:
+        from rat.engine.slm import assistant_engine
+        candidate = assistant_engine()
+        return candidate if getattr(candidate, "is_service_running", lambda: False)() else None
+    except Exception:
+        return None
 
-def extract_fallback_quiz(
-    source_text: str,
-    count: int = 5,
-    source_page: int = 0,
-) -> List[Dict[str, Any]]:
-    """Deterministically build verifiable MCQ items from source statements without an LLM."""
-    statements = _split_factual_statements(source_text)
-    if not statements:
-        return []
 
-    generic_foils = [
-        "Không phụ thuộc vào bất kỳ điều kiện hay trạng thái đầu vào nào.",
-        "Chỉ áp dụng khi tất cả tín hiệu điều khiển bị vô hiệu hóa hoàn toàn.",
-        "Luôn trả về giá trị ngược lại so với quy tắc chuẩn của hệ thống.",
-        "Chỉ có thể hoạt động tuần tự khi ngắt toàn bộ bộ nhớ đệm.",
-        "Tài liệu khẳng định trường hợp này không tồn tại trong thực tế.",
-    ]
-
-    raw_items: List[Dict[str, Any]] = []
-    for idx, stmt in enumerate(statements[: max(1, count)]):
-        stem, _topic = _make_stem_from_statement(stmt, idx)
-        other_stmts = [s for j, s in enumerate(statements) if j != idx]
-        distractors: List[str] = []
-        for s in other_stmts:
-            if len(distractors) >= 3:
-                break
-            distractors.append(s)
-        for foil in generic_foils:
-            if len(distractors) >= 3:
-                break
-            if foil.lower() != stmt.lower() and foil not in distractors:
-                distractors.append(foil)
-        raw_items.append(
-            {
-                "a_quote": stmt,
-                "b_question": stem,
-                "c_correct": stmt,
-                "d_distractors": distractors[:3],
-                "source_page": source_page,
-            }
-        )
-
-    return compile_quiz_items(
-        raw_items,
-        source_text=source_text,
-        source_page=source_page,
-        max_count=count,
-    )
+def quiz_failure_message(model_error: str | None) -> str:
+    """Why there is no quiz. There is no fallback: two rounds of page-built questions had
+    6/20 and 10/20 bad ones (experiments/study_flow/RESULTS.md)."""
+    if model_error == "model_unavailable":
+        return ("Chuột cần mô hình trên máy để soạn câu hỏi, mà mô hình chưa chạy. "
+                "Bật Ollama rồi thử lại.")
+    return ("Mô hình chưa viết được câu nào bám đúng trang này. Thử lại, "
+            "hoặc chỉ rõ trang, ví dụ \"trắc nghiệm trang 4\".")
 
 
 def generate_quiz_from_text(
@@ -253,7 +202,7 @@ def generate_quiz_from_text(
     source_page: int = 0,
     model_client: Any = None,
 ) -> Dict[str, Any]:
-    """Generate a verified interactive quiz payload from source text with deterministic fallback."""
+    """A verified quiz written by the local model; no questions, and the reason, when it cannot."""
     try:
         n_questions = max(1, min(10, int(count or 5)))
     except (TypeError, ValueError):
@@ -263,15 +212,7 @@ def generate_quiz_from_text(
     questions: List[Dict[str, Any]] = []
     model_error = "model_unavailable"
 
-    client = model_client
-    if client is None and not os.environ.get("PYTEST_CURRENT_TEST"):
-        try:
-            from rat.engine.slm import assistant_engine
-            candidate = assistant_engine()
-            if getattr(candidate, "is_service_running", lambda: False)():
-                client = candidate
-        except Exception:
-            client = None
+    client = model_client if model_client is not None else _default_quiz_client()
 
     if client is not None and clean_text:
         # One spare: the model writes a question on the table header in every run so far, and
@@ -315,9 +256,8 @@ def generate_quiz_from_text(
             questions = []
             model_error = f"model_call_failed: {exc}"
 
-    generator = "model" if questions else "extract"
-    if not questions and clean_text:
-        questions = extract_fallback_quiz(clean_text, count=n_questions, source_page=source_page)
+    if not clean_text:
+        model_error = "empty_source"
 
     return {
         "visual_type": "quiz",
@@ -327,7 +267,6 @@ def generate_quiz_from_text(
         "questions": questions,
         "question_count": len(questions),
         "grounded_count": sum(1 for q in questions if q.get("grounded")),
-        # "extract" means the questions were lifted from source sentences, not written by a model.
-        "generator": generator,
-        "model_error": None if generator == "model" else model_error,
+        "generator": "model" if questions else "none",
+        "model_error": None if questions else model_error,
     }

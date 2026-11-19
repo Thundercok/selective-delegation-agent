@@ -1,0 +1,23 @@
+{
+  "_by": "Claude, not blind; I built the generator. Same definition of bad as round 1.",
+  "orgnotes": {"1": ["bad", "heading 'Example: algebraic ____' states nothing"],
+               "2": ["ok", "xy(1 + z): the algebra decides it"],
+               "3": ["bad", "'This is the ____ theorem.': 'this' points at a line the stem does not show"],
+               "4": ["ok", "heading, but 'Canonical forms' is a term worth knowing"],
+               "5": ["ok", "grammar gives it away ('containing'), easy but not wrong"]},
+  "toeic8":   {"1": ["ok", "week number from the plan: trivia, but answerable"],
+               "2": ["bad", "table header row 'Ngày Bài học chính (____–60 phút) Thêm (15–30 phút)'"],
+               "3": ["bad", "Part 4 also has three printed questions to read first, so 'Part 4' is true too"],
+               "4": ["bad", "table cell cut mid-phrase: '____ từ chủ đề Du lịch và Đi'"],
+               "5": ["ok", ""]},
+  "proposal": {"1": ["ok", "'CHAPTER 2: THE 11 PILLARS'"],
+               "2": ["bad", "extraction garbage 'JECT ____ (TIÊU ĐỀ ĐỀ TÀI)'"],
+               "3": ["bad", "blank is a broken word 'echnically'"],
+               "4": ["ok", "'(1) … (2)': readable despite broken spacing"],
+               "5": ["bad", "blank is a broken word 'Incorporat'"]},
+  "imlbook":  {"1": ["bad", "table of contents section number"],
+               "2": ["ok", "'Non-Gaussian outcomes - GLMs'"],
+               "3": ["ok", "'Nonlinear effects - GAMs'"],
+               "4": ["bad", "'9.1 9.2 9.3 9.4 9.5 ____ .' is a contents line"],
+               "5": ["ok", "'Learn rules from a single feature (OneR)'"]}
+}
