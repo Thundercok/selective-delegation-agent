@@ -20,15 +20,22 @@ from rich.table import Table
 console = Console()
 
 
-def cmd_index(directories: Optional[List[str]] = None) -> None:
-    """Index files from directories."""
+def cmd_index(directories: Optional[List[str]] = None, purge: bool = False) -> None:
+    """Index files from directories, or purge ignored/secret/binary entries with --purge."""
     from rat.config import config
     from rat.crawler.db import Database
     from rat.crawler.indexer import Indexer
+
+    indexer = Indexer()
+    if purge:
+        removed = indexer.purge_ignored_from_db()
+        console.print(f"[green]✓ Đã dọn {removed} tệp bị loại trừ / nhạy cảm / nhị phân khỏi chỉ mục.[/green]")
+        if not directories:
+            return
+
     target_dirs = directories if directories else config.indexed_directories
     console.print(Panel.fit(f"[bold cyan]🐀 'rat' File Indexer[/bold cyan]\nQuét các thư mục: {', '.join(target_dirs)}", border_style="cyan"))
 
-    indexer = Indexer()
     files = indexer.discover_files(target_dirs)
     total = len(files)
 
@@ -488,6 +495,7 @@ def main() -> None:
     # Index command
     index_parser = subparsers.add_parser("index", help="Scan and index folders")
     index_parser.add_argument("dirs", nargs="*", help="Optional directories to index")
+    index_parser.add_argument("--purge", action="store_true", help="Purge ignored, secret, and binary entries from the index DB")
 
     # Search command
     search_parser = subparsers.add_parser("search", help="Search files with natural language")
@@ -529,7 +537,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if args.command == "index":
-        cmd_index(args.dirs if args.dirs else None)
+        cmd_index(args.dirs if args.dirs else None, purge=getattr(args, "purge", False))
     elif args.command == "search":
         cmd_search(args.query, limit=args.limit, open_first=args.open, reveal_first=args.finder, show_trace=getattr(args, "trace", False))
     elif args.command == "ask":

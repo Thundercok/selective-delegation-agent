@@ -92,3 +92,22 @@ def test_purge_ignored_from_db_removes_secrets_and_binary_blobs(tmp_path):
         assert db.get_document_by_path(str(tmp_path / "vrptw_report.md")) is not None
     finally:
         db.get_connection().close()
+
+
+def test_cli_index_purge_calls_purge_without_full_crawl(monkeypatch):
+    from rat import cli
+
+    calls = {"purge": 0, "discover": 0}
+
+    class _FakeIndexer:
+        def purge_ignored_from_db(self):
+            calls["purge"] += 1
+            return 3
+
+        def discover_files(self, dirs):
+            calls["discover"] += 1
+            return []
+
+    monkeypatch.setattr("rat.crawler.indexer.Indexer", _FakeIndexer)
+    cli.cmd_index(None, purge=True)
+    assert calls == {"purge": 1, "discover": 0}
