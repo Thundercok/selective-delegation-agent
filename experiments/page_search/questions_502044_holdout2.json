@@ -1,0 +1,12 @@
+[
+  {"id": "h2_t1", "source": "term", "query": "Công thức tính CPI (Average Cycle Per Instruction) nằm ở slide nào?", "expect": ["Chapter 8 - Computer Performance"], "pages": [13, 14]},
+  {"id": "h2_t2", "source": "term", "query": "Fully Associative Cache đặt một khối bộ nhớ vào đâu?", "expect": ["Chapter 13.2 - Cache Part II"], "pages": [26, 27]},
+  {"id": "h2_t3", "source": "term", "query": "Tín hiệu ALUop 2 bit dùng để làm gì?", "expect": ["Chapter 11.2 - Processor Control"], "pages": [26, 29]},
+  {"id": "h2_t4", "source": "term", "query": "Memory Wall, ILP Wall và Power Wall được giải thích ở slide nào?", "expect": ["Chapter 7 - Computer Organisation"], "pages": [14, 15]},
+  {"id": "h2_t5", "source": "term", "query": "Chính sách thay thế khối LRU (Least Recently Used) hoạt động thế nào?", "expect": ["Chapter 13.2 - Cache Part II"], "pages": [31, 32, 33]},
+  {"id": "h2_p1", "source": "paraphrase", "query": "Khi bộ nhớ đệm đã đầy thì đuổi khối lâu nhất không được dùng ra được nói ở slide nào?", "expect": ["Chapter 13.2 - Cache Part II"], "pages": [31, 32, 33]},
+  {"id": "h2_p2", "source": "paraphrase", "query": "Cách chia một lệnh thành nhiều bước thực thi, mỗi bước tốn một chu kỳ xung nhịp để rút ngắn chu kỳ máy nằm ở slide nào?", "expect": ["Chapter 11.2 - Processor Control"], "pages": [38]},
+  {"id": "h2_p3", "source": "paraphrase", "query": "Ba rào cản về tốc độ bộ nhớ, mức song song lệnh và điện năng làm hiệu năng một nhân không tăng mãi được nằm ở slide nào?", "expect": ["Chapter 7 - Computer Organisation"], "pages": [14, 15]},
+  {"id": "h2_p4", "source": "paraphrase", "query": "Ngắt vào ra xảy ra bất đồng bộ, không gắn với lệnh cụ thể nào và không cản lệnh đang chạy hoàn tất được nói ở slide nào?", "expect": ["Chapter 14.2 - IO"], "pages": [20]},
+  {"id": "h2_p5", "source": "paraphrase", "query": "Ý tưởng dùng nhiều tầng bộ nhớ đệm L1, L2, L3 để giảm thời gian phạt khi trượt cache nằm ở slide nào?", "expect": ["Chapter 13.2 - Cache Part II"], "pages": [41, 42]}
+]

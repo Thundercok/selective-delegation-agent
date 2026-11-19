@@ -1,0 +1,75 @@
+ -  [term] Endianness, big-endian và little-endian được giải thích ở slide nào?  page 14 ok
+      (no results)
+      keywords 1245 ms: byte order, endianness, big-endian, little-endian, data representation
+ -  [term] Universal gates và complete set of logic nằm ở slide nào?  page 14 ok
+      (no results)
+      keywords 982 ms: universal gate, complete set of logic, NAND gate, NOR gate
+ -  [term] Thiết kế half adder nằm ở slide nào?  page 9 ok
+      (no results)
+      keywords 1270 ms: combinational circuit, logic gate, truth table, binary addition, sum and carry output
+ -  [term] TLB là gì, nằm ở slide nào?  page 11 ok
+      (no results)
+      keywords 1105 ms: Translation Lookaside Buffer, memory management, virtual memory, cache hierarchy
+ -  [term] Polling và interrupt driven I/O khác nhau thế nào?  page 18 WRONG
+      (no results)
+      keywords 1655 ms: polling, interrupt-driven I/O, CPU busy, real-time response
+ -  [term] Write-through cache và write-back cache khác nhau thế nào?  page 69 ok
+      (no results)
+      keywords 1521 ms: write-through, write-back, cache coherence, dirty bit
+ -  [term] Priority encoder hoạt động thế nào?  page 26 WRONG
+      (no results)
+      keywords 1207 ms: priority decoding, binary encoding, input prioritization, active-low signals
+ -  [term] Prime implicant và essential prime implicant là gì?  page 5 ok
+      (no results)
+      keywords 1296 ms: prime implicant, essential prime implicant, Boolean function, Karnaugh map
+ -  [term] Khi nào phép cộng 2s complement bị overflow?  page 31 ok
+      (no results)
+      keywords 1264 ms: signed integer overflow, two's complement, carry out, negative result
+ -  [term] Full adder cộng ba bit thế nào?  page 33 WRONG
+      (no results)
+      keywords 1474 ms: binary addition, carry propagation, full adder circuit, sum output, carry output
+ -  [paraphrase] Ý tưởng để cả chương trình lẫn dữ liệu cùng nằm trong bộ nhớ được nói ở slide nào?  page 20 ok
+      (no results)
+      keywords 2183 ms: unity of program and data, integrated memory model, monolithic design, loaded program in memory
+ -  [paraphrase] Bảng dùng để đổi địa chỉ ảo sang địa chỉ thật nằm ở slide nào?  page 4 WRONG
+      (no results)
+      keywords 1568 ms: page table, virtual to physical mapping, memory management unit, address translation
+ -  [paraphrase] Vì sao chia việc thành nhiều công đoạn chạy chồng lên nhau không làm một việc nhanh hơn mà chỉ tăng số việc xong mỗi giờ?  page 12 ok
+      (no results)
+      keywords 1623 ms: parallelism, throughput, task decomposition, resource contention
+ -  [paraphrase] Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở slide nào?  page 84 ok
+      (no results)
+      keywords 940 ms: branch prediction, pipeline, speculative execution, instruction fetch
+ -  [paraphrase] Bộ nhớ đệm cho phép một khối dữ liệu nằm ở vài chỗ cố định trong một nhóm được nói ở slide nào?  page 45 WRONG
+      (no results)
+      keywords 842 ms: cache, cache line, memory hierarchy, block addressing
+ -  [paraphrase] Quy tắc biến phủ định của một tổng thành tích các phủ định nằm ở slide nào?  page 13 WRONG
+      (no results)
+      keywords 1274 ms: De Morgan's law, logical negation, distributive law, complementation rule
+ -  [paraphrase] Cách mã hoá từng chữ số thập phân thành bốn bit riêng nằm ở slide nào?  page 45 ok
+      (no results)
+      keywords 1429 ms: binary encoding, digit-to-bit mapping, fixed-length encoding, BCD encoding
+ -  [paraphrase] Mạch đưa một đầu vào ra một trong nhiều đầu ra tuỳ theo đường chọn nằm ở slide nào?  page 34 WRONG
+      (no results)
+      keywords 1838 ms: multiplexer, select line, data input, output line, combinatorial logic
+ -  [paraphrase] Mạch tuần tự đi vòng qua một chuỗi trạng thái cố định nằm ở slide nào?  page 35 WRONG
+      (no results)
+      keywords 1503 ms: state machine, finite state machine, state transition, sequential circuit, state diagram
+ -  [paraphrase] Các cách một lệnh hợp ngữ chỉ ra toán hạng của nó nằm ở đâu được nói ở slide nào?  page 20 WRONG
+      (no results)
+      keywords 1288 ms: addressing mode, instruction format, operand location, opcode, operand field
+{
+  "term": {
+    "with_pages": 10,
+    "page_given_file": 7
+  },
+  "all": {
+    "with_pages": 20,
+    "page_given_file": 11
+  },
+  "paraphrase": {
+    "with_pages": 10,
+    "page_given_file": 4
+  },
+  "keyword_ms_median": 1292.2
+}

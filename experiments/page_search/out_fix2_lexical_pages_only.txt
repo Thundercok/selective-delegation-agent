@@ -1,0 +1,54 @@
+ -  [term] Endianness, big-endian và little-endian được giải thích ở slide nào?  page 14 ok
+      (no results)
+ -  [term] Universal gates và complete set of logic nằm ở slide nào?  page 14 ok
+      (no results)
+ -  [term] Thiết kế half adder nằm ở slide nào?  page 9 ok
+      (no results)
+ -  [term] TLB là gì, nằm ở slide nào?  page 11 ok
+      (no results)
+ -  [term] Polling và interrupt driven I/O khác nhau thế nào?  page 17 ok
+      (no results)
+ -  [term] Write-through cache và write-back cache khác nhau thế nào?  page 69 ok
+      (no results)
+ -  [term] Priority encoder hoạt động thế nào?  page 30 ok
+      (no results)
+ -  [term] Prime implicant và essential prime implicant là gì?  page 5 ok
+      (no results)
+ -  [term] Khi nào phép cộng 2s complement bị overflow?  page 31 ok
+      (no results)
+ -  [term] Full adder cộng ba bit thế nào?  page 11 ok
+      (no results)
+ -  [paraphrase] Ý tưởng để cả chương trình lẫn dữ liệu cùng nằm trong bộ nhớ được nói ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Bảng dùng để đổi địa chỉ ảo sang địa chỉ thật nằm ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Vì sao chia việc thành nhiều công đoạn chạy chồng lên nhau không làm một việc nhanh hơn mà chỉ tăng số việc xong mỗi giờ?  page - WRONG
+      (no results)
+ -  [paraphrase] Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Bộ nhớ đệm cho phép một khối dữ liệu nằm ở vài chỗ cố định trong một nhóm được nói ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Quy tắc biến phủ định của một tổng thành tích các phủ định nằm ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Cách mã hoá từng chữ số thập phân thành bốn bit riêng nằm ở slide nào?  page 3 WRONG
+      (no results)
+ -  [paraphrase] Mạch đưa một đầu vào ra một trong nhiều đầu ra tuỳ theo đường chọn nằm ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Mạch tuần tự đi vòng qua một chuỗi trạng thái cố định nằm ở slide nào?  page - WRONG
+      (no results)
+ -  [paraphrase] Các cách một lệnh hợp ngữ chỉ ra toán hạng của nó nằm ở đâu được nói ở slide nào?  page - WRONG
+      (no results)
+{
+  "term": {
+    "with_pages": 10,
+    "page_given_file": 10
+  },
+  "all": {
+    "with_pages": 20,
+    "page_given_file": 10
+  },
+  "paraphrase": {
+    "with_pages": 10,
+    "page_given_file": 0
+  }
+}

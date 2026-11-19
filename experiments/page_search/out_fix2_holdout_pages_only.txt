@@ -1,0 +1,34 @@
+ -  [term] J-K flip-flop chuyển sang trạng thái toggle khi nào?  page 23 ok
+      (no results)
+ -  [term] Register file đọc và ghi được bao nhiêu thanh ghi trong một lệnh?  page 18 ok
+      (no results)
+ -  [term] I-format chia 32 bit của lệnh thành những trường nào?  page 34 WRONG
+      (no results)
+ -  [term] Tín hiệu MemToReg chọn dữ liệu ghi vào thanh ghi thế nào?  page 17 ok
+      (no results)
+ -  [term] PC-relative addressing tính địa chỉ đích của lệnh branch thế nào?  page 23 WRONG
+      (no results)
+ -  [paraphrase] Quy định một từ trong bộ nhớ phải bắt đầu ở địa chỉ chia hết cho số byte của nó được nói ở slide nào?  page 10 WRONG
+      (no results)
+ -  [paraphrase] Bước lấy lệnh ra khỏi bộ nhớ theo bộ đếm chương trình rồi tăng nó lên được nói ở slide nào?  page 43 WRONG
+      (no results)
+ -  [paraphrase] Phần tử nhớ chỉ đổi trạng thái đúng lúc cạnh xung nhịp được nói ở slide nào?  page 26 WRONG
+      (no results)
+ -  [paraphrase] Nguyên lý đổi chỗ phép nhân với phép cộng logic, đổi 0 với 1 mà đẳng thức vẫn đúng nằm ở slide nào?  page 10 WRONG
+      (no results)
+ -  [paraphrase] Vì sao bộ đếm chương trình vừa được đọc vừa được cập nhật trong cùng một chu kỳ mà không bị sai?  page 15 ok
+      (no results)
+{
+  "term": {
+    "with_pages": 5,
+    "page_given_file": 3
+  },
+  "all": {
+    "with_pages": 10,
+    "page_given_file": 4
+  },
+  "paraphrase": {
+    "with_pages": 5,
+    "page_given_file": 1
+  }
+}

@@ -1,0 +1,34 @@
+ -  [term] R-format gồm những trường nào?  page 9 ok
+      (no results)
+ -  [term] T flip-flop hoạt động thế nào?  page 70 WRONG
+      (no results)
+ -  [term] Tín hiệu điều khiển RegWrite dùng để làm gì?  page 13 ok
+      (no results)
+ -  [term] Minterm và maxterm khác nhau thế nào?  page 26 ok
+      (no results)
+ -  [term] Lệnh load word lấy dữ liệu từ bộ nhớ thế nào?  page 10 ok
+      (no results)
+ -  [paraphrase] Kiến trúc chỉ cho lệnh nạp và lệnh cất chạm vào bộ nhớ, còn phép tính chỉ làm trên thanh ghi được nói ở slide nào?  page 9 ok
+      (no results)
+ -  [paraphrase] Mạch chốt hai đầu vào bị trạng thái cấm khi cả hai cùng bật được nói ở slide nào?  page 4 WRONG
+      (no results)
+ -  [paraphrase] Năm bước mà một lệnh đi qua trong bộ xử lý được nói ở slide nào?  page 7 WRONG
+      (no results)
+ -  [paraphrase] Chia việc giải mã tín hiệu điều khiển thành hai tầng cho mạch nhỏ hơn được nói ở slide nào?  page 25 ok
+      (no results)
+ -  [paraphrase] Các tầng từ ngôn ngữ bậc cao xuống hợp ngữ, mã máy rồi tới phần cứng được nói ở slide nào?  page 5 WRONG
+      (no results)
+{
+  "term": {
+    "with_pages": 5,
+    "page_given_file": 4
+  },
+  "all": {
+    "with_pages": 10,
+    "page_given_file": 6
+  },
+  "paraphrase": {
+    "with_pages": 5,
+    "page_given_file": 2
+  }
+}

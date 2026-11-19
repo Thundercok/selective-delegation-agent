@@ -1,0 +1,12 @@
+[
+  {"id": "g_t1", "source": "term", "query": "R-format gồm những trường nào?", "expect": ["Chapter 9.3 - MIPS III"], "pages": [9, 10]},
+  {"id": "g_t2", "source": "term", "query": "T flip-flop hoạt động thế nào?", "expect": ["Chapter 6 - Sequential"], "pages": [25]},
+  {"id": "g_t3", "source": "term", "query": "Tín hiệu điều khiển RegWrite dùng để làm gì?", "expect": ["Chapter 11.2 - Processor Control"], "pages": [13]},
+  {"id": "g_t4", "source": "term", "query": "Minterm và maxterm khác nhau thế nào?", "expect": ["Chapter 2 - Boolean"], "pages": [26, 27]},
+  {"id": "g_t5", "source": "term", "query": "Lệnh load word lấy dữ liệu từ bộ nhớ thế nào?", "expect": ["Chapter 9.2 - MIPS II"], "pages": [10]},
+  {"id": "g_p1", "source": "paraphrase", "query": "Kiến trúc chỉ cho lệnh nạp và lệnh cất chạm vào bộ nhớ, còn phép tính chỉ làm trên thanh ghi được nói ở slide nào?", "expect": ["Chapter 9.2 - MIPS II"], "pages": [9]},
+  {"id": "g_p2", "source": "paraphrase", "query": "Mạch chốt hai đầu vào bị trạng thái cấm khi cả hai cùng bật được nói ở slide nào?", "expect": ["Chapter 6 - Sequential"], "pages": [11, 12, 13]},
+  {"id": "g_p3", "source": "paraphrase", "query": "Năm bước mà một lệnh đi qua trong bộ xử lý được nói ở slide nào?", "expect": ["Chapter 11.1 - Processor DataPath"], "pages": [9]},
+  {"id": "g_p4", "source": "paraphrase", "query": "Chia việc giải mã tín hiệu điều khiển thành hai tầng cho mạch nhỏ hơn được nói ở slide nào?", "expect": ["Chapter 11.2 - Processor Control"], "pages": [25, 26]},
+  {"id": "g_p5", "source": "paraphrase", "query": "Các tầng từ ngôn ngữ bậc cao xuống hợp ngữ, mã máy rồi tới phần cứng được nói ở slide nào?", "expect": ["Chapter 1.1"], "pages": [16]}
+]

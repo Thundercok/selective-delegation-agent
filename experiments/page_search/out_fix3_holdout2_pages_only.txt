@@ -1,0 +1,34 @@
+ -  [term] Công thức tính CPI (Average Cycle Per Instruction) nằm ở slide nào?  page 13 ok
+      (no results)
+ -  [term] Fully Associative Cache đặt một khối bộ nhớ vào đâu?  page 26 ok
+      (no results)
+ -  [term] Tín hiệu ALUop 2 bit dùng để làm gì?  page 26 ok
+      (no results)
+ -  [term] Memory Wall, ILP Wall và Power Wall được giải thích ở slide nào?  page 14 ok
+      (no results)
+ -  [term] Chính sách thay thế khối LRU (Least Recently Used) hoạt động thế nào?  page 31 ok
+      (no results)
+ -  [paraphrase] Khi bộ nhớ đệm đã đầy thì đuổi khối lâu nhất không được dùng ra được nói ở slide nào?  page 31 ok
+      (no results)
+ -  [paraphrase] Cách chia một lệnh thành nhiều bước thực thi, mỗi bước tốn một chu kỳ xung nhịp để rút ngắn chu kỳ máy nằm ở slide nào?  page 17 WRONG
+      (no results)
+ -  [paraphrase] Ba rào cản về tốc độ bộ nhớ, mức song song lệnh và điện năng làm hiệu năng một nhân không tăng mãi được nằm ở slide nào?  page 14 ok
+      (no results)
+ -  [paraphrase] Ngắt vào ra xảy ra bất đồng bộ, không gắn với lệnh cụ thể nào và không cản lệnh đang chạy hoàn tất được nói ở slide nào?  page 20 ok
+      (no results)
+ -  [paraphrase] Ý tưởng dùng nhiều tầng bộ nhớ đệm L1, L2, L3 để giảm thời gian phạt khi trượt cache nằm ở slide nào?  page 45 WRONG
+      (no results)
+{
+  "term": {
+    "with_pages": 5,
+    "page_given_file": 5
+  },
+  "all": {
+    "with_pages": 10,
+    "page_given_file": 8
+  },
+  "paraphrase": {
+    "with_pages": 5,
+    "page_given_file": 3
+  }
+}
