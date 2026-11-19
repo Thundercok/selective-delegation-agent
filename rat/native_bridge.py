@@ -15,6 +15,21 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 PROTOCOL_VERSION = "2025-03-26"
 CLIENT_INFO = {"name": "rat-native-bridge", "version": "0.1.0"}
+_SENSITIVE_NAME_PATTERNS = (
+    "firebase-adminsdk",
+    "service-account",
+    "id_rsa",
+    "id_ed25519",
+    ".env",
+    ".pem",
+    ".key",
+    "credentials.json",
+)
+
+
+def _is_sensitive_path(file_path: str) -> bool:
+    name = Path(file_path).name.lower()
+    return any(pat in name for pat in _SENSITIVE_NAME_PATTERNS)
 
 
 def _clean_text(text: str, max_chars: int = 800) -> str:
@@ -242,7 +257,7 @@ def sync_items_to_native(
     for raw_item in items:
         item = _item_to_dict(raw_item)
         file_path = item["file_path"]
-        if not file_path or file_path in synced_by_path:
+        if not file_path or file_path in synced_by_path or _is_sensitive_path(file_path):
             continue
         file_name = item["file_name"] or Path(file_path).name
         vinfo = item.get("version_info") or {}

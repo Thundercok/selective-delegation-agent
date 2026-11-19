@@ -30,6 +30,24 @@ from rat.engine.embedder import embedder
 
 logger = logging.getLogger("rat.indexer")
 
+TEXT_INSPECT_EXTENSIONS = {
+    ".txt", ".md", ".markdown", ".rst", ".csv", ".log",
+    ".py", ".js", ".jsx", ".ts", ".tsx", ".html", ".css",
+    ".json", ".yaml", ".yml", ".toml", ".sh", ".sql", ".xml",
+}
+
+
+def is_binary_text_file(path: Path, sample_bytes: int = 4096) -> bool:
+    """Detect binary payloads masquerading as text/code/XML (e.g., Android AXML with NUL bytes)."""
+    if path.suffix.lower() not in TEXT_INSPECT_EXTENSIONS:
+        return False
+    try:
+        with open(path, "rb") as f:
+            head = f.read(sample_bytes)
+        return b"\x00" in head
+    except OSError:
+        return False
+
 
 def get_file_md5_fast(file_path: str, max_bytes: int = 1024 * 1024) -> str:
     """Compute quick MD5 hash of the initial chunk of a file."""
@@ -71,8 +89,9 @@ class Indexer:
                 or lower_part.endswith(".photoslibrary")
             ):
                 return True
+        lower_name = path.name.lower()
         for pattern in IGNORE_PATTERNS:
-            if fnmatch.fnmatch(path.name, pattern):
+            if fnmatch.fnmatch(lower_name, pattern.lower()):
                 return True
         return False
 
@@ -113,6 +132,8 @@ class Indexer:
         try:
             path = Path(file_path_str)
             if not path.exists() or not path.is_file():
+                return False
+            if self.is_ignored(path) or is_binary_text_file(path):
                 return False
 
             stat = path.stat()
@@ -170,6 +191,21 @@ class Indexer:
         except Exception as e:
             logger.error(f"Error indexing {file_path_str}: {e}")
             return False
+
+    def purge_ignored_from_db(self) -> int:
+        """Remove already-indexed secrets, ignored paths, and NUL-byte binary text files from DB."""
+        conn = self.db.get_connection()
+        rows = conn.execute(
+            "SELECT file_path, instr(coalesce(content_text, ''), char(0)) > 0 AS has_nul FROM documents"
+        ).fetchall()
+        to_remove = [
+            row["file_path"]
+            for row in rows
+            if row["has_nul"] or self.is_ignored(Path(row["file_path"]))
+        ]
+        for file_path in to_remove:
+            self.db.delete_document(file_path)
+        return len(to_remove)
 
     def run_full_index(
         self,

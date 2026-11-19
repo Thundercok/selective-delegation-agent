@@ -123,7 +123,7 @@ class SearchEngine:
             facet_streams.append(FacetResult(
                 facet_name="lexical",
                 candidates=sparse_candidates,
-                weight=1.0,
+                weight=1.25,
             ))
 
         # 2b. Dense Vector Search (VectorCache in-memory dot product)
@@ -151,7 +151,7 @@ class SearchEngine:
                     facet_streams.append(FacetResult(
                         facet_name="semantic",
                         candidates=dense_chunk_candidates,
-                        weight=1.2,
+                        weight=1.0,
                         is_chunk_level=True,
                     ))
 
@@ -190,9 +190,9 @@ class SearchEngine:
                     weight=1.4,
                 ))
 
-        # Fuse all streams with Multi-Way RRF
+        # Fuse all streams with Multi-Way RRF (keep a wide pool so small `limit` never starves reranking)
         if facet_streams:
-            fused_candidates = self.multi_way_rrf.fuse(facet_streams, top_k=limit * 3)
+            fused_candidates = self.multi_way_rrf.fuse(facet_streams, top_k=max(45, limit * 4))
         else:
             fused_candidates = []
 

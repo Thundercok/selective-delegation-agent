@@ -60,7 +60,9 @@ IGNORE_PATTERNS = {
     ".DS_Store", "Thumbs.db", "desktop.ini", "*.tmp", "*.swp", "~$*", "*.pyc",
     # Sensitive secrets, tokens, private keys, and credential vaults
     ".env", ".env.*", "*.pem", "*.key", "*.p12", "*.pfx", "*.cer", "*.crt",
-    "*.kdbx", "id_rsa*", "id_ed25519*", "credentials.json", "service-account*.json",
+    "*.kdbx", "*.keystore", "*.jks", "id_rsa*", "id_ed25519*",
+    "credentials.json", "*service-account*.json", "*service_account*.json",
+    "*firebase-adminsdk*.json", "*client_secret*.json",
     "*.wallet", "*seed_phrase*", "*recovery_phrase*", "master.key"
 }
 
