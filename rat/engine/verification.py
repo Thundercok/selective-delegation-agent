@@ -113,6 +113,8 @@ class VerificationSession:
                 continue
             seen.add(id(checker))
             evidence = tuple(self.evidence.get(id(checker), []))
+            if not callable(getattr(checker, "check_answer", None)) and not evidence:
+                continue
             report = self._check(checker, "answer", lambda: checker.check_answer(self.goal, answer, evidence))
             if report:
                 reports.append(report)

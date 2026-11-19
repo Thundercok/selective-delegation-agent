@@ -152,6 +152,21 @@ def test_checker_crash_remains_unknown_and_cannot_silently_pass(runtime):
     assert result.answer_verification_status == 'UNKNOWN'
 
 
+def test_execution_only_plugin_verifier_without_evidence_does_not_block_unrelated_answer(runtime):
+    class ExecutionOnlyPluginVerifier:
+        def check_execution(self, evidence):
+            return VerificationReport(VerificationStatus.PASS, 'plugin_exec', 'ok', (evidence.id,))
+    runtime.registry.register_operation(OperationDefinition(
+        'plugin_noop', 'No-op plugin op', {'type': 'object', 'properties': {}},
+        lambda args, **ctx: {'ok': True}, verifier=ExecutionOnlyPluginVerifier()
+    ))
+    scripted(runtime, ModelDecision('', tool_name='calculate', tool_args={'expression': '2 + 2'}), final('4'))
+    result = runtime.run('2 + 2')
+    assert result.error is None
+    assert result.answer == '4'
+    assert result.answer_verification_status == 'PASS'
+
+
 def test_cancel_after_check_does_not_publish_the_candidate(runtime):
     scripted(runtime, final('4'))
     observed = []
