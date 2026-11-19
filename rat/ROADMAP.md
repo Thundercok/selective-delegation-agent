@@ -89,4 +89,8 @@ Lấy luồng thao tác của Lite (cái gì hiện ra, lúc nào, bấm gì), g
 - Chuột đổi tư thế theo việc đang làm: chờ sprite vẽ xong. `MascotPose.qml` và `SpeechSurface.qml` còn ở tag `rat-lite-0.6.0`.
 - Dọn các gói `astrology`, `divination`, `timetable` khỏi lúc khởi động.
 - Đưa `structured_llm` vào RAT: khai báo trong `tests/test_repo_boundaries.py` khi tới lúc.
-- Đồng thuận với độ sâu (làm sau này): Xử lý trọn gói bài tập lớn / tiểu luận kỹ thuật kèm biểu mẫu (đọc đề PDF nhiều câu, chạy kiểm chứng công thức/mã nguồn qua nhiều bộ tham số, chụp đầu vào/đầu ra và đồ thị, điền vào mẫu báo cáo .docx/.pdf của Khoa).
+- Đồng thuận với độ sâu (làm sau này): Xử lý trọn gói bài tập lớn / tiểu luận kỹ thuật kèm biểu mẫu (độ sâu tương đương tác vụ thực tế):
+  - Đọc đề PDF nhiều câu + trích cấu trúc, lề, font, logo từ mẫu `.docx` của Khoa.
+  - Sinh mã nguồn tuân thủ danh sách thư viện cho phép (kiểm tra bằng AST) và đối chiếu kết quả với số mẫu tham chiếu trong đề.
+  - Tự chạy nhiều bộ tham số độc lập, chụp ảnh I/O console và đồ thị sạch (tự kiểm tra trực quan tránh chồng chữ/tràn lề).
+  - Giải thích từng dòng lệnh + điền kết quả vào báo cáo `.docx` / `.pdf` (XeLaTeX) đúng chuẩn mẫu Khoa.
