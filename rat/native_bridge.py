@@ -41,6 +41,17 @@ def _clean_text(text: str, max_chars: int = 800) -> str:
     return cleaned[:max_chars]
 
 
+def _disambiguate_pair(latest_name: str, latest_path: str, stale_name: str, stale_path: str) -> tuple[str, str]:
+    """Include parent folder when latest and stale files share the same basename."""
+    if latest_name != stale_name:
+        return latest_name, stale_name
+    lp = Path(latest_path).parent.name if latest_path and not latest_path.startswith("latest://") else ""
+    sp = Path(stale_path).parent.name if stale_path else ""
+    src = f"{lp}/{latest_name}" if lp else latest_name
+    dst = f"{sp}/{stale_name}" if sp else stale_name
+    return src, dst
+
+
 def _doc_idempotency_key(file_path: str) -> str:
     digest = hashlib.sha256(file_path.encode("utf-8", errors="ignore")).hexdigest()[:24]
     return f"rat:doc:{digest}"
@@ -292,24 +303,28 @@ def sync_items_to_native(
                 pending_supersedes.append({
                     "stale_id": rec_id,
                     "stale_name": file_name,
+                    "stale_path": file_path,
                     "latest_path": latest_path or f"latest://{latest_name}",
                     "latest_name": latest_name,
                 })
 
     supersedes_links: List[Dict[str, Any]] = []
     for rel in pending_supersedes:
+        src_label, dst_label = _disambiguate_pair(
+            rel["latest_name"], rel["latest_path"], rel["stale_name"], rel["stale_path"]
+        )
         latest_entry = synced_by_path.get(rel["latest_path"])
         if latest_entry is None:
             latest_rec = client.create_document(
-                name=rel["latest_name"],
-                summary=f"Latest local revision superseding {rel['stale_name']} · synced by RAT",
-                body=f"Source path: `{rel['latest_path']}`\n\nIdentified by RAT revision detector as the latest version superseding `{rel['stale_name']}`.",
-                reason=f"Ensure latest local revision exists in Native before linking stale file '{rel['stale_name']}'",
+                name=src_label,
+                summary=f"Latest local revision superseding {dst_label} · synced by RAT",
+                body=f"Source path: `{rel['latest_path']}`\n\nIdentified by RAT revision detector as the latest version superseding `{dst_label}`.",
+                reason=f"Ensure latest local revision exists in Native before linking stale file '{dst_label}'",
                 idempotency_key=_doc_idempotency_key(rel["latest_path"]),
             )
             latest_entry = {
                 "record_id": latest_rec.get("id"),
-                "name": rel["latest_name"],
+                "name": src_label,
                 "file_path": rel["latest_path"],
                 "is_stale": False,
             }
@@ -321,13 +336,13 @@ def sync_items_to_native(
                 source_id=latest_entry["record_id"],
                 target_id=rel["stale_id"],
                 relationship="supersedes",
-                note=f"RAT revision detector flagged '{rel['stale_name']}' as older than '{rel['latest_name']}'",
+                note=f"RAT revision detector flagged '{dst_label}' as older than '{src_label}'",
             )
             supersedes_links.append({
                 "source_id": latest_entry["record_id"],
-                "source_name": rel["latest_name"],
+                "source_name": src_label,
                 "target_id": rel["stale_id"],
-                "target_name": rel["stale_name"],
+                "target_name": dst_label,
                 "relationship": "supersedes",
                 "status": link_resp.get("status", "added"),
             })

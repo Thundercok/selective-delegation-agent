@@ -82,3 +82,12 @@ def test_router_default_launches_quick_desk(monkeypatch):
     with pytest.raises(SystemExit):
         route_request([])
     mock_quick.assert_called_once_with([])
+
+
+def test_router_agenda_falls_back_cleanly_when_no_members_configured(monkeypatch):
+    mock_cli = Mock()
+    monkeypatch.setattr("rat.app.router.cli_main", mock_cli)
+    monkeypatch.setattr("rat.timetable.data.load_club_members", lambda: [])
+
+    route_request(["lịch học hôm nay"])
+    mock_cli.assert_called_once()

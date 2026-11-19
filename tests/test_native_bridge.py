@@ -80,6 +80,31 @@ def test_sync_items_creates_records_and_supersedes_link_for_stale_files():
     assert summary["native_search_hits"] == 2
 
 
+def test_sync_items_disambiguates_same_basename_supersedes_links():
+    client = _FakeNativeClient()
+    items = [
+        {
+            "file_path": "/archive_v1/vrptw.py",
+            "file_name": "vrptw.py",
+            "score": 90.0,
+            "explanation": "Older copy",
+            "snippet": "vrptw old",
+            "version_info": {
+                "total_versions": 2,
+                "is_latest": False,
+                "latest_file_name": "vrptw.py",
+                "latest_file_path": "/main_repo/vrptw.py",
+            },
+        },
+    ]
+
+    summary = sync_items_to_native(client, "vrptw", items)
+    assert len(summary["supersedes_links"]) == 1
+    link = summary["supersedes_links"][0]
+    assert link["source_name"] == "main_repo/vrptw.py"
+    assert link["target_name"] == "archive_v1/vrptw.py"
+
+
 @pytest.mark.skipif(
     not default_native_binary().is_file(),
     reason="Local withnative/native mcp-stdio binary not built",
