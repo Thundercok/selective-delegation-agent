@@ -424,3 +424,23 @@ Code: sau `6c313b6`. Với file có trang, khi không tìm ra trang thì RAT nó
 - **Máy rảnh nghĩa là:** không còn job huấn luyện nào (`mlx_lm`, `structured_llm`, `run.sh`). Ghi lại swap và RAM trống ngay trước khi chạy.
 - **Chạy 2 lần liên tiếp.** "Mỗi câu không quá 20 s" áp dụng cho **mọi câu ở cả hai lần**, kể cả câu đầu của lần 1 (lúc model có thể chưa được nạp). Người dùng ở buổi quan sát cũng gặp câu đầu như vậy.
 - **p05 dự kiến trả lời "không tìm thấy".** Theo ngưỡng, như vậy là đạt. Nếu p05 lại dẫn một trang cụ thể thì phải xem vì sao trước khi kết luận.
+
+### Kết quả đo lại (`out_dry_run_ask_idle.txt`, 20/11/2026 03:45)
+
+Trước khi chạy: không còn job huấn luyện, RAM trống 63%, swap vẫn dùng 7,2/8 GB (phần còn lại từ job huấn luyện; macOS không thu swap về ngay). Code `22bdaab`.
+
+| Câu | Trang RAT dẫn | Lần 1 | Lần 2 |
+|---|---|---|---|
+| t04 | 11 ✓ | 18,8 s | **37,2 s** |
+| p04 | 85 ✓ | **34,8 s** | **50,9 s** |
+| p05 | "không tìm thấy" ✓ (không gọi model) | 13,6 s | 20,3 s |
+
+**So với ngưỡng: SỬA TRƯỚC KHI MỜI NGƯỜI.** p04 lần 2 mất 50,9 s, quá mốc 40 s. Không có lỗi, cả 3 câu trả lời bằng tiếng Việt, trang dẫn đều đúng, p05 nói rõ là không thấy. Vậy chỉ có thời gian là không đạt.
+
+Đọc kỹ hơn:
+1. **Lần 2 chậm hơn lần 1 ở cả 3 câu.** Ngược với giả thuyết cold start ở lần chạy trước (lần 1 chậm vì model chưa nạp). Vậy nạp sẵn model không cứu được.
+2. **p05 vẫn mất 13-20 s dù không gọi model trả lời.** Thời gian đó là `read_document` cộng lần gọi model để dịch từ khoá (`slm_fallback`). Lần đo trước, phần dịch chỉ mất khoảng 2-3,6 s. Chưa tách được từng phần.
+3. **p04 vẫn chỉ nhắc lại câu hỏi.** Câu trả lời dài một câu mà mất 35-51 s. Nếu thời gian nằm ở lần gọi model, thì phần chậm là xử lý prompt chứ không phải sinh chữ (GIẢ THUYẾT, chưa đo).
+4. **Máy chưa thật sự "sạch".** Ngoài Ollama (3,7 GB), lúc đó còn một VM và một app Windows chạy qua lớp giả lập. Định nghĩa "máy rảnh" ở trên chỉ đòi không có job huấn luyện, nên lần đo này vẫn tính. Nhưng không loại được tải khác.
+
+Bước tiếp, trước khi mời người: đo tốc độ của chính Ollama (`prompt_eval_duration`, `eval_duration` trong response của `/api/chat`) cho đúng prompt của p04, để biết 35-51 s nằm ở đâu.
