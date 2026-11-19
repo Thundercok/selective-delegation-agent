@@ -444,3 +444,57 @@ Trước khi chạy: không còn job huấn luyện, RAM trống 63%, swap vẫn
 4. **Máy chưa thật sự "sạch".** Ngoài Ollama (3,7 GB), lúc đó còn một VM và một app Windows chạy qua lớp giả lập. Định nghĩa "máy rảnh" ở trên chỉ đòi không có job huấn luyện, nên lần đo này vẫn tính. Nhưng không loại được tải khác.
 
 Bước tiếp, trước khi mời người: đo tốc độ của chính Ollama (`prompt_eval_duration`, `eval_duration` trong response của `/api/chat`) cho đúng prompt của p04, để biết 35-51 s nằm ở đâu.
+
+### Lần đo lại lúc 03:45 bị nhiễm: hai client gọi Ollama xen kẽ (ghi 20/11/2026 03:55)
+
+Từ 03:46 đến 03:48, `~/.ollama/logs/server.log` ghi 16 lần `POST /api/chat`. `dry_run_ask.py` (2 lần chạy) chỉ gửi 8 lần. 8 lần còn lại đến từ một script đo khác chạy cùng lúc (`cold_warm.py`, nằm ngoài repo). Script đó không đặt `num_ctx`, nên Ollama dùng mặc định `-c 4096`, còn RAT luôn gửi `num_ctx: 8192` (`rat/engine/slm.py`, `chat_with_meta`).
+
+Mỗi khi `num_ctx` đổi, Ollama tắt llama-server rồi khởi động lại. Trong 12 lần khởi động gần nhất, có 6 lần `-c 4096` và 6 lần `-c 8192`, xen kẽ nhau. Ở các lần gọi "đã nạp" của script kia, `load_duration` lên tới 13-17 s. Vì vậy t04 37,2 s và p04 50,9 s ở `out_dry_run_ask_idle.txt` gồm cả thời gian nạp lại model do client kia gây ra. Kết luận "SỬA TRƯỚC KHI MỜI NGƯỜI" dựa trên lần đo này không dùng được. Ngưỡng giữ nguyên. Chỉ lần đo là phải làm lại.
+
+### Đo lại lần nữa, không có client nào khác (`out_dry_run_ask_clean.txt`, 20/11/2026 03:53)
+
+Cùng code (`4ae0aa1`), cùng 3 câu, cùng ngưỡng, 2 lần chạy liên tiếp. Trước lần 1, model đã được gỡ (`keep_alive: 0`), nên lần 1 bắt đầu từ lúc model chưa nạp. Trước khi chạy: không có job huấn luyện, RAM trống 33%, swap 7,4/8 GB (phần còn lại từ job cũ). Một app Windows chạy qua lớp giả lập vẫn dùng khoảng 100-130% CPU. Log Ollama trong lúc chạy: đúng 8 lần `/api/chat` (khớp số lần RAT gọi), 1 lần khởi động llama-server (lần nạp đầu).
+
+| Câu | Trang RAT dẫn | Lần 1 | Lần 2 |
+|---|---|---|---|
+| t04 | 11 ✓ | 15,3 s | 7,7 s |
+| p04 | 85 ✓ | 14,6 s | 4,2 s |
+| p05 | "không tìm thấy" ✓ (không gọi model trả lời) | 1,1 s | 1,0 s |
+
+**So với ngưỡng: GO cho buổi quan sát.** Cả 3 câu trả lời tiếng Việt, không lỗi, mọi câu ở cả hai lần đều dưới 20 s, và p05 nói rõ là không thấy.
+
+Đọc kỹ hơn:
+1. **Lần 2 nhanh hơn chủ yếu vì Ollama dùng lại prompt y hệt lần 1.** Người thật sẽ hỏi câu mới, nên lần 1 mới là con số đại diện: khoảng 15 s cho mỗi câu có trả lời.
+2. **Thời gian nằm ở đâu** (`cold_warm.py`, cùng `num_ctx` 8192, không có client khác): nạp model 1,0-1,3 s; xử lý prompt 4,4-7,8 s cho 722-1.213 token (khoảng 150 token/s); sinh chữ 10-13 token/s. Nạp sẵn model chỉ bớt được khoảng 1 s trên máy không chịu tải. **Không làm.**
+3. **`slm_fallback`** (`out_time_fallback_clean.txt`): trên 20 câu, thời gian chờ thêm trung vị 0,34 s, p90 0,96 s, tối đa 1,30 s. Số đo cũ (0,78 / 3,23 s, đo lúc máy thiếu RAM) đã cho GO; lần này tốt hơn, nên GO vẫn giữ.
+4. **p04 vẫn chỉ nhắc lại câu hỏi** ("... được nói ở trang 85."). Trang đúng, nhưng chưa giải thích gì. Đây là vấn đề chất lượng câu trả lời, không phải thời gian. Ngưỡng không bắt lỗi này.
+
+Rủi ro còn lại, chưa đo: trong RAT, `generate_with_meta` và `generate_stream` (`slm.py`) không đặt `num_ctx`, còn `chat_with_meta` đặt 8192. Một đường trong app gọi cả hai kiểu (ví dụ `qa_engine`, `hyde`, `meta_reasoner` dùng `generate`) sẽ khiến model phải nạp lại mỗi lần đổi kiểu gọi. Đường hỏi tài liệu đã chọn chỉ dùng `chat_with_meta`, nên không bị.
+
+### Tách thời gian từng bước (`time_ask_stages.py`, `out_time_ask_stages.txt`, 20/11/2026 04:05)
+
+Đây là lần đo **chẩn đoán**, không ghi trước, nên **không thay** verdict ở trên. Cùng code, cùng 3 câu, khoảng 20 phút sau lần đo lại. Lúc chạy: RAM trống 68%, swap 5,6/7 GB, không có job huấn luyện. Cache từ khoá được xoá trước mỗi câu.
+
+| Câu | Lần 1 | Lần 2 | Lần đo lại lúc 03:45 (lần 1 / lần 2) |
+|---|---|---|---|
+| t04 | 17,8 s | 5,7 s | 18,8 / 37,2 s |
+| p04 | 11,8 s | 3,3 s | 34,8 / 50,9 s |
+| p05 | 0,9 s | 1,4 s | 13,6 / 20,3 s |
+
+Ollama tự báo thời gian từng pha. Với lần gọi trả lời ở lần 1:
+
+| Câu | Nạp model | Xử lý prompt | Sinh chữ |
+|---|---|---|---|
+| t04 | 3,6 s | 5,3 s (875 token, ~165 token/s) | 7,7 s (74 token, ~10 token/s) |
+| p04 | 0 | 7,3 s (1316 token, ~180 token/s) | 2,1 s (28 token) |
+
+Đọc:
+1. **Lần đo lại lúc 03:45 chậm vì trạng thái máy, không phải vì code** (ỦNG HỘ MẠNH). Cùng code mà nhanh hơn 3-15 lần, và chậm cả ở các bước không gọi model trả lời: p05 lúc đó mất 13-20 s, giờ còn dưới 1,5 s. Lần đo lại bắt đầu chỉ 2 phút sau khi job huấn luyện dừng, lúc macOS có lẽ còn đang kéo dữ liệu từ swap về RAM (GIẢ THUYẾT, chưa đo trực tiếp).
+2. **Dịch từ khoá chỉ tốn 0,6-1,2 s.** `read_document` dưới 1,1 s. Gần như toàn bộ thời gian còn lại là lần gọi model trả lời.
+3. **Ở lần 2, xử lý prompt gần như bằng 0 (0,08 s)** vì Ollama dùng lại phần đã xử lý của cùng prompt ở lần 1. Người dùng thật hỏi câu mới, nên **lần 1 mới là con số đúng** cho buổi quan sát.
+4. **Câu đầu tiên sát ngưỡng:** t04 mất 17,8 s, trong đó 3,6 s là nạp lại model (Ollama đã đẩy model ra sau vài phút không dùng). Biên còn khoảng 2 s.
+
+Hệ quả cho cổng quyết định: không đổi verdict sau khi có số liệu. Phần cần sửa trước khi mời người là **điều kiện chạy**, không phải code. Trước buổi quan sát #1, ghi trước một lần chạy cuối với điều kiện:
+- job huấn luyện đã dừng ít nhất 15 phút;
+- model được nạp sẵn (một lần gọi khởi động trước khi người dùng hỏi câu đầu);
+- cùng 3 câu, cùng ngưỡng ≤ 20 s, chạy 2 lần.

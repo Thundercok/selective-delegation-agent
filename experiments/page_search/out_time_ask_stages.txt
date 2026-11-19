@@ -1,0 +1,41 @@
+Fri Nov 20 04:05:21 +07 2026
+vm.swapusage: total = 7168.00M  used = 5586.69M  free = 1581.31M  (encrypted)
+System-wide memory free percentage: 68%
+training procs: 0
+document_model_client: NoneType None
+=== run 1 t04 total 17.8 s err=None
+   {"t": 1.07, "kind": "step", "tool": "read_document"}
+   {"t": 1.13, "kind": "step", "tool": "expand_document_context"}
+   {"t": 17.75, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 16.62, "load": 3.58, "prompt_s": 5.28, "prompt_tok": 875, "gen_s": 7.67, "gen_tok": 74, "err": null, "fmt": false}
+   {"t": 17.77, "kind": "step", "tool": null}
+=== run 1 p04 total 11.8 s err=None
+   {"t": 0.9, "kind": "step", "tool": "read_document"}
+   {"t": 2.39, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 1.22, "load": 0.0, "prompt_s": 0.75, "prompt_tok": 163, "gen_s": 0.4, "gen_tok": 6, "err": null, "fmt": false}
+   {"t": 2.39, "kind": "keyword_query", "wall": 1.22, "client": "SLMEngine", "keywords": ["branch prediction", "speculative execution"]}
+   {"t": 2.4, "kind": "step", "tool": "expand_document_context"}
+   {"t": 11.77, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 9.37, "load": 0.0, "prompt_s": 7.29, "prompt_tok": 1316, "gen_s": 2.05, "gen_tok": 28, "err": null, "fmt": false}
+   {"t": 11.77, "kind": "step", "tool": null}
+=== run 1 p05 total 0.9 s err=None
+   {"t": 0.16, "kind": "step", "tool": "read_document"}
+   {"t": 0.91, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 0.63, "load": 0.0, "prompt_s": 0.17, "prompt_tok": 165, "gen_s": 0.37, "gen_tok": 6, "err": null, "fmt": false}
+   {"t": 0.91, "kind": "keyword_query", "wall": 0.63, "client": "SLMEngine", "keywords": ["cache coherence", "cache line"]}
+   {"t": 0.92, "kind": "step", "tool": "expand_document_context"}
+   {"t": 0.92, "kind": "step", "tool": null}
+=== run 2 t04 total 5.7 s err=None
+   {"t": 0.04, "kind": "step", "tool": "read_document"}
+   {"t": 0.08, "kind": "step", "tool": "expand_document_context"}
+   {"t": 5.65, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 5.56, "load": 0.0, "prompt_s": 0.08, "prompt_tok": 875, "gen_s": 5.41, "gen_tok": 73, "err": null, "fmt": false}
+   {"t": 5.65, "kind": "step", "tool": null}
+=== run 2 p04 total 3.3 s err=None
+   {"t": 0.28, "kind": "step", "tool": "read_document"}
+   {"t": 1.28, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 0.61, "load": 0.0, "prompt_s": 0.18, "prompt_tok": 163, "gen_s": 0.36, "gen_tok": 6, "err": null, "fmt": false}
+   {"t": 1.28, "kind": "keyword_query", "wall": 0.61, "client": "SLMEngine", "keywords": ["branch prediction", "speculative execution"]}
+   {"t": 1.29, "kind": "step", "tool": "expand_document_context"}
+   {"t": 3.33, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 2.03, "load": 0.0, "prompt_s": 0.08, "prompt_tok": 1316, "gen_s": 1.86, "gen_tok": 28, "err": null, "fmt": false}
+   {"t": 3.33, "kind": "step", "tool": null}
+=== run 2 p05 total 1.4 s err=None
+   {"t": 0.27, "kind": "step", "tool": "read_document"}
+   {"t": 1.39, "kind": "chat", "model": "qwen3:4b-instruct", "wall": 0.79, "load": 0.01, "prompt_s": 0.18, "prompt_tok": 165, "gen_s": 0.37, "gen_tok": 6, "err": null, "fmt": false}
+   {"t": 1.39, "kind": "keyword_query", "wall": 0.79, "client": "SLMEngine", "keywords": ["cache coherence", "cache line"]}
+   {"t": 1.4, "kind": "step", "tool": "expand_document_context"}
+   {"t": 1.4, "kind": "step", "tool": null}
