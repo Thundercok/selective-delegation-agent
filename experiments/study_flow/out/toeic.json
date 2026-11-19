@@ -1,0 +1,144 @@
+{
+  "doc": "/Users/thundercock2/Documents/Github/toeic-prep/ngay-01.pdf",
+  "steps": [
+    {
+      "request": "Tranh chỉ có đồ vật, không có người thì đáp án đúng thường dùng cấu trúc gì?",
+      "handled": true,
+      "seconds": 10.5,
+      "answer": "Đáp án đúng thường dùng cấu trúc: is placed / has been arranged / is located.",
+      "sources": [
+        {
+          "title": "ngay-01.pdf",
+          "page": 2,
+          "section": "",
+          "label": "Trang 2",
+          "location": "Trang PDF 2",
+          "readScope": "Trích đoạn · 3.000 ký tự",
+          "path": "/Users/thundercock2/Documents/Github/toeic-prep/ngay-01.pdf",
+          "snippet": "--- Page 2 ---\nBẫy hay gặp: đáp án có từ phát âm giống thứ trong tranh nhưng nói sai việc. Ví dụ tranh có\ncopier mà đáp án nói coffee.\nTranh chỉ có đồ vật, không có người: đáp án đúng thường dùng is placed / has been arranged / is\nlocated. Câu có is being + V3 nghĩa là có người đang làm việc đó, nên thường sai khi tranh không\ncó người.\nTừ chỉ vị trí cần thuộc: on, next to, beside, in front of, behind, between, across from.\n3b. Luyện nghe với đề thật (20 phút)\nNguồn: đề mẫu TOEIC Listening & Reading chính thức của ETS (nhà ra đề TOEIC), miễn phí, có\naudio.\nVào ets.org/toeic → Listening and Read",
+          "extendedSnippet": "--- Page 2 ---\nBẫy hay gặp: đáp án có từ phát âm giống thứ trong tranh nhưng nói sai việc. Ví dụ tranh có\ncopier mà đáp án nói coffee.\nTranh chỉ có đồ vật, không có người: đáp án đúng thường dùng is placed / has been arranged / is\nlocated. Câu có is being + V3 nghĩa là có người đang làm việc đó, nên thường sai khi tranh không\ncó người.\nTừ chỉ vị trí cần thuộc: on, next to, beside, in front of, behind, between, across from.\n3b. Luyện nghe với đề thật (20 phút)\nNguồn: đề mẫu TOEIC Listening & Reading chính thức của ETS (nhà ra đề TOEIC), miễn phí, có\naudio.\nVào ets.org/toeic → Listening and Reading → tìm mục Sample Test / Sample Questions.\n1. Làm Part 1 (6 câu) và 10 câu đầu Part 2, nghe một lần, không tua lại, giống thi thật.\n2. Ghi đáp án ra giấy rồi gửi lại để chấm.\n3. Nghe lại câu sai kèm transcript (nếu đề có), gạch chân chỗ nghe nhầm.\n4. Chép chính tả: chọn 3 câu ngắn trong Part 2, nghe từng câu, tạm dừng và chép lại.\nNghe thêm lúc rảnh (không bắt buộc): TED Talk ngắn như Try something new for 30 days (Matt Cutts) để quen tai.\n\n--- Page 3 ---\n4. Bài tập Part 5 (15 phút)\n1. The manager will ______ the report tomorrow.\n(A) review (B) reviewing (C) reviewed (D) reviews\n2. The meeting will start ______ 9 a.m.\n(A) at (B) on (C) in (D) to\n3. Ms. Lee is a very ______ employee.\n(A) reliable (B) reliably (C) rely (D) reliability\n4. The new software works ______.\n(A) efficient (B) efficiently (C) efficiency (D) efficiencies\n5. All employees must attend the safety ______.\n(A) train (B) trained (C) training (D) trains\n6. Mr. Kim ______ in the sales department since 2020.\n(A) works (B) has worked (C) working (D) is work\n7. We received many ______ from customers last month.\n(A) complain (B) complaints (C) complained (D) complaining\n8. The package was delivered ______ to the offic",
+          "hasMoreContext": true,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    },
+    {
+      "request": "Tạo 5 câu trắc nghiệm từ phần này",
+      "handled": true,
+      "seconds": 60.7,
+      "answer": "Đã tạo 5 câu trắc nghiệm từ trang 2, trang câu trả lời vừa rồi dẫn.\n\nBấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.",
+      "sources": [
+        {
+          "title": "ngay-01.pdf",
+          "page": 2,
+          "section": "",
+          "label": "Trang 2",
+          "location": "Trang PDF 2",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/toeic-prep/ngay-01.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": {
+        "visual_type": "quiz",
+        "source_page": 2,
+        "generator": "model",
+        "model_error": null,
+        "instruction": "Chọn phát biểu đúng và đầy đủ nhất.",
+        "questions": [
+          {
+            "question": "Trong một bức tranh có đồ vật như copier, điều nào sau đây là một lỗi thường gặp khi chọn đáp án?",
+            "options": [
+              "A. Đáp án có từ ngữ dài hơn so với từ trong tranh",
+              "B. Đáp án có từ phát âm giống thứ trong tranh nhưng nói sai việc",
+              "C. Đáp án chỉ nói về người tham gia hoạt động trong tranh",
+              "D. Đáp án sử dụng từ ngữ không liên quan đến nội dung tranh"
+            ],
+            "correct_index": 1,
+            "quote": "Bẫy hay gặp: đáp án có từ phát âm giống thứ trong tranh nhưng nói sai việc. Ví dụ tranh có copier mà đáp án nói coffee.",
+            "source_page": 2,
+            "grounded": true
+          },
+          {
+            "question": "Khi một bức tranh chỉ hiển thị đồ vật mà không có người, thì loại từ nào thường được sử dụng trong đáp án đúng?",
+            "options": [
+              "A. is being used / is being done",
+              "B. is moving / is running",
+              "C. is placed / has been arranged / is located",
+              "D. is working / is operating"
+            ],
+            "correct_index": 2,
+            "quote": "Tranh chỉ có đồ vật, không có người: đáp án đúng thường dùng is placed / has been arranged / is located. Câu có is being + V3 nghĩa là có người đang làm việc đó, nên thường sai khi tranh không có người.",
+            "source_page": 2,
+            "grounded": true
+          },
+          {
+            "question": "Trong các từ sau, từ nào là từ chỉ vị trí thường được sử dụng trong các câu mô tả vị trí của đồ vật trong tranh?",
+            "options": [
+              "A. above, below, inside, outside",
+              "B. before, after, during, until",
+              "C. near, far, close, distant",
+              "D. on, next to, beside, in front of, behind, between, across from"
+            ],
+            "correct_index": 3,
+            "quote": "Từ chỉ vị trí cần thuộc: on, next to, beside, in front of, behind, between, across from.",
+            "source_page": 2,
+            "grounded": true
+          },
+          {
+            "question": "Đề mẫu TOEIC Listening & Reading chính thức của ETS có thể tìm thấy ở đâu?",
+            "options": [
+              "A. vào ets.org/toeic → Listening and Reading → tìm mục Sample Test / Sample Questions",
+              "B. trên trang chủ của Bộ Giáo dục Việt Nam",
+              "C. trong sách giáo khoa tiếng Anh lớp 12",
+              "D. trên website của trường đại học Ngoại thương"
+            ],
+            "correct_index": 0,
+            "quote": "Nguồn: đề mẫu TOEIC Listening & Reading chính thức của ETS (nhà ra đề TOEIC), miễn phí, có audio.",
+            "source_page": 2,
+            "grounded": true
+          },
+          {
+            "question": "Khi luyện nghe TOEIC, bước nào sau đây được khuyến nghị để mô phỏng điều kiện thi thật?",
+            "options": [
+              "A. Nghe lại tất cả các câu và ghi chú chi tiết",
+              "B. Làm Part 1 (6 câu) và 10 câu đầu Part 2, nghe một lần, không tua lại",
+              "C. Tự chọn tốc độ nghe nhanh hơn để tiết kiệm thời gian",
+              "D. Tự làm bài và kiểm tra đáp án ngay sau khi nghe"
+            ],
+            "correct_index": 1,
+            "quote": "1. Làm Part 1 (6 câu) và 10 câu đầu Part 2, nghe một lần, không tua lại, giống thi thật.",
+            "source_page": 2,
+            "grounded": true
+          }
+        ]
+      }
+    },
+    {
+      "request": "Lưu thành ghi chú",
+      "handled": true,
+      "seconds": 0.1,
+      "answer": "Đã lưu ghi chú \"2026-11-19 0659 - Tạo 5 câu trắc nghiệm từ phần này\" vào thư mục /Users/thundercock2/Documents/Github/selective-delegation-agent/experiments/study_flow/out/notes.",
+      "sources": [
+        {
+          "title": "ngay-01.pdf",
+          "page": 2,
+          "section": "",
+          "label": "Trang 2",
+          "location": "Trang PDF 2",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/toeic-prep/ngay-01.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    }
+  ]
+}

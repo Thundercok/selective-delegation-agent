@@ -1,0 +1,13 @@
+{
+  "_doc": "Hand labels for out/<doc>.json under 'Chọn phát biểu đúng và đầy đủ nhất'. Claude only, 2026-11-19.",
+  "ask": {"wiki": ["right", "69 nước, cites page 3"], "dsa": ["right", "n², cites page 1"], "toeic": ["right", "is placed / has been arranged / is located, cites page 2"]},
+  "quiz": {
+    "wiki": {"1": ["right", ""], "2": ["right", ""], "3": ["right", ""],
+             "4": ["ambiguous", "all four options are organisations the page lists Việt Nam as a member of"],
+             "5": ["right", "quote is on the page"]},
+    "dsa": {"1": ["right", ""], "2": ["right", ""], "_missing": "3 of 5 not delivered"},
+    "toeic": {"1": ["right", ""], "2": ["right", ""],
+              "3": ["ambiguous", "strict: A 'above, below, inside, outside' are also position words, though not the page's list"],
+              "4": ["right", "the path is in the next sentence, not the quote"], "5": ["right", ""]}
+  }
+}

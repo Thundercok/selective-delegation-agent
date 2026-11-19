@@ -98,7 +98,8 @@ def key_supported_by_quote(correct: str, quote: str) -> bool:
         # A value such as "0" for NAND(1, 1): its options are other values, so only one can be true.
         numbers = re.findall(r"\d+", str(correct or ""))
         return bool(numbers) and all(re.search(rf"(?<!\d){n}(?!\d)", str(quote or "")) for n in numbers)
-    return len(key_words & _content_words(quote)) >= MIN_KEY_QUOTE_WORDS
+    # A one-word key ("n²", "WTO") can only share one word.
+    return len(key_words & _content_words(quote)) >= min(MIN_KEY_QUOTE_WORDS, len(key_words))
 
 
 def compile_quiz_items(

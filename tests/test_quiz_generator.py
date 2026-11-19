@@ -290,6 +290,9 @@ def test_a_value_key_passes_when_the_quote_holds_it():
     assert key_supported_by_quote("0", nand_row)
     assert not key_supported_by_quote("8", nand_row)
     assert not key_supported_by_quote("", nand_row)
+    # Study flow run, DSA cheatsheet: a one-word key quoted from the Big-O table.
+    assert key_supported_by_quote("n²", "Quick nlogn nlogn n² logn ✗")
+    assert not key_supported_by_quote("n²", "Merge nlogn nlogn nlogn n ✓")
 
 
 def test_quiz_says_the_fullest_statement_counts():

@@ -1,0 +1,144 @@
+{
+  "doc": "/Users/thundercock2/Documents/Github/Assignment4/wikipedia_kinh_te_viet_nam.pdf",
+  "steps": [
+    {
+      "request": "Đến năm 2017 có bao nhiêu nước công nhận Việt Nam là nền kinh tế thị trường?",
+      "handled": true,
+      "seconds": 12.7,
+      "answer": "Đến năm 2017, có 69 nước công nhận Việt Nam là một nền kinh tế thị trường.",
+      "sources": [
+        {
+          "title": "wikipedia_kinh_te_viet_nam.pdf",
+          "page": 3,
+          "section": "",
+          "label": "Trang 3",
+          "location": "Trang PDF 3",
+          "readScope": "Trích đoạn · 3.000 ký tự",
+          "path": "/Users/thundercock2/Documents/Github/Assignment4/wikipedia_kinh_te_viet_nam.pdf",
+          "snippet": "--- Page 3 ---\nnền kinh tế thị trường đầy đủ, đến năm 2013, đã có 37 quốc gia công nhận Việt Nam đạt kinh tế thị trường (VCCI) trong đó có Nhật Bản, Đức và\nHàn Quốc.[9] Đến năm 2017, sau những nỗ lực đàm phán các Hiệp định thương mại tự do (FTA) song phương với quốc tế, Phó Thủ tướng Phạm\nBình Minh đã thông báo đã có 69 nước công nhận Việt Nam là một nền kinh tế thị trường tại phiên họp thường trực chính phủ,[10] tuy nhiên Hoa Kỳ\n(đối tác thương mại lớn thứ 2) thì vẫn chưa công nhận kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh.[11] Xét về mặt kinh tế, Việt Nam\nlà quốc gia thành vi",
+          "extendedSnippet": "--- Page 3 ---\nnền kinh tế thị trường đầy đủ, đến năm 2013, đã có 37 quốc gia công nhận Việt Nam đạt kinh tế thị trường (VCCI) trong đó có Nhật Bản, Đức và\nHàn Quốc.[9] Đến năm 2017, sau những nỗ lực đàm phán các Hiệp định thương mại tự do (FTA) song phương với quốc tế, Phó Thủ tướng Phạm\nBình Minh đã thông báo đã có 69 nước công nhận Việt Nam là một nền kinh tế thị trường tại phiên họp thường trực chính phủ,[10] tuy nhiên Hoa Kỳ\n(đối tác thương mại lớn thứ 2) thì vẫn chưa công nhận kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh.[11] Xét về mặt kinh tế, Việt Nam\nlà quốc gia thành viên của Liên Hợp Quốc, Tổ chức Thương mại Thế giới, Quỹ Tiền tệ Quốc tế, Nhóm Ngân hàng Thế giới, Ngân hàng Phát triển\nchâu Á, Diễn đàn Hợp tác Kinh tế châu Á – Thái Bình Dương, Hiệp định Đối tác Toàn diện và Tiến bộ xuyên Thái Bình Dương, ASEAN.\nSố liệu\nBảng 1: Các chỉ số kinh tế chủ yếu của Việt Nam (1990 – 2024)\nNăm Tăng trưởng GDP GDP danh nghĩa GDP bình quân Lạm phát Thất nghiệp\n(%) (Tỷ USD) (USD/người) (%) (%)\n1990 ▲ 5.0 8.2 121.7 36.0 12.3\n2000 ▲ 6.8 39.6 498.6 ▲ -1.8 6.4\n2010 ▲ 6.4 143.2 1628.0 9.2 2.9\n2020 ▲ 2.9 346.3 3548.9 3.2 2.5\n2024 ▲ 7.1 476.4 4622.5 3.7 2.1\nNhư được thể hiện trong Bảng 1, nền kinh tế Việt Nam đã có sự tăng trưởng vượt bậc từ năm 1990 đến năm 2024...\nTháng 10 năm 2020, theo ước đoán của Quỹ Tiền tệ Quốc tế (IMF), quy mô nền kinh tế Việt Nam với 97,3 triệu dân[12] theo GDP danh nghĩa\nđạt 340,6 tỷ đô la Mỹ, sức mua tương đương đạt 1,047 tỷ đô la Mỹ,[13] GDP bình quân đầu người theo danh nghĩa là 3,498 USD/người[14] còn theo\nsức mua là 10,755 USD/người.[15]\nTheo Dự thảo Báo cáo chính trị tháng 10-2020 trình Đại hội XIII của Đảng Cộng sản Việt Nam: Tính chung cả thời kỳ Chiến lược 2011 - 2020,\ntăng trưởng GDP dự kiến đạt khoảng 5,9%/năm, thuộc nhóm các nư",
+          "hasMoreContext": true,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    },
+    {
+      "request": "Tạo 5 câu trắc nghiệm từ phần này",
+      "handled": true,
+      "seconds": 60.2,
+      "answer": "Đã tạo 5 câu trắc nghiệm từ trang 3, trang câu trả lời vừa rồi dẫn.\n\nBấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.",
+      "sources": [
+        {
+          "title": "wikipedia_kinh_te_viet_nam.pdf",
+          "page": 3,
+          "section": "",
+          "label": "Trang 3",
+          "location": "Trang PDF 3",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/Assignment4/wikipedia_kinh_te_viet_nam.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": {
+        "visual_type": "quiz",
+        "source_page": 3,
+        "generator": "model",
+        "model_error": null,
+        "instruction": "Chọn phát biểu đúng và đầy đủ nhất.",
+        "questions": [
+          {
+            "question": "Số lượng quốc gia công nhận Việt Nam đạt kinh tế thị trường vào năm 2013 là bao nhiêu?",
+            "options": [
+              "A. 25",
+              "B. 30",
+              "C. 37",
+              "D. 40"
+            ],
+            "correct_index": 2,
+            "quote": "nền kinh tế thị trường đầy đủ, đến năm 2013, đã có 37 quốc gia công nhận Việt Nam đạt kinh tế thị trường (VCCI) trong đó có Nhật Bản, Đức và Hàn Quốc.",
+            "source_page": 3,
+            "grounded": true
+          },
+          {
+            "question": "Số lượng nước công nhận Việt Nam là một nền kinh tế thị trường vào năm 2017 là bao nhiêu?",
+            "options": [
+              "A. 50",
+              "B. 70",
+              "C. 80",
+              "D. 69"
+            ],
+            "correct_index": 3,
+            "quote": "Đến năm 2017, sau những nỗ lực đàm phán các Hiệp định thương mại tự do (FTA) song phương với quốc tế, Phó Thủ tướng Phạm Bình Minh đã thông báo đã có 69 nước công nhận Việt Nam là một nền kinh tế thị trường tại phiên họp thường trực chính phủ.",
+            "source_page": 3,
+            "grounded": true
+          },
+          {
+            "question": "Đối tác thương mại lớn thứ hai của Việt Nam vẫn chưa công nhận điều gì về nền kinh tế Việt Nam?",
+            "options": [
+              "A. kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh",
+              "B. Việt Nam có tỷ lệ lạm phát thấp",
+              "C. Việt Nam là quốc gia thành viên của WTO",
+              "D. Việt Nam có tăng trưởng GDP cao"
+            ],
+            "correct_index": 0,
+            "quote": "Tuy nhiên Hoa Kỳ (đối tác thương mại lớn thứ 2) thì vẫn chưa công nhận kinh tế Việt Nam là một nền kinh tế thị trường hoàn chỉnh.",
+            "source_page": 3,
+            "grounded": true
+          },
+          {
+            "question": "Việt Nam là thành viên của tổ chức nào sau đây trong lĩnh vực kinh tế?",
+            "options": [
+              "A. Diễn đàn Hợp tác Kinh tế châu Á – Thái Bình Dương",
+              "B. Tổ chức Thương mại Thế giới",
+              "C. Liên Hợp Quốc",
+              "D. Nhóm Ngân hàng Thế giới"
+            ],
+            "correct_index": 1,
+            "quote": "Xét về mặt kinh tế, Việt Nam là quốc gia thành viên của Liên Hợp Quốc, Tổ chức Thương mại Thế giới, Quỹ Tiền tệ Quốc tế, Nhóm Ngân hàng Thế giới, Ngân hàng Phát triển châu Á, Diễn đàn Hợp tác Kinh tế châu Á – Thái Bình Dương, Hiệp định Đối tác Toàn diện và Tiến bộ xuyên Thái Bình Dương, ASEAN.",
+            "source_page": 3,
+            "grounded": true
+          },
+          {
+            "question": "Từ năm 1990 đến năm 2024, nền kinh tế Việt Nam có đặc điểm gì về tăng trưởng?",
+            "options": [
+              "A. tăng trưởng ổn định nhưng không đáng kể",
+              "B. giảm mạnh do khủng hoảng",
+              "C. có sự tăng trưởng vượt bậc",
+              "D. chỉ tăng nhẹ mỗi năm"
+            ],
+            "correct_index": 2,
+            "quote": "Như được thể hiện trong Bảng 1, nền kinh tế Việt Nam đã có sự tăng trưởng vượt bậc từ năm 1990 đến năm 2024...",
+            "source_page": 3,
+            "grounded": true
+          }
+        ]
+      }
+    },
+    {
+      "request": "Lưu thành ghi chú",
+      "handled": true,
+      "seconds": 0.1,
+      "answer": "Đã lưu ghi chú \"2026-11-19 0657 - Tạo 5 câu trắc nghiệm từ phần này\" vào thư mục /Users/thundercock2/Documents/Github/selective-delegation-agent/experiments/study_flow/out/notes.",
+      "sources": [
+        {
+          "title": "wikipedia_kinh_te_viet_nam.pdf",
+          "page": 3,
+          "section": "",
+          "label": "Trang 3",
+          "location": "Trang PDF 3",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/Assignment4/wikipedia_kinh_te_viet_nam.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    }
+  ]
+}

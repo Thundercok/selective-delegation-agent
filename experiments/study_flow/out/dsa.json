@@ -1,0 +1,105 @@
+{
+  "doc": "/Users/thundercock2/Documents/Github/tdtu-dsa-cheatsheet/cheatsheet.pdf",
+  "steps": [
+    {
+      "request": "Quick sort trường hợp xấu nhất có độ phức tạp bao nhiêu?",
+      "handled": true,
+      "seconds": 8.8,
+      "answer": "Theo bảng Big-O trong tài liệu, trường hợp xấu nhất của Quick sort là **n²**.",
+      "sources": [
+        {
+          "title": "cheatsheet.pdf",
+          "page": 1,
+          "section": "",
+          "label": "Trang 1",
+          "location": "Trang PDF 1",
+          "readScope": "Trích đoạn · 3.000 ký tự",
+          "path": "/Users/thundercock2/Documents/Github/tdtu-dsa-cheatsheet/cheatsheet.pdf",
+          "snippet": "--- Page 1 ---\nDSA Cheatsheet\n—\nGiữa kỳ (Java)\n·\nTDTU\n·\nThầy Nguyễn Thành An ⚠ Luật thi (đề 2026)\nCompile/runtime error\n=\n0 điểm cả bài. Main sửa cũng\nkhông được lỗi.\nKHÔNG đổi tên file, tên hàm, thứ tự tham số. Code trong\nfile cho sẵn.\nNộp folder MSSV\n_\nHoTen (vd 52100000\n_\nNguyenVanAn) có\nCharLinkedList, ListInterface, Node, Test, Question2,\nQuestion3 .java → nén zip.\nTự viết hàm in list + main test. Task 3 được dùng\njava.util.Stack (nhớ import).\nHàm phải return đủ mọi nhánh (hàm int/boolean không\nreturn = lỗi biên dịch).\nBig-O nhanh\nBest Avg Worst Space Stable\nBubble n* n² n² 1 ✓\nSelection ",
+          "extendedSnippet": "--- Page 1 ---\nDSA Cheatsheet\n—\nGiữa kỳ (Java)\n·\nTDTU\n·\nThầy Nguyễn Thành An ⚠ Luật thi (đề 2026)\nCompile/runtime error\n=\n0 điểm cả bài. Main sửa cũng\nkhông được lỗi.\nKHÔNG đổi tên file, tên hàm, thứ tự tham số. Code trong\nfile cho sẵn.\nNộp folder MSSV\n_\nHoTen (vd 52100000\n_\nNguyenVanAn) có\nCharLinkedList, ListInterface, Node, Test, Question2,\nQuestion3 .java → nén zip.\nTự viết hàm in list + main test. Task 3 được dùng\njava.util.Stack (nhớ import).\nHàm phải return đủ mọi nhánh (hàm int/boolean không\nreturn = lỗi biên dịch).\nBig-O nhanh\nBest Avg Worst Space Stable\nBubble n* n² n² 1 ✓\nSelection n² n² n² 1 ✗\nInsertion n n² n² 1 ✓\nMerge nlogn nlogn nlogn n ✓\nQuick nlogn nlogn n² logn ✗\nHeap nlogn nlogn nlogn 1 ✗\n*bubble có cờ swapped. Thứ tự tăng: 1 < logn < n < nlogn < n² < 2ⁿ\n< n!. Vòng lặp lồng nhau = nhân; tuần tự = cộng (lấy max); bỏ hằng\nsố.\nTruy\nXoá\nCấu trúc\nChèn đầu Chèn cuối Tìm\ncập\nđầu\nArray 1 n 1* n n\nLinkedList\n(head) n 1 n (1 nếu có\ntail) n 1\npush/enq\nStack/Queue–\n1 pop/deq 1 n 1\nLinked List (Node, CharLinkedList)\nclass Node { char data; Node next;\nNode(char d){data=d; next=null;} }\ñ\n// head==null ⇒ list rỗ\nng. Luôn check null TRƯỚC\nkhi .next\nvoid addFirst(char d){\nNode n=new Node(d); n.next=head; head=n; }\nboolean addAfterFirstKey(char d,char key){\nNode cur=head;\nwhile(cur!=null && cur.data!=key) cur=cur.next;\nif(cur==null) return false; // không có k\ney\nNode n=new Node(d);\nn.next=cur.next; cur.next=n; // THỨ TỰ: n.\nnext trước\nreturn true; }\ǹ\nint largestCharPostition(){ // vị trí ĐẦ\nU\n̉\nTIÊN củ\na max\nif(head==null) return -1;\nint pos=0,best=0; char mx=head.data; Node c=hea\nd.next; int i=1;\nwhile(c!=null){ if(c.data>mx){mx=c.data;best=\ni;} // > chứ không >=\nc=c.next; i++; }\nreturn best; }\nvoid print(){ for(Node c=head;c!=null;c=c.next)\nSystem.out.print(c.data",
+          "hasMoreContext": true,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    },
+    {
+      "request": "Tạo 5 câu trắc nghiệm từ phần này",
+      "handled": true,
+      "seconds": 67.0,
+      "answer": "Đã tạo 2 câu trắc nghiệm từ trang 1, trang câu trả lời vừa rồi dẫn.\n\nBấm chọn đáp án trên thẻ để kiểm tra, kèm trích dẫn nguồn.",
+      "sources": [
+        {
+          "title": "cheatsheet.pdf",
+          "page": 1,
+          "section": "",
+          "label": "Trang 1",
+          "location": "Trang PDF 1",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/tdtu-dsa-cheatsheet/cheatsheet.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": {
+        "visual_type": "quiz",
+        "source_page": 1,
+        "generator": "model",
+        "model_error": null,
+        "instruction": "Chọn phát biểu đúng và đầy đủ nhất.",
+        "questions": [
+          {
+            "question": "Trong lớp CharLinkedList, hàm addFirst thực hiện thao tác nào để chèn phần tử vào đầu danh sách?",
+            "options": [
+              "A. Tạo nút mới và đặt nó làm head, không cần cập nhật next",
+              "B. Tạo nút mới và đặt nó làm next của head",
+              "C. Tạo nút mới, đặt next của nó là head, rồi cập nhật head thành nút mới",
+              "D. Tạo nút mới và đặt nó làm tail của danh sách"
+            ],
+            "correct_index": 2,
+            "quote": "void addFirst(char d){ Node n=new Node(d); n.next=head; head=n; }",
+            "source_page": 1,
+            "grounded": true
+          },
+          {
+            "question": "Trong hàm đệ quy tính luỹ thừa n^k, điều kiện nào là cơ sở dừng (base case)?",
+            "options": [
+              "A. n == 0",
+              "B. n < 0",
+              "C. k > 0",
+              "D. k == 0"
+            ],
+            "correct_index": 3,
+            "quote": "static int recur(int n,int k){ if(k==0) return 1; return n*recur(n,k-1); }",
+            "source_page": 1,
+            "grounded": true
+          }
+        ]
+      }
+    },
+    {
+      "request": "Lưu thành ghi chú",
+      "handled": true,
+      "seconds": 0.1,
+      "answer": "Đã lưu ghi chú \"2026-11-19 0658 - Tạo 5 câu trắc nghiệm từ phần này\" vào thư mục /Users/thundercock2/Documents/Github/selective-delegation-agent/experiments/study_flow/out/notes.",
+      "sources": [
+        {
+          "title": "cheatsheet.pdf",
+          "page": 1,
+          "section": "",
+          "label": "Trang 1",
+          "location": "Trang PDF 1",
+          "readScope": "",
+          "path": "/Users/thundercock2/Documents/Github/tdtu-dsa-cheatsheet/cheatsheet.pdf",
+          "snippet": "",
+          "extendedSnippet": "",
+          "hasMoreContext": false,
+          "canOpen": true
+        }
+      ],
+      "card": null
+    }
+  ]
+}
