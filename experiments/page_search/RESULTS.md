@@ -143,3 +143,11 @@ Ngưỡng:
 Thêm một điều kiện, vì 20 câu này đã thành bộ chỉnh: trước khi gọi là GO cho buổi quan sát, viết **10 câu mới** (5 `term`, 5 `paraphrase`) trên những slide chưa dùng, kiểm tra đáp án bằng chữ trên trang, rồi chạy **một lần**. Nếu bộ mới thấp hơn bộ chỉnh từ 3 câu trở lên (tính theo tỉ lệ), thì cách chọn trang đang khớp theo bộ chỉnh chứ không phải theo nghĩa.
 
 Dự đoán (GIẢ THUYẾT): `paraphrase` lên 4-7/10. Mô hình đa ngôn ngữ nối được câu tiếng Việt với slide tiếng Anh, nhưng nhiều slide chỉ có hình nên chữ trích ra rất ít. Chi phí là chỗ chưa chắc nhất: mỗi câu hỏi nhúng lại toàn bộ trang của file, không có bộ nhớ đệm.
+
+### Bộ thẩm định (viết 19/11/2026, trước mọi lần chạy phần theo nghĩa)
+
+`questions_502044_holdout.json`: 10 câu (5 `term`, 5 `paraphrase`) trên 6 file. Bốn file trong số đó (9.2, 9.3, 11.1, 11.2) chưa có câu nào trong bộ chỉnh. Hai file còn lại (Ch2, Ch6) có câu trong bộ chỉnh, nhưng câu mới hỏi khái niệm khác: duality, flip-flop, J-K. Không câu nào hỏi lại khái niệm của bộ 20 câu hay của V1/V2. Mỗi đáp án đã đối chiếu với chữ trích ra từ trang PDF (pypdf). Số trang là trang PDF, không phải số in trên slide.
+
+Câu `paraphrase` chỉ dùng tiếng Việt thường, không dùng thuật ngữ trên slide. Câu `term` giữ đúng thuật ngữ của slide.
+
+Quy tắc: bộ này chạy **đúng một lần**, sau khi bộ chỉnh đã cho kết quả và mã chọn trang đã chốt. Không sửa câu, không sửa trang chấp nhận, không sửa mã sau khi thấy kết quả của bộ này. Nếu phải sửa mã sau lần chạy đó, cần viết một bộ thẩm định mới.

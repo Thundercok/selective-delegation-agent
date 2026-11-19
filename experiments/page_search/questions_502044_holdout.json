@@ -1,0 +1,12 @@
+[
+  {"id": "h_t1", "source": "term", "query": "J-K flip-flop chuyển sang trạng thái toggle khi nào?", "expect": ["Chapter 6 - Sequential"], "pages": [23, 24]},
+  {"id": "h_t2", "source": "term", "query": "Register file đọc và ghi được bao nhiêu thanh ghi trong một lệnh?", "expect": ["Chapter 11.1 - Processor DataPath"], "pages": [18]},
+  {"id": "h_t3", "source": "term", "query": "I-format chia 32 bit của lệnh thành những trường nào?", "expect": ["Chapter 9.3 - MIPS III"], "pages": [16, 17]},
+  {"id": "h_t4", "source": "term", "query": "Tín hiệu MemToReg chọn dữ liệu ghi vào thanh ghi thế nào?", "expect": ["Chapter 11.2 - Processor Control"], "pages": [17]},
+  {"id": "h_t5", "source": "term", "query": "PC-relative addressing tính địa chỉ đích của lệnh branch thế nào?", "expect": ["Chapter 9.3 - MIPS III"], "pages": [25, 26]},
+  {"id": "h_p1", "source": "paraphrase", "query": "Quy định một từ trong bộ nhớ phải bắt đầu ở địa chỉ chia hết cho số byte của nó được nói ở slide nào?", "expect": ["Chapter 9.2 - MIPS II"], "pages": [8]},
+  {"id": "h_p2", "source": "paraphrase", "query": "Bước lấy lệnh ra khỏi bộ nhớ theo bộ đếm chương trình rồi tăng nó lên được nói ở slide nào?", "expect": ["Chapter 11.1 - Processor DataPath"], "pages": [11, 12]},
+  {"id": "h_p3", "source": "paraphrase", "query": "Phần tử nhớ chỉ đổi trạng thái đúng lúc cạnh xung nhịp được nói ở slide nào?", "expect": ["Chapter 6 - Sequential"], "pages": [18, 19]},
+  {"id": "h_p4", "source": "paraphrase", "query": "Nguyên lý đổi chỗ phép nhân với phép cộng logic, đổi 0 với 1 mà đẳng thức vẫn đúng nằm ở slide nào?", "expect": ["Chapter 2 - Boolean"], "pages": [17]},
+  {"id": "h_p5", "source": "paraphrase", "query": "Vì sao bộ đếm chương trình vừa được đọc vừa được cập nhật trong cùng một chu kỳ mà không bị sai?", "expect": ["Chapter 11.1 - Processor DataPath"], "pages": [15]}
+]
