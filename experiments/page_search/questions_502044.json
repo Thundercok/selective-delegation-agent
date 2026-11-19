@@ -1,0 +1,22 @@
+[
+  {"id": "t01", "source": "term", "query": "Endianness, big-endian và little-endian được giải thích ở slide nào?", "expect": ["Chapter 10 - Instruction Set"], "pages": [14]},
+  {"id": "t02", "source": "term", "query": "Universal gates và complete set of logic nằm ở slide nào?", "expect": ["Chapter 3 - Logic gates"], "pages": [14, 15, 16]},
+  {"id": "t03", "source": "term", "query": "Thiết kế half adder nằm ở slide nào?", "expect": ["Chapter 5 - Combinational"], "pages": [9, 10]},
+  {"id": "t04", "source": "term", "query": "TLB là gì, nằm ở slide nào?", "expect": ["Chapter 14.1 - Virtual memory"], "pages": [11, 12]},
+  {"id": "t05", "source": "term", "query": "Polling và interrupt driven I/O khác nhau thế nào?", "expect": ["Chapter 14.2 - IO"], "pages": [17]},
+  {"id": "t06", "source": "term", "query": "Write-through cache và write-back cache khác nhau thế nào?", "expect": ["Chapter 13.1 - Cache Part I"], "pages": [69, 70]},
+  {"id": "t07", "source": "term", "query": "Priority encoder hoạt động thế nào?", "expect": ["Chapter 9.0 - MSI"], "pages": [30, 31]},
+  {"id": "t08", "source": "term", "query": "Prime implicant và essential prime implicant là gì?", "expect": ["Chapter 4.2"], "pages": [5]},
+  {"id": "t09", "source": "term", "query": "Khi nào phép cộng 2s complement bị overflow?", "expect": ["Chapter 1.2 - Number systems"], "pages": [30, 31]},
+  {"id": "t10", "source": "term", "query": "Full adder cộng ba bit thế nào?", "expect": ["Chapter 5 - Combinational"], "pages": [11, 12]},
+  {"id": "p01", "source": "paraphrase", "query": "Ý tưởng để cả chương trình lẫn dữ liệu cùng nằm trong bộ nhớ được nói ở slide nào?", "expect": ["Chapter 7 - Computer Organisation"], "pages": [20]},
+  {"id": "p02", "source": "paraphrase", "query": "Bảng dùng để đổi địa chỉ ảo sang địa chỉ thật nằm ở slide nào?", "expect": ["Chapter 14.1 - Virtual memory"], "pages": [7]},
+  {"id": "p03", "source": "paraphrase", "query": "Vì sao chia việc thành nhiều công đoạn chạy chồng lên nhau không làm một việc nhanh hơn mà chỉ tăng số việc xong mỗi giờ?", "expect": ["Chapter 12 - Pipelining"], "pages": [9, 10, 11, 12]},
+  {"id": "p04", "source": "paraphrase", "query": "Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở slide nào?", "expect": ["Chapter 12 - Pipelining"], "pages": [84, 85]},
+  {"id": "p05", "source": "paraphrase", "query": "Bộ nhớ đệm cho phép một khối dữ liệu nằm ở vài chỗ cố định trong một nhóm được nói ở slide nào?", "expect": ["Chapter 13.2 - Cache Part II"], "pages": [9, 10]},
+  {"id": "p06", "source": "paraphrase", "query": "Quy tắc biến phủ định của một tổng thành tích các phủ định nằm ở slide nào?", "expect": ["Chapter 2 - Boolean"], "pages": [19]},
+  {"id": "p07", "source": "paraphrase", "query": "Cách mã hoá từng chữ số thập phân thành bốn bit riêng nằm ở slide nào?", "expect": ["Chapter 1.2 - Number systems"], "pages": [45, 46, 47]},
+  {"id": "p08", "source": "paraphrase", "query": "Mạch đưa một đầu vào ra một trong nhiều đầu ra tuỳ theo đường chọn nằm ở slide nào?", "expect": ["Chapter 9.0 - MSI"], "pages": [32, 33]},
+  {"id": "p09", "source": "paraphrase", "query": "Mạch tuần tự đi vòng qua một chuỗi trạng thái cố định nằm ở slide nào?", "expect": ["Chapter 6 - Sequential"], "pages": [61]},
+  {"id": "p10", "source": "paraphrase", "query": "Các cách một lệnh hợp ngữ chỉ ra toán hạng của nó nằm ở đâu được nói ở slide nào?", "expect": ["Chapter 10 - Instruction Set"], "pages": [15, 16]}
+]

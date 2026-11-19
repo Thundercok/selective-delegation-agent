@@ -10,6 +10,12 @@ The questions name real files, so they live outside the repo:
 
 A question counts for its "source" separately: questions written by someone who has just read the
 file reuse its words and score higher than what a person really types.
+
+A question may also list "pages" (PDF pages, from 1) that answer it. With --files ROOT, the right file
+is found under ROOT by name, and its page is picked the way the ask path does (page_match.best_page
+on extract_document_content), whether or not search found the file:
+
+    python tools/measure_search_quality.py --questions Q.json --files ROOT --pages-only   no index needed
 """
 from __future__ import annotations
 
@@ -54,17 +60,47 @@ def summarize(ranks):
     }
 
 
-def score(cases, search):
+def summarize_pages(lines):
+    """Right page given the right file, and right page with the file in the top 3 (needs search)."""
+    paged = [line for line in lines if 'page_ok' in line]
+    summary = {'with_pages': len(paged), 'page_given_file': sum(line['page_ok'] for line in paged)}
+    if any(line['rank'] is not None for line in paged):
+        summary['page_top_3'] = sum(line['page_ok'] and line['rank'] is not None and line['rank'] <= 3
+                                    for line in paged)
+    return summary
+
+
+def best_page_number(query, path):
+    """The page the ask path would open for this question, or None."""
+    from rat.crawler.extractors import extract_document_content
+    from rat.engine.page_match import best_page, query_terms
+    span = best_page(extract_document_content(str(path)), query_terms(query))
+    return span[0] if span else None
+
+
+def score(cases, search, page_of=None, files=()):
     """Rank each question and summarize per source, plus everything together as 'all'."""
     lines, by_source = [], collections.defaultdict(list)
+    files = list(files)
     for case in cases:
         paths = unique_files(search(case['query']))
         rank = rank_of(case['expect'], paths)
-        by_source[case.get('source', 'unknown')].append(rank)
-        by_source['all'].append(rank)
-        lines.append({'query': case['query'], 'rank': rank, 'top': [Path(p).name for p in paths[:3]],
-                      'source': case.get('source', 'unknown')})
-    return lines, {source: summarize(ranks) for source, ranks in by_source.items()}
+        line = {'query': case['query'], 'rank': rank, 'top': [Path(p).name for p in paths[:3]],
+                'source': case.get('source', 'unknown')}
+        if page_of and case.get('pages'):
+            # The right file from the folder, not from search: this scores page picking on its own.
+            position = rank_of(case['expect'], files)
+            line['page'] = page_of(case['query'], files[position - 1]) if position else None
+            line['page_ok'] = line['page'] in case['pages']
+        by_source[case.get('source', 'unknown')].append(line)
+        by_source['all'].append(line)
+        lines.append(line)
+    summary = {}
+    for source, group in by_source.items():
+        summary[source] = summarize([line['rank'] for line in group])
+        if any('page_ok' in line for line in group):
+            summary[source].update(summarize_pages(group))
+    return lines, summary
 
 
 def build_index(index, roots):
@@ -80,23 +116,38 @@ def main():
     parser.add_argument('--db', type=Path, default=None, help='index file, default the app index')
     parser.add_argument('--questions', type=Path, default=None, help='default ~/.rat/search_quality.json')
     parser.add_argument('--build', action='store_true', help='index the configured folders into --db first')
+    parser.add_argument('--files', type=Path, default=None, help='folder holding the expected files; scores pages')
+    parser.add_argument('--pages-only', action='store_true', help='score pages with --files, without the index')
     args = parser.parse_args()
+    if args.pages_only and not args.files:
+        parser.error('--pages-only needs --files')
 
     sys.path.insert(0, str(ROOT))
-    from rat.engine.semantic_index import SemanticIndex
-    index = SemanticIndex(args.db or state_directory() / 'semantic-index.sqlite')
-    if args.build:
-        from rat.config import config
-        build_index(index, config.indexed_directories)
+    if args.pages_only:
+        search = lambda query: []
+    else:
+        from rat.engine.semantic_index import SemanticIndex
+        index = SemanticIndex(args.db or state_directory() / 'semantic-index.sqlite')
+        if args.build:
+            from rat.config import config
+            build_index(index, config.indexed_directories)
+        search = index.search
 
     questions = args.questions or state_directory() / 'search_quality.json'
     if not questions.exists():
         print(f'No questions at {questions}')
         return 0
-    lines, summary = score(json.loads(questions.read_text(encoding='utf-8')), index.search)
+    files = sorted(str(p) for p in args.files.rglob('*') if p.is_file()) if args.files else ()
+    lines, summary = score(json.loads(questions.read_text(encoding='utf-8')), search,
+                           page_of=best_page_number if args.files else None, files=files)
+    if args.pages_only:
+        # Without search every rank is None; file scores would read as zero, not as unmeasured.
+        summary = {source: {k: v for k, v in s.items() if k in ('with_pages', 'page_given_file')}
+                   for source, s in summary.items()}
     for line in lines:
         rank = line['rank'] or '-'
-        print(f"{rank!s:>2}  [{line['source']}] {line['query']}\n      {' | '.join(line['top']) or '(no results)'}")
+        page = f"  page {line['page'] or '-'} {'ok' if line['page_ok'] else 'WRONG'}" if 'page_ok' in line else ''
+        print(f"{rank!s:>2}  [{line['source']}] {line['query']}{page}\n      {' | '.join(line['top']) or '(no results)'}")
     print(json.dumps(summary, indent=2, ensure_ascii=False))
     return 0
 
