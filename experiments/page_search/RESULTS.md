@@ -416,3 +416,11 @@ Thử cùng một lần gọi model trả lời (821 token vào, 120 ra), lúc m
 Kết luận:
 - **Nạp sẵn model chỉ bỏ được 2-5 s.** Phần chậm chính là sinh chữ, ở 3-8 token/s, dao động gấp đôi giữa các lần chạy. Rất có thể đó là do thiếu RAM (GIẢ THUYẾT mạnh: swap gần đầy và model bị đẩy ra khỏi RAM).
 - `out_time_fallback.txt` và `out_dry_run_ask.txt` đều được đo sau 17:28, nên đều đo trong lúc máy đang chịu tải này. Quyết định GO cho `slm_fallback` và mức "ở giữa" của lần chạy thử cần đo lại khi máy không chạy job huấn luyện.
+
+## Đo lại lần chạy thử trên máy rảnh (ghi trước khi chạy, 20/11/2026)
+
+Code: sau `6c313b6`. Với file có trang, khi không tìm ra trang thì RAT nói không tìm thấy, không gọi model. Cùng 3 câu, cùng ngưỡng như mục "Chạy thử cả đường hỏi", không đổi ngưỡng sau khi có số liệu.
+
+- **Máy rảnh nghĩa là:** không còn job huấn luyện nào (`mlx_lm`, `structured_llm`, `run.sh`). Ghi lại swap và RAM trống ngay trước khi chạy.
+- **Chạy 2 lần liên tiếp.** "Mỗi câu không quá 20 s" áp dụng cho **mọi câu ở cả hai lần**, kể cả câu đầu của lần 1 (lúc model có thể chưa được nạp). Người dùng ở buổi quan sát cũng gặp câu đầu như vậy.
+- **p05 dự kiến trả lời "không tìm thấy".** Theo ngưỡng, như vậy là đạt. Nếu p05 lại dẫn một trang cụ thể thì phải xem vì sao trước khi kết luận.
