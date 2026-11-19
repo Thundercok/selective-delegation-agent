@@ -1,0 +1,15 @@
+=== t04 accepted pages [11, 12]  34.2 s  error=None
+  step read_document page=None
+  step expand_document_context page=11
+  source page=11 read=True start=None truncated=True
+  answer: TLB là Translation Look-aside Buffer, một bộ nhớ nhanh trong CPU dùng để lưu trữ các bảng điều hướng trang (PTE) để tăng tốc quá trình chuyển đổi địa chỉ. Nó được đề cập ở trang 11 và tiếp tục được giải thích ở các trang 13 đến 14 của tài liệu.
+=== p04 accepted pages [84, 85]  36.9 s  error=None
+  step read_document page=None
+  step expand_document_context page=85
+  source page=85 read=True start=None truncated=True
+  answer: Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở trang 85.
+=== p05 accepted pages [9, 10]  38.4 s  error=None
+  step read_document page=None
+  step expand_document_context page=None
+  source page=None read=True start=None truncated=True
+  answer: Bộ nhớ đệm cho phép một khối dữ liệu nằm ở vài chỗ cố định trong một nhóm được nói ở slide 10.

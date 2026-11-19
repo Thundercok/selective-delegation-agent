@@ -358,3 +358,61 @@ Phiên bản đo: `page_match.py` `088dfc714d95…`, `page_keywords.py` `fa2b01c
 - **Mỗi lần gọi ở đây chậm hơn nhiều so với 0,45 s đo ở Sửa 3 lần 2**, dù cùng prompt và cùng model. Chưa rõ vì sao. Có thể máy đang sạc ở 20% pin nên chạy chậm lại, hoặc Ollama đang tải thêm việc khác (GIẢ THUYẾT).
 - **Ở p05 và p09, model được gọi nhưng vẫn không ra trang nào.** Người dùng chờ thêm khoảng 3,5 s mà không được gì. Hai câu này rơi về cách tìm chuỗi cũ trong `documents.py`.
 - **Không có câu `term` nào đổi trang khi bật.**
+
+## Chạy thử cả đường hỏi (ghi trước khi chạy, 19/11/2026)
+
+`dry_run_ask.py` gọi `answer_selected_document` đúng như app (`execution_service.py`):
+- `AssistantRuntime` mặc định, trả lời bằng Ollama `qwen3:4b-instruct`;
+- `selected_document_path` là file đã chọn.
+
+Ba câu từ bộ chỉnh, chọn theo kiểu lỗi, không dùng V1/V2:
+
+| Câu | Vì sao chọn |
+|---|---|
+| t04 | TLB, `term`, đúng trang khi chỉ khớp chữ |
+| p04 | branch prediction, `paraphrase`, đúng trang sau khi gọi model |
+| p05 | set associative, `paraphrase`, gọi model mà vẫn không ra trang |
+
+Ngưỡng:
+
+| Kết quả | Quyết định |
+|---|---|
+| Cả 3 câu có câu trả lời tiếng Việt, không lỗi, mỗi câu không quá 20 s. Với p05, RAT nói rõ là không thấy, hoặc dẫn đúng trang 9-10. | GO cho buổi quan sát |
+| Có câu lỗi, câu trả lời rỗng, mất trên 40 s, hoặc p05 khẳng định một trang sai như thể đúng | Sửa trước khi mời người |
+| Ở giữa | Ghi lại, sửa nếu rẻ |
+
+### Kết quả chạy thử (`out_dry_run_ask.txt`)
+
+| Câu | Trang RAT dẫn | Lần 1 | Lần 2 | Lần gọi model trả lời (lần 2) |
+|---|---|---|---|---|
+| t04 | 11 ✓ | 34,2 s | 21,9 s | 18,4 s, 875 token vào, 73 ra |
+| p04 | 85 ✓ | 36,9 s | 10,5 s | 7,3 s |
+| p05 | "slide 10" ✓, nhưng xem dưới | 38,4 s | 9,3 s | 6,7 s |
+
+**So với ngưỡng: Ở GIỮA.** Không có lỗi, có câu trả lời tiếng Việt, trang dẫn đều nằm trong trang chấp nhận. Nhưng chưa có lần chạy nào cả 3 câu đều không quá 20 s.
+
+Bốn điều nhận ra:
+
+1. **Gần như toàn bộ thời gian là lần gọi model để trả lời.** Gọi model để dịch từ khoá chỉ mất khoảng 2 s. Câu đầu của mỗi lần chạy chậm nhất. Lần 1 chậm hơn lần 2 khoảng 3 lần, dù cùng code và cùng câu. GIẢ THUYẾT: Ollama nạp lại model (cold start), hoặc máy đang chịu tải khác.
+2. **p05 đúng nhờ vị trí của đáp án, không nhờ cách chọn trang.** Model dịch ra "cache coherence, cache line" nên không ra trang nào. `expand_document_context` quay về đầu file (trang 1-11), và đáp án tình cờ nằm ở trang 9-10. Nếu đáp án ở cuối file, RAT sẽ không thấy. Ngưỡng được đặt theo chữ trên câu trả lời, nên câu này vẫn tính là đạt.
+3. **p04 chỉ nhắc lại câu hỏi** ("…được nói ở trang 85"), không giải thích gì. Trang đúng, nhưng câu trả lời không có giá trị. Ngưỡng không đo chất lượng câu trả lời; buổi quan sát sẽ đo.
+4. **t04 nhắc tới "trang 13 đến 14".** Hai trang này nằm trong đoạn đã đọc (trang 11-18), nhưng chưa kiểm xem nội dung có đúng không.
+
+### Các số đo thời gian bị nhiễm (ghi lúc 17:47, 19/11/2026)
+
+Từ khoảng 17:28, máy (M1, 16 GB) chạy song song một job huấn luyện `mlx_lm lora` trên Qwen3-8B. Job đó không thuộc phép đo này. Lúc kiểm tra:
+- swap đã dùng 9,6/10 GB, RAM trống còn 14%;
+- `llama-server` của Ollama chỉ còn 1,28/3,8 GB trong RAM.
+
+Thử cùng một lần gọi model trả lời (821 token vào, 120 ra), lúc model chưa nạp và lúc đã nạp:
+
+| | Nạp model | Xử lý prompt | Sinh chữ | Tổng |
+|---|---|---|---|---|
+| Chưa nạp | 4,7 s / 2,4 s | 19,0 s / 12,0 s | 38,2 s / 16,9 s | 61,9 s / 31,4 s |
+| Đã nạp | 0 | 0,2 s / 0,1 s | 29,3 s / 15,6 s | 29,6 s / 15,8 s |
+
+Ở dòng "đã nạp", Ollama dùng lại phần prompt đã xử lý của lần trước. Câu hỏi mới thì không được như vậy, nên xử lý prompt vẫn mất khoảng 12-19 s.
+
+Kết luận:
+- **Nạp sẵn model chỉ bỏ được 2-5 s.** Phần chậm chính là sinh chữ, ở 3-8 token/s, dao động gấp đôi giữa các lần chạy. Rất có thể đó là do thiếu RAM (GIẢ THUYẾT mạnh: swap gần đầy và model bị đẩy ra khỏi RAM).
+- `out_time_fallback.txt` và `out_dry_run_ask.txt` đều được đo sau 17:28, nên đều đo trong lúc máy đang chịu tải này. Quyết định GO cho `slm_fallback` và mức "ở giữa" của lần chạy thử cần đo lại khi máy không chạy job huấn luyện.
