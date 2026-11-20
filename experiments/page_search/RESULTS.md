@@ -509,3 +509,35 @@ Mục trên giải thích rằng lần đo lại chậm do trạng thái máy, v
 Cách này cũng giải thích được vì sao p05 mất 13-20 s dù không gọi model trả lời: lần gọi dịch từ khoá của p05 cũng dùng `chat_with_meta` (8192). Nếu ngay trước đó script kia vừa gọi với 4096, Ollama phải nạp lại model. Hai nguyên nhân có thể cùng xảy ra. Nhưng chỉ riêng việc nạp lại model đã đủ giải thích phần thời gian thừa.
 
 Sửa trong code (cùng ngày): `slm.py` có hằng `NUM_CTX = 8192`. `chat_with_meta`, `generate_with_meta`, `generate_stream` và `LLMClient.query_ollama` đều gửi giá trị này. Test `test_every_ollama_request_sends_the_same_context_size` giữ điều đó. Sửa này không đổi đường hỏi tài liệu đã chọn, vì đường đó vốn chỉ dùng 8192. Nó chặn trường hợp hai phần của RAT tự làm Ollama nạp lại model khi gọi xen nhau. Script đo nằm ngoài RAT vẫn cần đặt `num_ctx: 8192`, nếu không sẽ gây lại đúng lỗi này.
+
+## Lần chạy cổng trước buổi quan sát #1 (ghi trước khi chạy, 20/11/2026 09:12)
+
+Điều kiện lấy từ mục "Tách thời gian từng bước", không đổi:
+- job huấn luyện đã dừng ít nhất 15 phút (dừng lúc 03:42);
+- model được nạp sẵn bằng một lần gọi khởi động qua `SLMEngine.chat_with_meta`;
+- cùng 3 câu, chạy 2 lần;
+- cùng ngưỡng của mục "Chạy thử cả đường hỏi".
+
+Code `880b940`, đã có `NUM_CTX`.
+
+Thêm một điều kiện để lần chạy được tính, dựa trên `~/.ollama/logs/server.log` trong lúc chạy:
+- đúng 9 lần `/api/chat`: 1 lần khởi động và 8 lần của 2 lượt chạy;
+- llama-server khởi động nhiều nhất 1 lần, và chỉ ở lần gọi khởi động.
+
+Nếu một trong hai điều trên sai thì lần chạy bị nhiễm và không được tính. Khi đó phải chạy lại.
+
+### Kết quả lần chạy cổng (`out_dry_run_ask_gate.txt`, 20/11/2026 09:11)
+
+Lần chạy được tính. Log ghi đúng 9 lần `/api/chat`. llama-server chỉ khởi động 1 lần, ở lần gọi khởi động (mất 3,5 s), sau đó không khởi động lại lần nào. Lúc chạy: RAM trống 77%, swap 4,4/6 GB, không có job huấn luyện, app Windows đã tắt.
+
+| Câu | Trang RAT dẫn | Lần 1 | Lần 2 |
+|---|---|---|---|
+| t04 | 11 ✓ | 8,6 s | 4,4 s |
+| p04 | 85 ✓ | 9,7 s | 2,5 s |
+| p05 | "không tìm thấy" ✓ | 0,7 s | 0,7 s |
+
+**So với ngưỡng: GO cho buổi quan sát #1.** Cả 3 câu trả lời tiếng Việt, không lỗi, mọi câu dưới 20 s, p05 nói rõ là không thấy.
+
+Còn lại, ngưỡng này không đo:
+- **p04 chỉ nhắc lại câu hỏi.** Trang dẫn đúng, nhưng câu trả lời không có nội dung nào từ slide. Buổi quan sát sẽ cho biết sinh viên có coi như vậy là đủ không, vì họ còn mở trang 85 ra xem được.
+- **Thời gian là của model đã nạp sẵn.** Ollama gỡ model sau 5 phút không dùng. Trong buổi quan sát, gọi khởi động ngay trước câu đầu, nếu không câu đầu sẽ mất thêm khoảng 1-4 s.
