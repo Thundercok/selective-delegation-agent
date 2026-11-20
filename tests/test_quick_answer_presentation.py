@@ -244,6 +244,37 @@ def test_incomplete_answers_have_an_incomplete_history_state(app, outcome):
         controller.close()
 
 
+def settle_window(view, root, fit_timer, polls=3, snapshots=()):
+    """Wait until the window has finished fitting its content.
+
+    `click` only waits before a click, so the fit queued by the click itself (and any
+    later layout growth that restarts it) can still be pending. A bottom anchor read
+    then belongs to a half-fitted window, and when the full height reaches the top
+    clamp the window moves.
+
+    A page snapshot card is 0 px tall until its image finishes loading, and it loads
+    again each time the answer comes back, so name the cards whose height counts.
+    """
+    def snapshots_ready():
+        cards = [find_item(root, name) for name in snapshots]
+        return all(card is not None and card.property('snapshotReady') for card in cards)
+
+    wait_for(snapshots_ready, timeout=3)
+    last, steady = None, 0
+
+    def fitted():
+        nonlocal last, steady
+        pref = min(round(root.property('preferredWindowHeight')),
+                   view.screen().availableGeometry().height() - 32)
+        state = (view.geometry().getRect(), pref)
+        done = not fit_timer.isActive() and abs(view.height() - pref) <= 2
+        steady = steady + 1 if done and state == last else 0
+        last = state
+        return steady >= polls
+
+    wait_for(fitted, timeout=3)
+
+
 @pytest.mark.parametrize('width,dark', [(520, False), (520, True), (700, False), (700, True)])
 def test_answer_copy_and_source_page_journey(app, tmp_path, width, dark):
     path = write_pdf(tmp_path / 'Source.pdf', ['Page one', 'Actual evidence on page two', 'Page three'])
@@ -336,6 +367,7 @@ def test_answer_copy_and_source_page_journey(app, tmp_path, width, dark):
         editor.setProperty('text', 'Câu hỏi tiếp theo chưa gửi')
         answer_item.select(0, 3)
         selected = answer_item.property('selectedText')
+        settle_window(view, root, timer, snapshots=['sourceSnapshot_0'])
         anchor = view.y() + composer.mapToScene(QPointF(0, composer.height())).y()
         click(view, root, 'liveFoldButton')
         assert not paper.isVisible() and chip.isVisible() and menu.isVisible()
@@ -349,6 +381,7 @@ def test_answer_copy_and_source_page_journey(app, tmp_path, width, dark):
         assert paper.isVisible() and root.property('answerSourcesOpen')
         assert answer_item.property('selectedText') == selected
         assert editor.property('text') == 'Câu hỏi tiếp theo chưa gửi'
+        settle_window(view, root, timer, snapshots=['sourceSnapshot_0'])
         assert abs(view.y() + composer.mapToScene(QPointF(0, composer.height())).y() - anchor) <= 1
         assert not controller.openAnswerSource(1)  # Missing page never defaults to 1.
         click(view, root, 'openAnswerSource_0')
