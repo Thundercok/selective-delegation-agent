@@ -28,12 +28,11 @@ from rat.engine.completion import (
     reconcile_turn,
 )
 from rat.kernel.contracts import Artifact, InputRequest
-from rat.timetable.compositor import TimetableCompositor
 from rat.ui.chat_session import ConversationHistory
 
 
 def runtime_fixture():
-    return AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]),
+    return AssistantRuntime(db=MagicMock(),
                             use_live_model=False, plan_tasks=False)
 
 

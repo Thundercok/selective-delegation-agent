@@ -7,7 +7,6 @@ import pytest
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime
 from rat.engine.selected_document_qa import answer_selected_document, MAX_READ_CHARS
-from rat.timetable.compositor import TimetableCompositor
 
 
 @pytest.fixture
@@ -21,7 +20,7 @@ def env(tmp_path):
     client = Mock()
     client.chat_with_meta.return_value = {'message': {'role': 'assistant', 'content': 'LOTUS-7319'},
         'prompt_tokens': 100, 'completion_tokens': 8, 'done_reason': 'stop', 'error': None}
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True)
+    runtime = AssistantRuntime(db=db, use_live_model=True)
     yield runtime, path, client
     db.get_connection().close()
 

@@ -10,14 +10,13 @@ from rat.engine.completion import ExecutionJournal, TurnContract
 from rat.engine.context_snapshot import validate_context_snapshot
 from rat.engine.runtime_context import collect_runtime_context, compact_model_context, ContextBuildError
 from rat.kernel.contracts import Artifact
-from rat.timetable.compositor import TimetableCompositor
 from rat.ui.chat_session import ConversationHistory
 
 
 @pytest.fixture
 def runtime(tmp_path):
     db = Database(str(tmp_path / 'index.db'))
-    obj = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True, structured_context=True)
+    obj = AssistantRuntime(db=db, use_live_model=True, structured_context=True)
     yield obj
     db.get_connection().close()
 

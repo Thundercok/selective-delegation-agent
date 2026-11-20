@@ -23,13 +23,12 @@ from rat.engine.assistant_runtime import AssistantRuntime
 from rat.engine.execution import ExecutionRequest
 from rat.engine.execution_service import AgentExecutionService
 from rat.kernel.contracts import ExecutionEvent
-from rat.timetable.compositor import TimetableCompositor
 
 
 @pytest.fixture
 def service_env(tmp_path):
     db = Database(str(tmp_path / "test.db"))
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True)
+    runtime = AssistantRuntime(db=db, use_live_model=True)
     service = AgentExecutionService(runtime)
     yield service, runtime, tmp_path
     db.get_connection().close()

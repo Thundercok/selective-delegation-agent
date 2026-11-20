@@ -52,7 +52,6 @@ print(json.dumps({'exit_code': code, 'stdout': output.getvalue()}))
       for command in ('search', 'index', 'ask', 'ask-file', 'dedup', 'status')],
     ({'kind': 'module', 'module': 'rat.main', 'argv': ['rat.main', 'init-shell']}, 'rat()'),
     ({'kind': 'module', 'module': 'rat.main', 'argv': ['rat.main', '2+2']}, '4'),
-    ({'kind': 'module', 'module': 'rat.main', 'argv': ['rat.main', 'B203']}, 'B203'),
 ])
 def test_lightweight_command_needs_no_gui_model_or_service(tmp_path, case, expected):
     # A sentinel database must not be opened, migrated or replaced by help and

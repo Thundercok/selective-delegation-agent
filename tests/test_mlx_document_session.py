@@ -151,7 +151,6 @@ def test_selected_document_runtime_uses_native_session_after_real_read(session, 
     from rat.crawler.db import Database
     from rat.engine.assistant_runtime import AssistantRuntime
     from rat.engine.selected_document_qa import answer_selected_document, selected_document_messages, MAX_READ_CHARS
-    from rat.timetable.compositor import TimetableCompositor
 
     client, backend = session
     client.load()
@@ -162,7 +161,7 @@ def test_selected_document_runtime_uses_native_session_after_real_read(session, 
         file_size=path.stat().st_size, created_at=1, modified_at=1, indexed_at=1,
         content_text=path.read_text()))
     try:
-        runtime = AssistantRuntime(db=database, compositor=TimetableCompositor([]), use_live_model=True)
+        runtime = AssistantRuntime(db=database, use_live_model=True)
         read = runtime.registry.execute('read_document', {'file_path': str(path), 'max_chars': MAX_READ_CHARS})
         assert read['content'] != path.read_text()
         client.prepare_context(selected_document_messages('', read, path.name)[:-1])
@@ -185,7 +184,6 @@ def resident_env(session, tmp_path, monkeypatch):
     from rat.engine import mlx_document_session
     from rat.crawler.db import Database
     from rat.engine.assistant_runtime import AssistantRuntime
-    from rat.timetable.compositor import TimetableCompositor
 
     client, backend = session
     monkeypatch.setattr(mlx_document_session, '_native_backend', lambda: backend)
@@ -196,7 +194,7 @@ def resident_env(session, tmp_path, monkeypatch):
         db.upsert_document(dict(file_path=str(path), file_name=path.name, file_ext='.txt',
             file_size=path.stat().st_size, created_at=1, modified_at=1, indexed_at=1,
             content_text=path.read_text()))
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]),
+    runtime = AssistantRuntime(db=db,
                               document_model_path=client.model_path)
     try:
         yield runtime, paths, backend, client.model_path

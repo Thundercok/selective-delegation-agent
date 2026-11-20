@@ -69,12 +69,6 @@ def test_router_single_action_math(capsys):
     assert "144" in captured.out
 
 
-def test_router_single_action_room(capsys):
-    route_request(["B203"])
-    captured = capsys.readouterr()
-    assert "Phòng B203" in captured.out
-
-
 def test_router_default_launches_quick_desk(monkeypatch):
     mock_quick = Mock(return_value=0)
     monkeypatch.setattr("rat.ui.quick_app.main", mock_quick)
@@ -84,10 +78,9 @@ def test_router_default_launches_quick_desk(monkeypatch):
     mock_quick.assert_called_once_with([])
 
 
-def test_router_agenda_falls_back_cleanly_when_no_members_configured(monkeypatch):
+def test_router_non_math_query_falls_back_to_cli_search(monkeypatch):
     mock_cli = Mock()
     monkeypatch.setattr("rat.app.router.cli_main", mock_cli)
-    monkeypatch.setattr("rat.timetable.data.load_club_members", lambda: [])
 
-    route_request(["lịch học hôm nay"])
+    route_request(["tài liệu giải tích"])
     mock_cli.assert_called_once()

@@ -6,7 +6,6 @@ import pytest
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
 from rat.engine.task_state import validate_task_state
-from rat.timetable.compositor import TimetableCompositor
 
 STATE = dict(goal='Explain the exercise', constraints=['20 minutes', 'Skip IP routing'],
              success_criteria=['Read source and explain timeout backoff'], known_facts=[],
@@ -16,7 +15,7 @@ STATE = dict(goal='Explain the exercise', constraints=['20 minutes', 'Skip IP ro
 @pytest.fixture
 def runtime(tmp_path):
     db = Database(str(tmp_path / 'index.db'))
-    result = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=False)
+    result = AssistantRuntime(db=db, use_live_model=False)
     yield result
     db.get_connection().close()
 

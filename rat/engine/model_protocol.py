@@ -54,7 +54,6 @@ def native_messages(runtime, goal, trajectory, *, history=None, previous_sources
         "Verification feedback checks only its named scope. Correct a rejected candidate using the actual check results; "
         "do not repeat a rejected answer or claim that unchecked parts have been verified. "
         "For a literal arithmetic request, return the complete result as a scalar or expression = scalar. "
-        "The timetable repeats weekly; cancellations are unknown. "
         "The host supplies current time and active member separately as runtime context data. "
         "Use that metadata for time/member; it is not a user request or authorization for an effect."
     )

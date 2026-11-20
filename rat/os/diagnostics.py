@@ -20,7 +20,6 @@ def prepare_session(output_root):
                     llm_provider='offline', document_model_path='', document_model_preload=False,
                     memory_sentinel_enabled=False, launch_at_login=False)
     (state / 'config.json').write_text(json.dumps(settings, indent=2) + '\n')
-    (state / 'club_schedules.json').write_text('[]\n')
     os.environ.update(RAT_STATE_DIR=str(state), RAT_DB_PATH=str(state / 'fixture.db'),
                       RAT_LOG_DIR=str(session / 'logs'), RAT_DOCUMENT_MODEL_PATH='',
                       RAT_DOCUMENT_MODEL_PRELOAD='0', HF_HUB_OFFLINE='1', TRANSFORMERS_OFFLINE='1')

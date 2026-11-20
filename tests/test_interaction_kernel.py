@@ -52,8 +52,6 @@ from rat.kernel.view_spec import (
     validate_view_spec,
 )
 from rat.kernel.capabilities import build_default_registry
-from rat.timetable.compositor import TimetableCompositor
-from rat.timetable.model import ClassSession, MemberSchedule
 
 
 # =============================================================================
@@ -92,26 +90,12 @@ def mock_db(tmp_path):
 
 
 @pytest.fixture
-def mock_compositor():
-    member = MemberSchedule(
-        id="student_huy",
-        name="Huy",
-        schedule={
-            "T2": [ClassSession(1, 3, "Hệ điều hành", "C101", course_code="OS101", lecturer="TS. Nam")],
-            "T3": [ClassSession(4, 6, "Mạng máy tính", "B202", course_code="NET102", lecturer="ThS. Hoa")],
-        },
-    )
-    return TimetableCompositor([member])
-
-
-@pytest.fixture
-def kernel_env(mock_db, mock_compositor):
-    registry = build_default_registry(db=mock_db, compositor=mock_compositor)
+def kernel_env(mock_db):
+    registry = build_default_registry(db=mock_db)
     store = ArtifactStore()
     dispatcher = ActionDispatcher(registry, store)
     runtime = AssistantRuntime(
         db=mock_db,
-        compositor=mock_compositor,
         registry=registry,
         artifact_store=store,
         dispatcher=dispatcher,
@@ -277,24 +261,22 @@ def test_scenario_2_birth_time_modification_and_stale_detection(kernel_env):
 # Scenario 3: Schedule and document search/read produce versioned artifacts
 # -----------------------------------------------------------------------------
 
-def test_scenario_3_schedule_and_documents_produce_artifacts_with_truthful_status(kernel_env):
+def test_scenario_3_calculation_and_documents_produce_artifacts_with_truthful_status(kernel_env):
     """
-    Scenario 3: Schedule lookup and file search/read both produce artifacts through
+    Scenario 3: Core calculation and file search/read produce artifacts through
     the same foundation. Partial/model failures preserve actual results and accurate status.
     """
     runtime = kernel_env["runtime"]
     store = kernel_env["store"]
 
-    # 1. Schedule lookup produces schedule artifact
-    sched_result = runtime.execute_tool("get_schedule", {"target_date": "T2", "member_id": "student_huy"})
-    assert isinstance(sched_result, list)
-    assert len(sched_result) == 1
-    assert sched_result[0]["course_name"] == "Hệ điều hành"
+    # 1. Calculation produces calculation artifact
+    calc_result = runtime.execute_tool("calculate", {"expression": "12 * 12"})
+    assert calc_result["result"] == "144"
 
-    sched_arts = store.find_by_kind("schedule")
-    assert len(sched_arts) == 1
-    assert sched_arts[0].kind == "schedule"
-    assert sched_arts[0].revision == 1
+    calc_arts = store.find_by_kind("calculation")
+    assert len(calc_arts) == 1
+    assert calc_arts[0].kind == "calculation"
+    assert calc_arts[0].revision == 1
 
     # 2. Document search produces document_search artifact
     search_result = runtime.execute_tool("search_documents", {"query": "Operating Systems"})
@@ -316,45 +298,40 @@ def test_scenario_3_schedule_and_documents_produce_artifacts_with_truthful_statu
     assert read_arts[0].kind == "document_content"
 
     # 4. Partial / model failure preserves actual results and truthful status
-    # Simulate model failure after reading document
     runtime.model_callable = lambda goal, steps: ModelDecision(thought="", error="timeout_inference")
     res = runtime.run("Giải thích tệp tin")
     assert res.error == "timeout_inference"
-    # Artifacts remain preserved in store
     assert len(store.list()) >= 3
-    assert not res.answer  # Truthful status: does not fabricate answer
+    assert not res.answer
 
 
 # -----------------------------------------------------------------------------
-# Scenario 4: Composed request using schedule, search, and reading in one task
+# Scenario 4: Composed request using calculation, search, and reading in one task
 # -----------------------------------------------------------------------------
 
 def test_scenario_4_composed_multi_step_request_plumbing(kernel_env):
     """
-    Scenario 4: A composed request uses schedule, search and reading in one task
+    Scenario 4: A composed request uses calculation, search and reading in one task
     rather than a hardcoded preparation-plan feature. Check plumbing.
     """
     runtime = kernel_env["runtime"]
-    store = kernel_env["store"]
 
-    # Script model to compose schedule, search, and reading in one task
     decisions = [
-        ModelDecision("", tool_name="get_schedule", tool_args={"target_date": "T2", "member_id": "student_huy"}),
+        ModelDecision("", tool_name="calculate", tool_args={"expression": "2 + 2"}),
         ModelDecision("", tool_name="search_documents", tool_args={"query": "Hệ điều hành"}),
         ModelDecision("", tool_name="read_document", tool_args={"file_path": runtime.tool_search_documents("Hệ điều hành")[0]["path"]}),
-        ModelDecision("", final_answer="Thứ Hai bạn học môn Hệ điều hành tại phòng C101. Tài liệu ôn tập tập trung vào Concurrency và Scheduling."),
+        ModelDecision("", final_answer="Tài liệu Hệ điều hành tập trung vào Concurrency và Scheduling (2 + 2 = 4)."),
     ]
     it = iter(decisions)
     runtime.model_callable = lambda goal, steps: next(it)
 
-    resp = runtime.run("Mai học gì và xem tài liệu giúp mình")
+    resp = runtime.run("Tính 2+2 và xem tài liệu Hệ điều hành giúp mình")
     assert resp.error is None
-    assert len(resp.sources) >= 2
+    assert len(resp.sources) >= 1
     assert len(resp.artifacts) >= 3
 
-    # Artifacts for all three operations are in the store
     kinds = [a.kind for a in resp.artifacts]
-    assert "schedule" in kinds
+    assert "calculation" in kinds
     assert "document_search" in kinds
     assert "document_content" in kinds
 

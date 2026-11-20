@@ -98,41 +98,71 @@ class _FakeSignalWorker(QObject):
 
 
 def test_submit_multistep_bypasses_instant_loads_packs_and_streams_steps(app):
+    from rat.kernel.registry import Capability, OperationDefinition
+    from rat.plugins import ToolPack, ToolPackManifest, get_plugin_manager
+
+    class _DemoPack(ToolPack):
+        manifest = ToolPackManifest(
+            id="demo_schedule_pack",
+            name="Demo Pack",
+            description="Synthetic external plugin for multistep routing verification.",
+            version="0.1.0",
+            category="vertical",
+        )
+
+        def create_capabilities(self, context=None):
+            cap = Capability("demo_schedule", "Demo", "Synthetic capability")
+            cap.register_operation(
+                OperationDefinition(
+                    name="demo_lookup",
+                    description="Demo lookup",
+                    parameters={"type": "object", "properties": {}, "additionalProperties": False},
+                    handler=lambda args, **_ctx: {"ok": True},
+                    artifact_kind="demo_lookup",
+                )
+            )
+            return [cap]
+
+        def get_routing_keywords(self):
+            return ("demo_trigger",)
+
+    manager = get_plugin_manager()
+    manager.register_pack(_DemoPack())
     runtime = AssistantRuntime(active_tool_packs=[], discover_tools=True, use_live_model=False)
     ctrl = QuickPDFController(assistant_runtime=runtime, auto_init_finder=False)
     ctrl.ready()
     fake_worker = _FakeSignalWorker()
 
     try:
-        assert not runtime.is_tool_pack_loaded("timetable")
+        assert not runtime.is_tool_pack_loaded("demo_schedule_pack")
         with patch("rat.ui.quick_pdf_controller.create_execution_worker", return_value=fake_worker) as mock_factory:
-            ok = ctrl.submit("xem lịch học hôm nay rồi tóm tắt https://example.com")
+            ok = ctrl.submit("chạy demo_trigger rồi tóm tắt https://example.com")
 
         assert ok is True
         assert fake_worker.started is True
         assert mock_factory.call_count == 1
-        assert runtime.is_tool_pack_loaded("timetable")
+        assert runtime.is_tool_pack_loaded("demo_schedule_pack")
         assert ctrl.snapshot["busy"] is True
         assert ctrl.snapshot["artifactCard"] is None
 
         eid = ctrl._current_execution_id
         gen = ctrl._chat_generation
 
-        step1 = AgentStep(1, "Đang xem lịch học", tool_name="get_schedule", tool_args={"target_date": "today"}, duration_ms=10.0)
+        step1 = AgentStep(1, "Đang tìm tài liệu", tool_name="search_documents", tool_args={"query": "demo"}, duration_ms=10.0)
         step2 = AgentStep(2, "Đang đọc trang web", tool_name="read_web_page", tool_args={"url": "https://example.com"}, duration_ms=25.0)
         ctrl._on_execution_step(eid, gen, step1)
         assert ctrl.snapshot["busy"] is True
-        assert [s["shortTitle"] for s in ctrl.snapshot["processSteps"]] == ["Lịch", "Đối chiếu"]
+        assert [s["shortTitle"] for s in ctrl.snapshot["processSteps"]] == ["Tìm", "Đối chiếu"]
         assert "Bước 1:" in ctrl.snapshot["status"]
 
         ctrl._on_execution_step(eid, gen, step2)
-        assert [s["shortTitle"] for s in ctrl.snapshot["processSteps"]] == ["Lịch", "Web", "Đối chiếu"]
+        assert [s["shortTitle"] for s in ctrl.snapshot["processSteps"]] == ["Tìm", "Web", "Đối chiếu"]
         assert "Bước 2:" in ctrl.snapshot["status"]
 
         step3 = AgentStep(3, "Đang lưu ghi chú", tool_name="synthesize_smart_note", tool_args={"title": "Tổng hợp"}, duration_ms=15.0)
         ctrl._on_execution_response(
             AgentResponse(
-                answer="Đã xem lịch, đọc web và lưu ghi chú.",
+                answer="Đã tìm tài liệu, đọc web và lưu ghi chú.",
                 steps=[step1, step2, step3],
                 total_time_ms=50.0,
                 tool_call_count=3,
@@ -144,9 +174,10 @@ def test_submit_multistep_bypasses_instant_loads_packs_and_streams_steps(app):
         snap = ctrl.snapshot
         assert snap["busy"] is False
         assert snap["view"] == "answer"
-        assert [s["shortTitle"] for s in snap["processSteps"]] == ["Lịch", "Web", "Ghi chú", "Đối chiếu"]
+        assert [s["shortTitle"] for s in snap["processSteps"]] == ["Tìm", "Web", "Ghi chú", "Đối chiếu"]
         assert ctrl._live_steps == []
     finally:
+        manager._packs.pop("demo_schedule_pack", None)
         ctrl.close()
 
 

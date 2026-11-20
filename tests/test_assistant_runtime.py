@@ -7,8 +7,6 @@ import pytest
 
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AgentStep, AssistantRuntime, ModelDecision, observed_sources
-from rat.timetable.compositor import TimetableCompositor
-from rat.timetable.model import ClassSession, MemberSchedule
 
 
 @pytest.fixture
@@ -21,11 +19,7 @@ def runtime(tmp_path):
         VALUES (?,?,?,?,?,?,?,?,?,?)''',
         (str(file), file.name, '.txt', 80, 1, 1, file.read_text(), 'Networks TCP', 'networks tcp', 1))
     db.get_connection().commit()
-    member = MemberSchedule(id='student', name='Student', schedule={
-        'T2': [ClassSession(1, 3, 'Networks', 'B203', course_code='NET101')],
-        'T4': [ClassSession(4, 6, 'Networks', 'B203', course_code='NET101')],
-    })
-    r = AssistantRuntime(db=db, compositor=TimetableCompositor([member]), use_live_model=False)
+    r = AssistantRuntime(db=db, use_live_model=False)
     yield r
     db.get_connection().close()
 
@@ -35,14 +29,10 @@ def scripted(*decisions):
     return lambda goal, steps: next(it)
 
 
-def test_tools_and_active_member(runtime):
-    assert runtime.tool_get_schedule('Monday', 'student')[0]['room'] == 'B203'
-    with pytest.raises(ValueError):
-        runtime.tool_get_schedule('T2', 'missing-member')
-    with pytest.raises(ValueError):
-        runtime.tool_get_schedule('made up date')
-    assert runtime.tool_get_schedule('next', now_dt=datetime(2026, 10, 12, 23))[0]['day_code'] == 'T4'
-    assert runtime.tool_get_schedule('2026-10-14')[0]['course_code'] == 'NET101'
+def test_tools_search_and_calculate(runtime):
+    hits = runtime.tool_search_documents('Networks')
+    assert hits and hits[0]['filename'] == 'networks.txt'
+    assert runtime.tool_calculate('6 * 7') == '42'
 
 
 def test_observed_sources_and_token_accounting(runtime):
@@ -94,27 +84,28 @@ def test_context_includes_followup_and_selected_member(runtime):
 
 
 def test_duplicate_action_requests_model_finish_without_canned_plan(runtime):
-    call = ModelDecision('', tool_name='get_schedule', tool_args={'target_date': 'T2'})
+    call = ModelDecision('', tool_name='search_documents', tool_args={'query': 'Networks'})
     runtime.model_callable = scripted(call, call, ModelDecision('', final_answer='Only this model-authored answer.'))
-    result = runtime.run('Check schedule')
+    result = runtime.run('Find networks notes')
     assert result.tool_call_count == 1
     assert result.answer == 'Only this model-authored answer.'
-    assert result.sources[0]['type'] == 'schedule'
+    assert result.sources[0]['filename'] == 'networks.txt'
 
 
 def test_learned_stop_retains_sources_and_uses_model_synthesis(runtime):
     from rat.engine.controller import ControllerDecision, ControllerIntervention
-    class StopAfterSchedule:
+    class StopAfterSearch:
         def evaluate_step(self, state, action, args, goal):
-            return ControllerDecision(ControllerIntervention.FORCE_STOP if state.has_schedule else ControllerIntervention.ALLOW, 'fixture')
-    runtime.controller = StopAfterSchedule()
+            return ControllerDecision(ControllerIntervention.FORCE_STOP if state.doc_paths else ControllerIntervention.ALLOW, 'fixture')
+    runtime.controller = StopAfterSearch()
+    path = runtime.tool_search_documents('Networks')[0]['path']
     runtime.model_callable = scripted(
-        ModelDecision('', tool_name='get_schedule', tool_args={'target_date': 'T2'}),
         ModelDecision('', tool_name='search_documents', tool_args={'query': 'Networks'}),
-        ModelDecision('', final_answer='I only have the schedule.'),
+        ModelDecision('', tool_name='read_document', tool_args={'file_path': path}),
+        ModelDecision('', final_answer='I only have the search metadata.'),
     )
-    result = runtime.run('Check classes')
-    assert result.answer == 'I only have the schedule.'
+    result = runtime.run('Check networks notes')
+    assert result.answer == 'I only have the search metadata.'
     assert result.tool_call_count == 1 and result.sources
     assert any(d.get('intervention') == 'FORCE_STOP' for d in result.controller_decisions)
 
@@ -133,7 +124,7 @@ def test_live_failure_keeps_raw_completion_and_usage(runtime):
 
 def test_cancel_before_inference_and_budget_exhaustion(runtime):
     assert runtime.run('Help', should_cancel=lambda: True).error == 'cancelled'
-    runtime.model_callable = scripted(ModelDecision('', tool_name='get_schedule', tool_args={'target_date': 'T2'}))
+    runtime.model_callable = scripted(ModelDecision('', tool_name='search_documents', tool_args={'query': 'Networks'}))
     result = runtime.run('Help', max_steps=1)
     assert result.error == 'step_budget_exhausted' and not result.answer
 
@@ -144,7 +135,7 @@ def native_call(name, args):
 
 def test_native_parallel_calls_return_all_observations_once(runtime):
     runtime.use_live_model = True
-    calls = [native_call('get_schedule', {'target_date': 'T2'}), native_call('search_documents', {'query': 'Networks'})]
+    calls = [native_call('calculate', {'expression': '6 * 7'}), native_call('search_documents', {'query': 'Networks'})]
     replies = [
         {'message': {'role': 'assistant', 'content': '', 'tool_calls': calls}, 'prompt_tokens': 100, 'completion_tokens': 30},
         {'message': {'role': 'assistant', 'content': 'Model-authored result.'}, 'prompt_tokens': 200, 'completion_tokens': 20},
@@ -155,22 +146,22 @@ def test_native_parallel_calls_return_all_observations_once(runtime):
     assert result.tool_call_count == 2 and result.total_tokens == 350
     messages = chat.call_args_list[-1].args[0]
     tool_messages = [m for m in messages if m['role'] == 'tool']
-    assert [m['tool_name'] for m in tool_messages] == ['get_schedule', 'search_documents']
-    assert json.loads(tool_messages[0]['content'])[0]['room'] == 'B203'
+    assert [m['tool_name'] for m in tool_messages] == ['calculate', 'search_documents']
+    assert '42' in tool_messages[0]['content']
     assert json.loads(tool_messages[1]['content'])[0]['filename'] == 'networks.txt'
 
 
 def test_duplicate_in_parallel_batch_skips_remaining_tools_and_asks_model_to_finish(runtime):
     runtime.use_live_model = True
-    repeated = native_call('get_schedule', {'target_date': 'T2'})
+    repeated = native_call('calculate', {'expression': '6 * 7'})
     replies = [
         {'message': {'role': 'assistant', 'tool_calls': [repeated]}},
         {'message': {'role': 'assistant', 'tool_calls': [repeated, native_call('search_documents', {'query': 'Networks'})]}},
-        {'message': {'role': 'assistant', 'content': 'Schedule-only answer.'}},
+        {'message': {'role': 'assistant', 'content': 'Calculation-only answer.'}},
     ]
     with patch('rat.engine.slm.slm_engine.chat_with_meta', side_effect=replies) as chat:
         result = runtime.run('Help')
-    assert result.tool_call_count == 1 and result.answer == 'Schedule-only answer.'
+    assert result.tool_call_count == 1 and result.answer == 'Calculation-only answer.'
     assert chat.call_args.args[1] == []
     messages = chat.call_args.args[0]
     skipped = next(m for m in messages if m.get('role') == 'tool'
@@ -179,7 +170,7 @@ def test_duplicate_in_parallel_batch_skips_remaining_tools_and_asks_model_to_fin
 
 
 @pytest.mark.parametrize('message', [None, [], {}, {'content': ''},
-    {'tool_calls': [{'function': {'name': 'get_schedule', 'arguments': []}}]},
+    {'tool_calls': [{'function': {'name': 'search_documents', 'arguments': []}}]},
     {'tool_calls': [42]}, {'tool_calls': [{'function': None}]}])
 def test_malformed_native_messages_are_recorded_failures(runtime, message):
     runtime.use_live_model = True
@@ -200,12 +191,12 @@ def test_partial_sources_survive_cancel_after_read(runtime):
 def test_reserved_final_turn_uses_no_tools_and_exposes_budget(runtime):
     runtime.use_live_model = True
     replies = [
-        {'message': {'role': 'assistant', 'tool_calls': [native_call('get_schedule', {'target_date': 'T2'})]}},
-        {'message': {'role': 'assistant', 'content': 'Only the schedule is available.'}},
+        {'message': {'role': 'assistant', 'tool_calls': [native_call('search_documents', {'query': 'Networks'})]}},
+        {'message': {'role': 'assistant', 'content': 'Only the search metadata is available.'}},
     ]
     with patch('rat.engine.slm.slm_engine.chat_with_meta', side_effect=replies) as chat:
         result = runtime.run('Prepare', max_steps=2)
-    assert result.answer == 'Only the schedule is available.'
+    assert result.answer == 'Only the search metadata is available.'
     assert chat.call_args.args[1] == []
     assert 'budget' in chat.call_args.args[0][-1]['content']
 

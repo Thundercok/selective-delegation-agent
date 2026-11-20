@@ -96,16 +96,6 @@ def test_dynamic_pack_loading_and_unloading():
     assert not manager.is_pack_loaded("dummy_external", registry)
     assert "dummy_echo" not in [op.name for op in registry.list_operations()]
 
-    # 2. Built-in Timetable pack
-    assert not manager.is_pack_loaded("timetable", registry)
-    assert manager.load_pack("timetable", registry)
-    assert manager.is_pack_loaded("timetable", registry)
-    assert "get_schedule" in [op.name for op in registry.list_operations()]
-
-    assert manager.unload_pack("timetable", registry)
-    assert not manager.is_pack_loaded("timetable", registry)
-    assert "get_schedule" not in [op.name for op in registry.list_operations()]
-
 
 def test_assistant_runtime_core_mode_and_dynamic_load():
     """Verify AssistantRuntime starting in pure core mode can dynamically load an external pack."""

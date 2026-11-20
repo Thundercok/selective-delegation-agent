@@ -159,44 +159,6 @@ def route_request(args: Sequence[str] | None = None) -> None:
                 except Exception:
                     pass
 
-            # 2. Campus Room Guide (generic building+room codes, no hardcoded personal room IDs)
-            m_room = re.search(r"\b([A-Fa-f]\d{3})\b", query)
-            if m_room:
-                try:
-                    from rat.timetable.model import resolve_room_location
-                    rm = m_room.group(1).upper()
-                    print(f"📍 Phòng {rm}: {resolve_room_location(rm)}")
-                    return
-                except Exception:
-                    pass
-
-            # 3. Live Agenda Query (only when user has configured timetable members)
-            if any(k in query.lower() for k in ["hôm nay", "hom nay", "chiều nay", "chieu nay", "sáng nay", "sang nay", "lịch học", "lich hoc"]):
-                try:
-                    from rat.config import config
-                    from rat.timetable.compositor import TimetableCompositor
-                    from rat.timetable.data import load_club_members
-                    members = load_club_members()
-                    if members:
-                        comp = TimetableCompositor()
-                        profile_name = (config.default_member_name or "").strip().lower()
-                        active_member = next(
-                            (m for m in members if profile_name and profile_name in m.name.lower()),
-                            members[0],
-                        )
-                        agenda = comp.get_today_agenda(active_member)
-                        if agenda:
-                            print(f"⚡ Hôm nay ({active_member.name}) có {len(agenda)} ca học:")
-                            for item in agenda:
-                                s = item["session"]
-                                deg = "[ThS]" if s.degree_level == "master" else "[ĐH]"
-                                print(f"  • {item['badge']} [{item['start_time']} - {item['end_time']}] {deg} {s.course_name} (Phòng {s.room}) — {item['countdown']}")
-                        else:
-                            print(f"⚡ Hôm nay ({active_member.name}) không có ca học nào trên TKB. Hoàn toàn rảnh!")
-                        return
-                except Exception as e:
-                    logger.debug(f"CLI agenda error: {e}")
-
             # Fallback to semantic file search in CLI
             run_cli_handler()
             return

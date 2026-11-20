@@ -193,7 +193,6 @@ def cmd_ask_file(file_path, model_path, *, db_path=None, questions=None,
     from rat.crawler.db import Database
     from rat.engine.assistant_runtime import AssistantRuntime
     from rat.engine.selected_document_qa import answer_selected_document
-    from rat.timetable.compositor import TimetableCompositor
 
     database = None
     current_path = Path(file_path).expanduser()
@@ -207,7 +206,7 @@ def cmd_ask_file(file_path, model_path, *, db_path=None, questions=None,
     try:
         database = Database(db_path or config.db_path, read_only=True)
         validate_path(current_path)
-        with AssistantRuntime(db=database, compositor=TimetableCompositor([]),
+        with AssistantRuntime(db=database,
                 active_tool_packs=[],
                 document_model_path=model_path,
                 document_max_context_tokens=max_context_tokens) as runtime:

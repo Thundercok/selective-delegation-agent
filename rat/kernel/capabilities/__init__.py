@@ -148,7 +148,7 @@ def build_core_registry(
 
 def build_default_registry(
     db: Optional[Database] = None,
-    compositor: Optional[TimetableCompositor] = None,
+    compositor: Optional[Any] = None,
     enable_web: bool = True,
     active_tool_packs: Optional[Sequence[str]] = None,
 ) -> CapabilityRegistry:

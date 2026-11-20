@@ -7,11 +7,10 @@ import pytest
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
 from rat.engine.completion import ExecutionJournal, OutcomeSpec, TurnContract, reconcile_turn
 from rat.kernel.contracts import Artifact
-from rat.timetable.compositor import TimetableCompositor
 
 
 def runtime():
-    return AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=False)
+    return AssistantRuntime(db=MagicMock(), use_live_model=False)
 
 
 def action(name, **args):
@@ -113,7 +112,7 @@ def test_native_malformed_source_reference_returns_invalid_without_crashing():
         {"message": {"contract": {"outcomes": [{"outcome_id": "save", "kind": "registered_effect", "effect_type": "record_work_note", "source_ref": "not-an-object"}]}, "tool_calls": [{"function": {"name": "record_work_note", "arguments": {"text": "126", "source_result": {"artifact_id": "source", "revision": 1, "field": "result"}}}}]}, "prompt_tokens": 1, "completion_tokens": 1},
         {"message": {"content": "Đã ghi"}, "prompt_tokens": 1, "completion_tokens": 1},
     ]
-    rt = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True, model_client=client)
+    rt = AssistantRuntime(db=MagicMock(), use_live_model=True, model_client=client)
     rt.artifact_store.put(Artifact("source", "sample", payload={"result": "126"}))
     response = rt.run("Ghi kết quả vào note")
     assert response.reconciliation.intent_coverage == "invalid"
@@ -123,7 +122,7 @@ def test_native_malformed_source_reference_returns_invalid_without_crashing():
 def test_native_explicit_empty_contract_stays_unchecked_or_unresolved():
     client = MagicMock()
     client.chat_with_meta.return_value = {"message": {"content": json.dumps({"contract": {"outcomes": []}, "answer": "Xin chào"})}, "prompt_tokens": 1, "completion_tokens": 1}
-    rt = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True, model_client=client)
+    rt = AssistantRuntime(db=MagicMock(), use_live_model=True, model_client=client)
     response = rt.run("Chào")
     assert response.reconciliation.declared_scope_completion != "satisfied"
     # ADR-003 permits unchecked/invalid when coverage is not established.
@@ -134,7 +133,7 @@ def test_native_explicit_empty_contract_stays_unchecked_or_unresolved():
 def test_planner_schema_advertises_typed_expected_args():
     client = MagicMock()
     client.chat_with_meta.return_value = {"message": {"content": "{}"}}
-    rt = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True, plan_tasks=True, model_client=client)
+    rt = AssistantRuntime(db=MagicMock(), use_live_model=True, plan_tasks=True, model_client=client)
     rt._plan_task("Tính 18 * 7")
     schema = client.chat_with_meta.call_args.kwargs["response_format"]
     assert schema["properties"]["outcomes"]["items"]["properties"]["expected_args"]["type"] == "object"
@@ -157,7 +156,7 @@ def test_malformed_nested_fields_are_invalid_at_all_contract_ingress(entry, fiel
             {"message": {"content": json.dumps(plan)}, "prompt_tokens": 1, "completion_tokens": 1},
             {"message": {"content": "Đã trả lời"}, "prompt_tokens": 1, "completion_tokens": 1},
         ]
-        rt = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True, plan_tasks=True, model_client=client)
+        rt = AssistantRuntime(db=MagicMock(), use_live_model=True, plan_tasks=True, model_client=client)
         response = rt.run("Chào")
     assert response.reconciliation.intent_coverage == "invalid"
     assert response.reconciliation.declared_scope_completion != "satisfied"
@@ -192,7 +191,7 @@ def test_native_mock_final_check_emits_candidate_bound_proof(planner):
         client.chat_with_meta.side_effect = [{"message": {"content": json.dumps(plan)}, "prompt_tokens": 1, "completion_tokens": 1}, final]
     else:
         client.chat_with_meta.return_value = final
-    rt = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True, plan_tasks=planner, model_client=client)
+    rt = AssistantRuntime(db=MagicMock(), use_live_model=True, plan_tasks=planner, model_client=client)
     response = rt.run("Tính 18 * 7")
     assert response.answer == "126"
     assert response.reconciliation.declared_scope_completion == "satisfied"

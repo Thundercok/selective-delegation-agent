@@ -5,11 +5,10 @@ from unittest.mock import MagicMock
 import pytest
 
 from rat.engine.assistant_runtime import AssistantRuntime
-from rat.timetable.compositor import TimetableCompositor
 
 
 def calculated():
-    runtime = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=False)
+    runtime = AssistantRuntime(db=MagicMock(), use_live_model=False)
     runtime.execute_tool('calculate', {'expression': '18 * 7'}, turn_id='turn-1', execution_id='exec-1')
     artifact = runtime.artifact_store.list('calculation')[0]
     runtime.notebook.begin_request('Ghi lại kết quả.', turn_ref='turn-2')

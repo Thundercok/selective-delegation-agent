@@ -48,11 +48,3 @@ def test_smoke_cli_quick_math():
     proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=10)
     assert proc.returncode == 0
     assert "40" in proc.stdout
-
-
-def test_smoke_cli_room_lookup():
-    """Verify `python main.py B203` resolves room location without starting GUI."""
-    cmd = [sys.executable, "main.py", "B203"]
-    proc = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, timeout=10)
-    assert proc.returncode == 0
-    assert "B203" in proc.stdout

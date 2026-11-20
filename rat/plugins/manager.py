@@ -257,12 +257,8 @@ class PluginManager:
                     logger.warning("PluginManager: Failed loading module plugin '%s': %s", spec, exc)
 
     def register_builtins(self) -> None:
-        """Register built-in general-purpose packs and discover installed external plugins."""
+        """Discover installed external plugins (no domain verticals are bundled in core)."""
         with self._lock:
-            if not self._packs:
-                from rat.plugins.packs.timetable import TimetableToolPack
-
-                self.register_pack(TimetableToolPack())
             self.discover_external_plugins()
 
 

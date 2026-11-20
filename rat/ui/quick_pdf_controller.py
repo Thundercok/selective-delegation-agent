@@ -1478,54 +1478,6 @@ class QuickPDFController(QObject):
                 f"🔗 Nguồn: {res_card['url']}"
             )
 
-        # 4. Thời khóa biểu
-        elif any(k in q_low for k in (
-            "thời khóa biểu", "thoi khoa bieu", "lịch học", "lich hoc",
-            "tkb", "xem lịch", "xem lich", "hôm nay học gì", "hom nay hoc gi", "mai học gì", "mai hoc gi"
-        )):
-            from rat.engine.runtime_tools import get_schedule
-            compositor = getattr(self.assistant_runtime, "compositor", None)
-            if compositor is None:
-                from rat.kernel.profile import _main_compositor
-                compositor = _main_compositor()
-
-            target_day = "today"
-            if "mai" in q_low or "tomorrow" in q_low:
-                target_day = "tomorrow"
-            elif any(w in q_low for w in ("thứ 2", "thu 2", "t2", "thứ hai", "thu hai")):
-                target_day = "T2"
-            elif any(w in q_low for w in ("thứ 3", "thu 3", "t3", "thứ ba", "thu ba")):
-                target_day = "T3"
-            elif any(w in q_low for w in ("thứ 4", "thu 4", "t4", "thứ tư", "thu tu")):
-                target_day = "T4"
-            elif any(w in q_low for w in ("thứ 5", "thu 5", "t5", "thứ năm", "thu nam")):
-                target_day = "T5"
-            elif any(w in q_low for w in ("thứ 6", "thu 6", "t6", "thứ sáu", "thu sau")):
-                target_day = "T6"
-            elif any(w in q_low for w in ("thứ 7", "thu 7", "t7", "thứ bảy", "thu bay")):
-                target_day = "T7"
-            elif any(w in q_low for w in ("chủ nhật", "chu nhat", "cn")):
-                target_day = "CN"
-
-            sessions = get_schedule(compositor, target_date=target_day)
-            day_display = "Hôm nay" if target_day == "today" else "Ngày mai" if target_day == "tomorrow" else target_day
-            if sessions:
-                day_display = sessions[0].get("day", day_display)
-                lines = []
-                for s in sessions:
-                    instr = f" ({s['instructor']})" if s.get('instructor') else ""
-                    lines.append(f"• [{s['time']}] {s['course_name']} — Phòng {s['room']}{instr}")
-                ans_text = f"📅 Thời khóa biểu: {day_display}\n\n" + "\n".join(lines)
-            else:
-                ans_text = f"📅 Thời khóa biểu: {day_display}\n\n🎉 Bạn không có tiết học nào trong ngày này. Thảnh thơi nghỉ ngơi nhé!"
-
-            res_card = {
-                "visual_type": "timetable",
-                "day": day_display,
-                "target_date": target_day,
-                "sessions": sessions,
-            }
-
         if res_card is not None:
             return self._complete_instant_card(q, ans_text, res_card)
 
@@ -1734,10 +1686,7 @@ class QuickPDFController(QObject):
             return
         q_low = (q or "").lower()
         from rat.plugins import get_plugin_manager
-        pack_keywords = [
-            ("timetable", ("lịch", "lich", "tkb", "thời khóa biểu", "thoi khoa bieu", "phòng", "tiết")),
-            *get_plugin_manager().get_routing_keywords_map(),
-        ]
+        pack_keywords = list(get_plugin_manager().get_routing_keywords_map())
         for pack_id, keywords in pack_keywords:
             if any(k in q_low for k in keywords):
                 try:

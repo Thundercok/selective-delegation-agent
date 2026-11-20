@@ -9,12 +9,6 @@ def _main_database():
     return Database(config.db_path)
 
 
-def _main_compositor():
-    from rat.timetable.compositor import TimetableCompositor
-    from rat.timetable.data import load_club_members
-    return TimetableCompositor(load_club_members())
-
-
 @dataclass(frozen=True)
 class RuntimeProfileSpec:
     profile_name: str
@@ -28,7 +22,7 @@ class RuntimeProfileSpec:
     enable_document_model: bool = True
 
 
-MAIN_PROFILE = RuntimeProfileSpec('main', db_factory=_main_database, compositor_factory=_main_compositor)
+MAIN_PROFILE = RuntimeProfileSpec('main', db_factory=_main_database)
 MINI_PROFILE = RuntimeProfileSpec(
     'mini', allowed_capabilities=frozenset({'finder', 'translation', 'mini_setup', 'applications'}),
     enable_work_notes=False, enable_tool_packs=False, max_reasoning_steps=6,

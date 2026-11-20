@@ -3,7 +3,6 @@ import pytest
 
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime
-from rat.timetable.compositor import TimetableCompositor
 
 
 def test_selected_read_grant_is_exact_transient_and_does_not_index(tmp_path):
@@ -12,7 +11,7 @@ def test_selected_read_grant_is_exact_transient_and_does_not_index(tmp_path):
     selected.write_text("Read this explicitly selected document.")
     other.write_text("Another document requires its own selection.")
     db = Database(str(tmp_path / "index.db"))
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=False)
+    runtime = AssistantRuntime(db=db, use_live_model=False)
     try:
         args = {"file_path": str(selected), "max_chars": 3000}
         with pytest.raises(ValueError, match="chỉ mục RAT"):

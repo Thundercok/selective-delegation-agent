@@ -9,13 +9,12 @@ from rat.engine.assistant_runtime import AgentStep, AssistantRuntime
 from rat.engine.completion import ExecutionJournal, TurnContract, reconcile_turn
 from rat.engine.runtime_context import collect_runtime_context
 from rat.kernel.contracts import Artifact
-from rat.timetable.compositor import TimetableCompositor
 
 
 @pytest.fixture
 def runtime(tmp_path):
     db = Database(str(tmp_path / "fixture-index.db"))
-    obj = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True,
+    obj = AssistantRuntime(db=db, use_live_model=True,
                            plan_tasks=True, model_client=Mock())
     yield obj
     db.get_connection().close()

@@ -19,7 +19,6 @@ import pytest
 
 from rat.config import Config
 from rat.os.diagnostics import collect_system_diagnostics
-from rat.timetable.model import resolve_room_location
 from reasoning.reasoning_strategies import safe_calculate
 
 
@@ -69,11 +68,7 @@ def test_pure_offline_queries_open_zero_sockets():
     res = safe_calculate("25 * 4 + 10")
     assert res == "110"
 
-    # 2. Campus room lookup
-    loc = resolve_room_location("B203")
-    assert "B2" in loc or "Tòa" in loc
-
-    # 3. Config roundtrip in memory/tempfile
+    # 2. Config roundtrip in memory/tempfile
     cfg = Config()
     cfg.default_member_name = "IsolationTest"
     assert cfg.default_member_name == "IsolationTest"

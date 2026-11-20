@@ -159,12 +159,10 @@ import json, sys
 from rat.os.diagnostics import prepare_session
 path = prepare_session(sys.argv[1])
 from rat.config import config, RAT_DIR, CONFIG_FILE
-from rat.timetable import data
 from rat.os import crash_shield
 assert not config.auto_watch and config.first_run_completed
 assert config.indexed_directories == [] and config.document_model_path == ''
 assert not config.document_model_preload and not config.memory_sentinel_enabled
-assert data.DATA_DIR == RAT_DIR and data.load_club_members() == []
 assert crash_shield.CRASH_LOG_DIR == path / 'logs'
 assert not any(x in sys.modules for x in ('PyQt6','mlx','mlx_lm','fastembed'))
 print(json.dumps({'state_dir': str(RAT_DIR), 'config': str(CONFIG_FILE)}))

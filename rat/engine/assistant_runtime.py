@@ -38,7 +38,7 @@ from rat.engine.model_protocol import (
     operation_planning_schema,
     plan_task,
 )
-from rat.engine.runtime_tools import calculate, get_schedule, search_documents
+from rat.engine.runtime_tools import calculate, search_documents
 
 from rat.engine.controller import (
     AgentStateTracker,
@@ -105,7 +105,7 @@ class AssistantRuntime:
     def __init__(
         self,
         db: Optional[Database] = None,
-        compositor: Optional[TimetableCompositor] = None,
+        compositor: Optional[Any] = None,
         model_callable: Optional[Callable[[str, List[AgentStep]], ModelDecision]] = None,
         use_live_model: bool = True,
         controller: Optional[AgentStoppingController] = None,
@@ -260,10 +260,6 @@ class AssistantRuntime:
     def _model_observation(self, value, op_name=None):
         return model_observation(value, registry=self.registry, enable_observation_pack=getattr(self, "enable_observation_pack", False), op_name=op_name)
 
-    def tool_get_schedule(self, target_date: Optional[str] = "today", member_id: Optional[str] = None,
-                          now_dt: Optional[datetime] = None) -> List[Dict[str, Any]]:
-        return get_schedule(self.compositor, target_date, member_id, now_dt)
-
     def tool_search_documents(self, query: str, limit: int = 5) -> List[Dict[str, Any]]:
         return search_documents(self.db, query, limit)
 
@@ -289,7 +285,6 @@ class AssistantRuntime:
             "compositor": self.compositor,
             "member_id": member_id,
             "now_dt": now_dt,
-            "get_schedule": self.tool_get_schedule,
             "notes_generation": notes_generation,
             "turn_id": turn_id,
             "execution_id": execution_id,

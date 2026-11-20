@@ -10,13 +10,12 @@ from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
 from rat.kernel import Artifact, ArtifactAction, ArtifactStore, ActionDispatcher, CapabilityRegistry, OperationDefinition
 from rat.kernel.view_spec import StandardViewProvider, ViewBlock, ViewSpec, validate_view_spec
-from rat.timetable.compositor import TimetableCompositor
 
 
 @pytest.fixture
 def runtime(tmp_path):
     db = Database(str(tmp_path / 'index.db'))
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=False)
+    runtime = AssistantRuntime(db=db, use_live_model=False)
     yield runtime
     db.get_connection().close()
 

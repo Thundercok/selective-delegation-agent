@@ -7,7 +7,6 @@ from PyQt6.QtGui import QGuiApplication
 
 from rat.crawler.db import Database
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
-from rat.timetable.compositor import TimetableCompositor
 from rat.ui.assistant_worker import AssistantWorker
 
 
@@ -29,7 +28,7 @@ def test_worker_does_not_block_ui_and_cancellation_discards_inflight_answer(tmp_
         assert release.wait(15), 'GUI did not release the fixture inference'
         return ModelDecision('', final_answer='Late answer')
 
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), model_callable=model)
+    runtime = AssistantRuntime(db=db, model_callable=model)
     worker = AssistantWorker(runtime, 'Help')
     responses = []
     worker.response_ready.connect(responses.append)

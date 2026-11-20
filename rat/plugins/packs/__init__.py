@@ -1,11 +1,8 @@
 """
-rat.plugins.packs — Built-in general-purpose tool packs.
+rat.plugins.packs — Optional tool packs registry namespace.
 
-Domain-specific verticals (e.g. archetypal symbolic systems) are loaded externally
-via the ``rat.plugins`` entry-point group.
+Domain-specific verticals (e.g. group scheduling in ``zero-form-scheduling``)
+are loaded externally via the ``rat.plugins`` entry-point group.
 """
-from rat.plugins.packs.timetable import TimetableToolPack
 
-__all__ = [
-    "TimetableToolPack",
-]
+__all__: list[str] = []

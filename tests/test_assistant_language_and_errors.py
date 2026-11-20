@@ -14,7 +14,6 @@ from rat.engine.assistant_runtime import AssistantRuntime
 from rat.engine.model_protocol import decision_from_reply
 from rat.engine.language_check import is_mainly_cjk, is_vietnamese, reads_as_english
 from rat.engine.selected_document_qa import answer_selected_document
-from rat.timetable.compositor import TimetableCompositor
 
 
 def test_language_check_helpers():
@@ -66,7 +65,7 @@ def test_vietnamese_query_cjk_answer_retried_successfully(tmp_path):
         },
     ]
 
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True)
+    runtime = AssistantRuntime(db=db, use_live_model=True)
     resp = answer_selected_document(runtime, "Tìm tài liệu trong tệp này", str(path), model_client=client)
 
     assert client.chat_with_meta.call_count == 2
@@ -112,7 +111,7 @@ def test_vietnamese_query_cjk_answer_retried_fails_honest_error(tmp_path):
         },
     ]
 
-    runtime = AssistantRuntime(db=db, compositor=TimetableCompositor([]), use_live_model=True)
+    runtime = AssistantRuntime(db=db, use_live_model=True)
     resp = answer_selected_document(runtime, "Tìm tài liệu trong tệp này", str(path), model_client=client)
 
     assert client.chat_with_meta.call_count == 2

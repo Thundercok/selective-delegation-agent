@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
 from rat.engine.work_notes import WorkNotebook
-from rat.timetable.compositor import TimetableCompositor
 
 
 def test_quotes_have_provenance_and_paraphrases_remain_suggestions():
@@ -22,7 +21,7 @@ def test_quotes_have_provenance_and_paraphrases_remain_suggestions():
 
 @pytest.mark.parametrize('completed,expected_error', [([], None), (['Đã ghi chú'], 'task_plan_failed:initial_plan_claimed_execution')])
 def test_initial_plan_does_not_write_notes_and_cannot_claim_completed_work(completed, expected_error):
-    runtime = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=True,
+    runtime = AssistantRuntime(db=MagicMock(), use_live_model=True,
         plan_tasks=True, model_client=MagicMock())
     state = dict(goal='Ôn TCP', constraints=['Mình chỉ ôn TCP trong lượt này.'],
         success_criteria=['Ghi điều người dùng dặn'], known_facts=[], completed=completed,
@@ -91,7 +90,7 @@ def test_direct_input_replaces_previous_value_for_same_result_field():
 
 
 def test_runtime_notes_reach_followup_as_sourced_context():
-    runtime = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=False)
+    runtime = AssistantRuntime(db=MagicMock(), use_live_model=False)
     choices = iter([ModelDecision('', tool_name='record_work_note', tool_args={
         'text': 'chỉ ôn TCP.', 'source_quote': 'chỉ ôn TCP.'}), ModelDecision('', final_answer='Đã ghi.')])
     runtime.model_callable = lambda goal, steps: next(choices)
@@ -105,7 +104,7 @@ def test_runtime_notes_reach_followup_as_sourced_context():
 
 def test_work_selection_only_accepts_real_results_and_can_clear_the_surface():
     from rat.kernel.contracts import Artifact
-    runtime = AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=False)
+    runtime = AssistantRuntime(db=MagicMock(), use_live_model=False)
     for name, kind in [('schedule', 'schedule'), ('files', 'document_search')]:
         runtime.artifact_store.put(Artifact(name, kind))
     selected = runtime.execute_tool('select_work_results', {'artifact_ids': ['schedule', 'files']})
@@ -214,8 +213,7 @@ def test_dsa_six_turn_shared_conversation_core_contract():
     history = ConversationHistory()
     runtime = AssistantRuntime(
         db=MagicMock(),
-        compositor=TimetableCompositor([]),
-        use_live_model=False,
+                use_live_model=False,
     )
 
     # Turn 1: Explain binary search with a small example

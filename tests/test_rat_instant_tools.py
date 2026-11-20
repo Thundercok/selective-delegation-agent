@@ -51,12 +51,21 @@ def test_controller_instant_dispatch():
     runtime = AssistantRuntime()
     ctrl = QuickPDFController(assistant_runtime=runtime)
     ctrl.ready()
+    fake_web = {
+        "visual_type": "web",
+        "title": "Tin Tức Công Nghệ 2026",
+        "domain": "tech-news.vn",
+        "url": "https://tech-news.vn/article/123",
+        "bullets": ["Mô hình chạy trực tiếp trên thiết bị cá nhân."],
+        "summary": "Mô hình chạy trực tiếp trên thiết bị cá nhân.",
+    }
     try:
-        handled = ctrl.submit("thời khóa biểu thứ hai")
+        with patch("rat.engine.web_reader.fetch_web_summary", return_value=fake_web):
+            handled = ctrl.submit("tóm tắt https://tech-news.vn/article/123")
         assert handled is True
         snap = ctrl.snapshot
         assert snap["view"] == "answer"
-        assert snap["artifactCard"]["visual_type"] == "timetable"
-        assert "Thời khóa biểu" in snap["answerText"]
+        assert snap["artifactCard"]["visual_type"] == "web"
+        assert "Tin Tức Công Nghệ 2026" in snap["answerText"]
     finally:
         ctrl.close()

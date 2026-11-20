@@ -9,12 +9,11 @@ from rat.engine.assistant_runtime import AssistantRuntime, ModelDecision
 from rat.engine.verification import (CalculationVerifier, ExecutionEvidence,
     VerificationReport, VerificationSession, VerificationStatus, evaluate_expression)
 from rat.kernel.registry import OperationDefinition
-from rat.timetable.compositor import TimetableCompositor
 
 
 @pytest.fixture
 def runtime():
-    return AssistantRuntime(db=MagicMock(), compositor=TimetableCompositor([]), use_live_model=False)
+    return AssistantRuntime(db=MagicMock(), use_live_model=False)
 
 
 def scripted(runtime, *decisions):
