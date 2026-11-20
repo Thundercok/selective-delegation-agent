@@ -518,6 +518,13 @@ class QuickPDFController(QObject):
 
                 threading.Thread(target=scan_catalog, name="rat-quick-catalog-scan", daemon=True).start()
 
+    def _warm_selected_document_model(self):
+        """Start loading the answer model while the user types; a failure here only means a slower first answer."""
+        try:
+            self.assistant_runtime.warm_selected_document_model()
+        except Exception:
+            logger.debug("selected-document model warm-up did not start", exc_info=True)
+
     @property
     def assistant_runtime(self) -> AssistantRuntime:
         if self._assistant_runtime is None:
@@ -1205,6 +1212,7 @@ class QuickPDFController(QObject):
             return
         if request.kind == "select":
             self._selection = data
+            self._warm_selected_document_model()
             self._status = f"{data.path.name} · {data.page_count} trang PDF. Hỏi trực tiếp trong ô chat hoặc bấm ⌘F để tìm từ khóa."
             if self._auto_read_on_select:
                 self._auto_read_on_select = False

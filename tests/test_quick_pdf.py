@@ -944,3 +944,22 @@ def test_desk_shortcut_label_follows_the_configured_chord(app, controller, monke
         assert hints == ["⌃⇧Space gọi Chuột · thả PDF, ảnh vào đây"], hints
     finally:
         view.deleteLater()
+
+
+def test_picking_a_pdf_starts_warming_the_answer_model(controller, tmp_path, monkeypatch):
+    warmed = []
+    monkeypatch.setattr(type(controller.assistant_runtime), "warm_selected_document_model",
+                        lambda self: warmed.append(self))
+    controller.selectFile(str(write_pdf(tmp_path / "Algo.pdf", ["Binary search"])))
+    wait_for(lambda: not controller.snapshot["busy"])
+    assert controller.snapshot["fileName"] == "Algo.pdf"
+    assert warmed == [controller.assistant_runtime]
+
+
+def test_a_warm_up_that_fails_to_start_does_not_break_picking(controller, tmp_path, monkeypatch):
+    def broken(self):
+        raise RuntimeError("fixture warm-up failure")
+    monkeypatch.setattr(type(controller.assistant_runtime), "warm_selected_document_model", broken)
+    controller.selectFile(str(write_pdf(tmp_path / "Algo.pdf", ["Binary search"])))
+    wait_for(lambda: not controller.snapshot["busy"])
+    assert controller.snapshot["fileName"] == "Algo.pdf" and controller.snapshot["pageCount"] == 1

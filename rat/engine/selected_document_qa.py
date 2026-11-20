@@ -83,6 +83,16 @@ def unlocated_reply(located, filename, page_marked=True):
             'Bạn thử hỏi lại bằng thuật ngữ ghi trên slide (thường là tiếng Anh).')
 
 
+def local_document_client(runtime):
+    """The Ollama client that answers selected-document questions. Refuses a URL that is not local."""
+    from rat.engine.slm import SLMEngine
+    from rat.config import config
+    url = getattr(runtime.model_client, 'ollama_url', None) or config.ollama_url
+    if urlparse(url).hostname not in ('localhost', '127.0.0.1', '::1'):
+        raise ValueError('selected_document_requires_local_model')
+    return SLMEngine(model=MODEL, ollama_url=url)
+
+
 def answer_selected_document(runtime, question, file_path, *, model_client=None,
                              on_model_call=None, should_cancel=None, on_text=None, **context):
     """Read only the exact selected indexed path, then make at most one call."""
@@ -95,12 +105,7 @@ def answer_selected_document(runtime, question, file_path, *, model_client=None,
     if model_client is None:
         model_client = runtime.document_model_client
     if model_client is None:
-        from rat.engine.slm import SLMEngine
-        from rat.config import config
-        url = getattr(runtime.model_client, 'ollama_url', None) or config.ollama_url
-        if urlparse(url).hostname not in ('localhost', '127.0.0.1', '::1'):
-            raise ValueError('selected_document_requires_local_model')
-        model_client = SLMEngine(model=MODEL, ollama_url=url)
+        model_client = local_document_client(runtime)
     calls = 0
     history_turns = 0
     last_meta = {}

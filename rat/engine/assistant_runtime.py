@@ -15,6 +15,7 @@ import copy
 import json
 import logging
 import os
+import threading
 import time
 from datetime import datetime
 from pathlib import Path
@@ -141,6 +142,8 @@ class AssistantRuntime:
             from rat.engine.document_model_service import ResidentDocumentModel
             self.document_model_client = ResidentDocumentModel(document_model_path,
                 max_context_tokens=document_max_context_tokens)
+        self._warmup_lock = threading.Lock()
+        self._warmup_future = None
         self.plan_tasks = plan_tasks
         self.discover_tools = discover_tools
         self.structured_context = structured_context
@@ -210,6 +213,38 @@ class AssistantRuntime:
         if self.document_model_client is not None:
             return self.document_model_client.preload()
         return None
+
+    def warm_selected_document_model(self):
+        """Load the local Ollama model that answers selected-document questions; return a Future or None.
+
+        Called when the user picks a file, so the first question does not wait 1-4 s for Ollama to load
+        the model (experiments/page_search/RESULTS.md, gate run before observation session 1). It does
+        not apply to a native document model, which has its own preload setting, or to a runtime without
+        a live model. While a warm-up is running, a second call returns the same Future. Once it is done,
+        a new call sends another, which is cheap on a loaded model and restarts Ollama's unload timer.
+        """
+        if self.document_model_client is not None or not self.use_live_model:
+            return None
+        from rat.engine.selected_document_qa import local_document_client
+        try:
+            client = local_document_client(self)
+        except ValueError:
+            return None
+        with self._warmup_lock:
+            if self._warmup_future is not None and not self._warmup_future.done():
+                return self._warmup_future
+            from concurrent.futures import Future
+            future = Future()
+
+            def run():
+                try:
+                    future.set_result(client.warm_up())
+                except Exception as exc:  # warm_up reports errors in its dict; this is a last guard
+                    future.set_exception(exc)
+
+            self._warmup_future = future
+            threading.Thread(target=run, name="rat-ollama-warmup", daemon=True).start()
+            return future
 
     def close(self) -> None:
         """Release this runtime's optional resident document inference service."""

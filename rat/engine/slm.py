@@ -114,6 +114,24 @@ class SLMEngine:
             logger.error(f"Failed to pull model {model_name}: {e}")
             return False
 
+    def warm_up(self, timeout: float = 60.0) -> Dict[str, Any]:
+        """Load the model into Ollama without generating anything.
+
+        Ollama loads a model on a chat with no messages. It sends the same num_ctx as real calls, or
+        Ollama would load the model again on the first question.
+        """
+        payload = {"model": self.model, "messages": [], "stream": False, "options": {"num_ctx": NUM_CTX}}
+        req = urllib.request.Request(self.ollama_url + "/api/chat", data=json.dumps(payload).encode(),
+                                     headers={"Content-Type": "application/json"}, method="POST")
+        tick = time.perf_counter()
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as reply:
+                data = json.load(reply)
+        except Exception as exc:
+            data = {"error": str(exc)}
+        # Ollama reports no load_duration for a load-only chat, so the wall time is what there is.
+        return {"error": data.get("error"), "duration_ms": (time.perf_counter() - tick) * 1000}
+
     def chat_with_meta(self, messages: List[Dict[str, Any]], tools: List[Dict[str, Any]],
                        timeout: float = 90.0, max_tokens: int = 640, thinking: bool = False,
                        response_format: Optional[Dict[str, Any]] = None,
