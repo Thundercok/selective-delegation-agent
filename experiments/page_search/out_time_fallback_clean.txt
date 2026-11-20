@@ -1,0 +1,27 @@
+t01  model=False page off=14   on=14   extra 0.003 s
+t02  model=False page off=14   on=14   extra 0.002 s
+t03  model=False page off=9    on=9    extra 0.002 s
+t04  model=False page off=11   on=11   extra 0.000 s
+t05  model=False page off=17   on=17   extra 0.001 s
+t06  model=False page off=69   on=69   extra 0.007 s
+t07  model=False page off=30   on=30   extra 0.003 s
+t08  model=False page off=5    on=5    extra 0.000 s
+t09  model=False page off=31   on=31   extra 0.005 s
+t10  model=False page off=11   on=11   extra 0.003 s
+p01  model=True  page off=None on=20   extra 0.974 s
+p02  model=True  page off=None on=7    extra 0.676 s
+p03  model=True  page off=None on=12   extra 0.754 s
+p04  model=True  page off=None on=85   extra 0.790 s
+p05  model=True  page off=None on=None extra 0.878 s
+p06  model=True  page off=None on=19   extra 1.303 s
+p07  model=True  page off=3    on=53   extra 0.914 s
+p08  model=True  page off=None on=34   extra 0.840 s
+p09  model=True  page off=None on=20   extra 0.959 s
+p10  model=True  page off=None on=12   extra 0.807 s
+{
+  "questions": 20,
+  "model_called": 10,
+  "extra_median_s": 0.341,
+  "extra_p90_s": 0.959,
+  "extra_max_s": 1.303
+}

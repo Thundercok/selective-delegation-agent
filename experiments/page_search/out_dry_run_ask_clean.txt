@@ -1,0 +1,32 @@
+##### run 1
+=== t04 accepted pages [11, 12]  15.3 s  error=None
+  step read_document page=None
+  step expand_document_context page=11
+  source page=11 read=True start=None truncated=True
+  answer: TLB là Translation Look-aside Buffer, một bộ nhớ nhanh trong CPU dùng để lưu trữ các bảng điều hướng trang (PTE) để tăng tốc quá trình chuyển đổi địa chỉ. Nó được đề cập ở trang 11 và tiếp tục được giải thích ở các trang 13 đến 14 của tài liệu.
+=== p04 accepted pages [84, 85]  14.6 s  error=None
+  step read_document page=None
+  step expand_document_context page=85
+  source page=85 read=True start=None truncated=True
+  answer: Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở trang 85.
+=== p05 accepted pages [9, 10]  1.1 s  error=None
+  step read_document page=None
+  step expand_document_context page=None
+  source page=None read=True start=None truncated=True
+  answer: Mình không tìm thấy phần nói về câu hỏi này trong Chapter 13.2 - Cache Part II.pdf. Bạn thử hỏi lại bằng thuật ngữ ghi trên slide (thường là tiếng Anh).
+##### run 2
+=== t04 accepted pages [11, 12]  7.7 s  error=None
+  step read_document page=None
+  step expand_document_context page=11
+  source page=11 read=True start=None truncated=True
+  answer: TLB là Translation Look-aside Buffer, một bộ nhớ nhanh trong CPU dùng để lưu trữ các bảng điều hướng trang (PTE) để tăng tốc quá trình chuyển đổi địa chỉ. Nó được đề cập ở trang 11 và tiếp tục được giải thích ở các trang 13 đến 14 của tài liệu.
+=== p04 accepted pages [84, 85]  4.2 s  error=None
+  step read_document page=None
+  step expand_document_context page=85
+  source page=85 read=True start=None truncated=True
+  answer: Đoán trước lệnh rẽ nhánh có nhảy hay không để khỏi phải chờ được nói ở trang 85.
+=== p05 accepted pages [9, 10]  1.0 s  error=None
+  step read_document page=None
+  step expand_document_context page=None
+  source page=None read=True start=None truncated=True
+  answer: Mình không tìm thấy phần nói về câu hỏi này trong Chapter 13.2 - Cache Part II.pdf. Bạn thử hỏi lại bằng thuật ngữ ghi trên slide (thường là tiếng Anh).

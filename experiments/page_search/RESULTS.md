@@ -498,3 +498,14 @@ Hệ quả cho cổng quyết định: không đổi verdict sau khi có số li
 - job huấn luyện đã dừng ít nhất 15 phút;
 - model được nạp sẵn (một lần gọi khởi động trước khi người dùng hỏi câu đầu);
 - cùng 3 câu, cùng ngưỡng ≤ 20 s, chạy 2 lần.
+
+### Ghi chú: hai cách giải thích lần đo lúc 03:45 (ghi 20/11/2026 04:15)
+
+Mục trên giải thích rằng lần đo lại chậm do trạng thái máy, vì swap đang được kéo về RAM. Đó vẫn là GIẢ THUYẾT. Log Ollama có một nguyên nhân thấy trực tiếp (SỰ THẬT, từ `server.log`):
+- trong 03:46-03:48 có 16 lần `/api/chat`, còn `dry_run_ask.py` chỉ gửi 8;
+- llama-server khởi động lại xen kẽ giữa `-c 4096` và `-c 8192`;
+- `load_duration` lên tới 13-17 s.
+
+Cách này cũng giải thích được vì sao p05 mất 13-20 s dù không gọi model trả lời: lần gọi dịch từ khoá của p05 cũng dùng `chat_with_meta` (8192). Nếu ngay trước đó script kia vừa gọi với 4096, Ollama phải nạp lại model. Hai nguyên nhân có thể cùng xảy ra. Nhưng chỉ riêng việc nạp lại model đã đủ giải thích phần thời gian thừa.
+
+Sửa trong code (cùng ngày): `slm.py` có hằng `NUM_CTX = 8192`. `chat_with_meta`, `generate_with_meta`, `generate_stream` và `LLMClient.query_ollama` đều gửi giá trị này. Test `test_every_ollama_request_sends_the_same_context_size` giữ điều đó. Sửa này không đổi đường hỏi tài liệu đã chọn, vì đường đó vốn chỉ dùng 8192. Nó chặn trường hợp hai phần của RAT tự làm Ollama nạp lại model khi gọi xen nhau. Script đo nằm ngoài RAT vẫn cần đặt `num_ctx: 8192`, nếu không sẽ gây lại đúng lỗi này.
