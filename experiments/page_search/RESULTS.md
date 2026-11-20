@@ -541,3 +541,25 @@ Lần chạy được tính. Log ghi đúng 9 lần `/api/chat`. llama-server ch
 Còn lại, ngưỡng này không đo:
 - **p04 chỉ nhắc lại câu hỏi.** Trang dẫn đúng, nhưng câu trả lời không có nội dung nào từ slide. Buổi quan sát sẽ cho biết sinh viên có coi như vậy là đủ không, vì họ còn mở trang 85 ra xem được.
 - **Thời gian là của model đã nạp sẵn.** Ollama gỡ model sau 5 phút không dùng. Trong buổi quan sát, gọi khởi động ngay trước câu đầu, nếu không câu đầu sẽ mất thêm khoảng 1-4 s.
+
+### Nạp sẵn bằng code của app (`beef0e9`, `out_dry_run_ask_appwarm.txt`, 20/11/2026 09:33): không tính
+
+Cùng giao thức với lần chạy cổng, nhưng thay lệnh `curl` bằng `AssistantRuntime.warm_selected_document_model()`.
+
+Log sạch: 9 lần `/api/chat`, llama-server khởi động 1 lần lúc nạp sẵn, sau đó không lần nào. Vậy nạp sẵn trong app gửi đúng `num_ctx`.
+
+Thời gian:
+
+| Câu | Lần 1 | Lần 2 |
+|---|---|---|
+| t04 | 24,8 s | 15,9 s |
+| p04 | 21,1 s | 8,2 s |
+| p05 | 2,1 s | 1,0 s |
+
+**Lần chạy này không tính, vì máy không rảnh.** Lúc chạy có hai job nặng:
+- 9 tiến trình `pool_mitm` của `slp-superopt`, mỗi tiến trình khoảng 75% CPU;
+- `drift.py run` của `multi-step-structured-reasoning`.
+
+Load average 15-25 trên máy 8 nhân, swap 18,6/19,4 GB.
+
+Lệnh `pgrep -fl "mlx_lm|structured_llm"` trong kịch bản quan sát **không bắt được hai job này**, vì tên lệnh của chúng không khớp mẫu. Bước kiểm tra cần dựa vào tải của máy (load average, swap), không dựa vào tên tiến trình.
