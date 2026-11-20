@@ -26,7 +26,16 @@ Thay đổi so với §6, ghi lại cho minh bạch: §6 đo ba việc khác nha
 - Chưa có `.dmg`, nên buổi đầu chạy trên Mac của chủ RAT. **Thời gian cài đặt chưa đo được ở các buổi này**; ghi rõ là lỗ hổng, đo riêng khi có bản cài.
 - Tài liệu: thư mục slide và giáo trình của một môn cả hai đều học (ví dụ 502044 Tổ chức máy tính). Chưa dùng file riêng của người tham gia: RAT chưa có lệnh gỡ một file khỏi chỉ mục (`rat index --purge` chỉ dọn file bị loại trừ, nhạy cảm hoặc nhị phân, không dọn file đã xoá), nên nội dung của họ sẽ nằm lại trong chỉ mục.
 - Slide môn này còn một bản sao một phần ở `SchoolAppCoreRazor/1/schoolworks/to-chuc-may-tinh/`. Chỉ `rat index` thư mục `dump/schoolworks/to-chuc-may-tinh/`, để đáp án V2 chỉ nằm ở một nơi. Sau đó chạy `rat doctor`, cắm sạc, mở Ollama.
-- **Máy không chạy job nặng.** Ngay trước buổi, chạy `pgrep -fl "mlx_lm|structured_llm"`. Nếu lệnh in ra gì, chờ job xong rồi đợi thêm 15 phút, hoặc dời buổi. Đừng coi máy là rảnh chỉ vì RAM còn trống. Ngày 19-20/11/2026, hai lần chạy thử chậm gấp 2-5 lần vì có job huấn luyện hoặc eval MLX chạy song song (`experiments/page_search/RESULTS.md`).
+- **Máy không chạy job nặng.** Ngay trước buổi, chạy:
+  `sysctl -n vm.loadavg; memory_pressure | tail -1; ps -axo pcpu,comm -r | head -5`
+  Chỉ bắt đầu khi đủ cả ba điều kiện:
+  - số đầu tiên của load average (trung bình 1 phút) không quá 4;
+  - RAM trống (`free percentage`) từ 30% trở lên;
+  - ngoài Ollama, không tiến trình nào dùng quá 50% CPU.
+
+  Nếu thiếu một điều kiện, chờ job xong rồi đợi thêm 15 phút, hoặc dời buổi. Đừng nhìn số swap đã dùng: macOS giữ swap rất lâu sau khi job đã dừng, nên con số đó không cho biết máy đang bận hay rảnh.
+
+  Lý do kiểm tra theo tải của máy mà không theo tên tiến trình: ngày 20/11/2026 có hai job (`pool_mitm` của `slp-superopt` và `drift.py`) đẩy load lên 15-25 trên máy 8 nhân, mà mẫu `pgrep "mlx_lm|structured_llm"` không bắt được job nào. Các ngưỡng trên **chưa được hiệu chỉnh**. Chúng nằm giữa các lần đo đã đạt (lúc 03:53 RAM trống 33%, lúc 09:11 RAM trống 77%) và lần bị chậm (load 15-25). Điều kiện CPU chặt hơn mức đã thấy là cần: lúc 03:53 có một app Windows dùng 100-130% CPU mà lần chạy vẫn đạt. Mình cố ý để chặt, vì dời một buổi thì rẻ hơn mất số liệu của nó. Xem `experiments/page_search/RESULTS.md`.
 - **Nạp sẵn mô hình, giữ 60 phút.** Ollama tự gỡ mô hình sau 5 phút không dùng, mà phần giới thiệu buổi dễ dài hơn thế. Chạy:
   `curl -s localhost:11434/api/chat -d '{"model":"qwen3:4b-instruct","messages":[],"keep_alive":"60m","options":{"num_ctx":8192}}'`
   Phải có `num_ctx` 8192, đúng giá trị RAT gửi (`NUM_CTX` trong `rat/engine/slm.py`). Nếu khác, câu hỏi đầu tiên của RAT sẽ làm Ollama nạp lại mô hình. Ghi lại: lần hỏi đầu tiên trong buổi là "nóng" (đã nạp).
@@ -74,7 +83,7 @@ Bốn câu V1, V2 viết ngày 19/11/2026 từ slide môn 502044 (`~/Documents/G
 
 Người tham gia: P__ (không ghi tên) · Ngày: __ · Máy của họ: __ · Tài liệu môn để ở: __
 
-Job nặng trước buổi (`pgrep`): không / có → dời · Lần nạp mô hình (`starting llama-server`): sau khi nạp sẵn __ / sau buổi __
+Tải trước buổi: load 1 phút __ · RAM trống __% · tiến trình > 50% CPU: __ · đạt / dời · Lần nạp mô hình (`starting llama-server`): sau khi nạp sẵn __ / sau buổi __
 
 | Việc | Cách | Câu | Bước | Chuyển cửa sổ | Giây | Kết quả | Ghi chú (chỗ khựng, câu họ nói) |
 |---|---|---|---|---|---|---|---|
