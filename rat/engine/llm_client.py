@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 
 from rat.config import config
 from rat.engine.context_parser import remove_accents
+from rat.engine.slm import NUM_CTX
 
 logger = logging.getLogger("rat.llm")
 
@@ -110,7 +111,8 @@ class LLMClient:
         payload = {
             "model": self.ollama_model,
             "prompt": prompt,
-            "stream": False
+            "stream": False,
+            "options": {"num_ctx": NUM_CTX},
         }
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(

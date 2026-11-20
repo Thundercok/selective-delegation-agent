@@ -27,6 +27,10 @@ DEFAULT_SLM_MODEL = "qwen2.5:1.5b"
 # qwen3:4b-instruct read and answered 6/6 (median 20.5 s), qwen3:4b 4/6 (100.6 s, leaks its reasoning),
 # qwen2.5:1.5b 0/6.
 TOOL_CAPABLE_MODELS = ("qwen3:4b-instruct",)
+# Every request sends the same context size: Ollama restarts the model whenever num_ctx changes, and on
+# 2026-11-20 two clients alternating 4096 and 8192 reloaded it before each call, up to 17 s per call
+# (experiments/page_search/RESULTS.md).
+NUM_CTX = 8192
 
 
 class SLMEngine:
@@ -116,7 +120,7 @@ class SLMEngine:
                        should_cancel: Optional[Callable[[], bool]] = None) -> Dict[str, Any]:
         """Ollama native tool calling; retain token counts and the assistant message."""
         payload = {"model": self.model, "messages": messages, "stream": False, "think": thinking,
-                   "options": {"temperature": 0.1, "num_predict": max_tokens, "num_ctx": 8192}}
+                   "options": {"temperature": 0.1, "num_predict": max_tokens, "num_ctx": NUM_CTX}}
         if tools:
             payload["tools"] = tools
         if response_format:
@@ -188,6 +192,7 @@ class SLMEngine:
             "options": {
                 "temperature": temperature,
                 "num_predict": max_tokens,
+                "num_ctx": NUM_CTX,
             },
         }
         if system_prompt:
@@ -267,6 +272,7 @@ class SLMEngine:
             "options": {
                 "temperature": 0.2,
                 "num_predict": 512,
+                "num_ctx": NUM_CTX,
             },
         }
         if system_prompt:

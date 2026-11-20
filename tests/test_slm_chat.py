@@ -61,3 +61,25 @@ def test_explicit_zero_cached_tokens_are_distinct_from_missing_usage():
         with patch('urllib.request.urlopen', return_value=BytesIO(json.dumps(payload).encode())):
             result = SLMEngine().chat_with_meta([], [])
         assert result['cached_tokens'] == expected
+
+
+def test_every_ollama_request_sends_the_same_context_size():
+    # Ollama restarts the model when num_ctx changes, so a mix of sizes reloads it between calls.
+    from rat.engine.llm_client import LLMClient
+    from rat.engine.slm import NUM_CTX
+
+    reply = {'message': {'role': 'assistant', 'content': 'x'}, 'response': 'x', 'done': True}
+    sizes = []
+
+    def urlopen(request, timeout=None):
+        sizes.append(json.loads(request.data)['options'].get('num_ctx'))
+        return BytesIO(json.dumps(reply).encode())
+
+    engine = SLMEngine(model='fixture')
+    with patch('urllib.request.urlopen', side_effect=urlopen), \
+            patch.object(SLMEngine, 'is_service_running', return_value=True):
+        engine.chat_with_meta([], [])
+        engine.generate_with_meta('q')
+        list(engine.generate_stream('q'))
+        LLMClient().query_ollama('q')
+    assert sizes == [NUM_CTX] * 4
