@@ -25,7 +25,12 @@ Thay đổi so với §6, ghi lại cho minh bạch: §6 đo ba việc khác nha
 
 - Chưa có `.dmg`, nên buổi đầu chạy trên Mac của chủ RAT. **Thời gian cài đặt chưa đo được ở các buổi này**; ghi rõ là lỗ hổng, đo riêng khi có bản cài.
 - Tài liệu: thư mục slide và giáo trình của một môn cả hai đều học (ví dụ 502044 Tổ chức máy tính). Chưa dùng file riêng của người tham gia: RAT chưa có lệnh gỡ một file khỏi chỉ mục (`rat index --purge` chỉ dọn file bị loại trừ, nhạy cảm hoặc nhị phân, không dọn file đã xoá), nên nội dung của họ sẽ nằm lại trong chỉ mục.
-- Slide môn này còn một bản sao một phần ở `SchoolAppCoreRazor/1/schoolworks/to-chuc-may-tinh/`. Chỉ `rat index` thư mục `dump/schoolworks/to-chuc-may-tinh/`, để đáp án V2 chỉ nằm ở một nơi. Sau đó chạy `rat doctor`, cắm sạc, mở Ollama, hỏi thử một câu để mô hình đã nạp sẵn. Ghi lại: lần hỏi đầu tiên trong buổi là "nóng" (đã nạp).
+- Slide môn này còn một bản sao một phần ở `SchoolAppCoreRazor/1/schoolworks/to-chuc-may-tinh/`. Chỉ `rat index` thư mục `dump/schoolworks/to-chuc-may-tinh/`, để đáp án V2 chỉ nằm ở một nơi. Sau đó chạy `rat doctor`, cắm sạc, mở Ollama.
+- **Máy không chạy job nặng.** Ngay trước buổi, chạy `pgrep -fl "mlx_lm|structured_llm"`. Nếu lệnh in ra gì, chờ job xong rồi đợi thêm 15 phút, hoặc dời buổi. Đừng coi máy là rảnh chỉ vì RAM còn trống. Ngày 19-20/11/2026, hai lần chạy thử chậm gấp 2-5 lần vì có job huấn luyện hoặc eval MLX chạy song song (`experiments/page_search/RESULTS.md`).
+- **Nạp sẵn mô hình, giữ 60 phút.** Ollama tự gỡ mô hình sau 5 phút không dùng, mà phần giới thiệu buổi dễ dài hơn thế. Chạy:
+  `curl -s localhost:11434/api/chat -d '{"model":"qwen3:4b-instruct","messages":[],"keep_alive":"60m","options":{"num_ctx":8192}}'`
+  Phải có `num_ctx` 8192, đúng giá trị RAT gửi (`NUM_CTX` trong `rat/engine/slm.py`). Nếu khác, câu hỏi đầu tiên của RAT sẽ làm Ollama nạp lại mô hình. Ghi lại: lần hỏi đầu tiên trong buổi là "nóng" (đã nạp).
+- **Đếm số lần nạp mô hình.** Trước và sau buổi, chạy `grep -c "starting llama-server" ~/.ollama/logs/server.log`. Tính từ sau lệnh nạp sẵn, hai số phải bằng nhau. Nếu khác, có thứ khác đã làm mô hình nạp lại giữa buổi. Khi đó ghi cột `Giây` của các dòng RAT trong buổi đó là **bị nhiễm**. Phần quan sát hành vi của buổi vẫn tính.
 - Mở sẵn Finder ở thư mục môn học và trình duyệt trống, để cách quen thuộc không bị thiệt vì khâu mở máy.
 - Đồng hồ bấm giờ, bảng ghi chép bên dưới in sẵn.
 
@@ -68,6 +73,8 @@ Bốn câu V1, V2 viết ngày 19/11/2026 từ slide môn 502044 (`~/Documents/G
 ## Bảng ghi chép, mỗi buổi một bảng
 
 Người tham gia: P__ (không ghi tên) · Ngày: __ · Máy của họ: __ · Tài liệu môn để ở: __
+
+Job nặng trước buổi (`pgrep`): không / có → dời · Lần nạp mô hình (`starting llama-server`): sau khi nạp sẵn __ / sau buổi __
 
 | Việc | Cách | Câu | Bước | Chuyển cửa sổ | Giây | Kết quả | Ghi chú (chỗ khựng, câu họ nói) |
 |---|---|---|---|---|---|---|---|
